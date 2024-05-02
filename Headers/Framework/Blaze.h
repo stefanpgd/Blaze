@@ -8,11 +8,10 @@
 class Renderer;
 class Editor;
 
-// When using the template, rename 'Application' to whatever the current project is called 
-class Application
+class Blaze
 {
 public:
-	Application();
+	Blaze();
 
 	void Run();
 
@@ -26,7 +25,7 @@ private:
 	static LRESULT CALLBACK WindowsCallback(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 private:
-	std::wstring applicationName = L"Flux";
+	std::wstring applicationName = L"Blaze";
 	bool runApplication = true;
 
 	unsigned int windowWidth = 1080;

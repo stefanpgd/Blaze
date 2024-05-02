@@ -164,7 +164,7 @@
     <ClCompile Include="Source\Graphics\Transform.cpp" />
     <ClCompile Include="Source\Graphics\Window.cpp" />
     <ClCompile Include="Source\Framework\Renderer.cpp" />
-    <ClCompile Include="Source\Framework\Application.cpp" />
+    <ClCompile Include="Source\Framework\Blaze.cpp" />
     <ClCompile Include="Source\main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -180,7 +180,7 @@
     <ClInclude Include="Dependencies\ImGui\imstb_truetype.h" />
     <ClInclude Include="Headers\Graphics\DXStructuredBuffer.h" />
     <ClInclude Include="Headers\Graphics\DXComputePipeline.h" />
-    <ClInclude Include="Headers\Framework\Application.h" />
+    <ClInclude Include="Headers\Framework\Blaze.h" />
     <ClInclude Include="Headers\Graphics\DepthBuffer.h" />
     <ClInclude Include="Headers\Graphics\DXAccess.h" />
     <ClInclude Include="Headers\Graphics\DXCommands.h" />

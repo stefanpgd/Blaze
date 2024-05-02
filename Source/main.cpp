@@ -1,8 +1,8 @@
-#include "Framework/Application.h"
+#include "Framework/Blaze.h"
 
 int main()
 {
-	Application app;
+	Blaze app;
 	app.Run();
 
 	return 0;

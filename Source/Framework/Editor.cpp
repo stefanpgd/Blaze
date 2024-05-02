@@ -1,10 +1,10 @@
 #include "Framework/Editor.h"
-#include "Framework/Application.h"
+#include "Framework/Blaze.h"
 
 #include <imgui.h>
 #include <string>
 
-Editor::Editor(Application* application) : application(application)
+Editor::Editor(Blaze* application) : application(application)
 {
 	ImGuiStyleSettings();
 }

@@ -1,4 +1,4 @@
-#include "Framework/Application.h"
+#include "Framework/Blaze.h"
 #include "Framework/Renderer.h"
 #include "Framework/Editor.h"
 #include "Framework/Input.h"
@@ -22,17 +22,17 @@ namespace EngineInternal
 }
 using namespace EngineInternal;
 
-Application::Application()
+Blaze::Blaze()
 {
 	RegisterWindowClass();
 
 	renderer = new Renderer(applicationName, windowWidth, windowHeight);
 	editor = new Editor(this);
 
-	LOG("Successfully initialized - 'Insert Application Name'");
+	LOG("Successfully initialized - Blaze");
 }
 
-void Application::Run()
+void Blaze::Run()
 {
 	std::chrono::high_resolution_clock* clock = new std::chrono::high_resolution_clock();
 	auto t0 = std::chrono::time_point_cast<std::chrono::milliseconds>((clock->now())).time_since_epoch();;
@@ -60,7 +60,7 @@ void Application::Run()
 	}
 }
 
-void Application::Start()
+void Blaze::Start()
 {
 	if(doResize)
 	{
@@ -73,7 +73,7 @@ void Application::Start()
 	ImGui::NewFrame();
 }
 
-void Application::Update(float deltaTime)
+void Blaze::Update(float deltaTime)
 {
 	Input::Update();
 
@@ -85,13 +85,13 @@ void Application::Update(float deltaTime)
 	}
 }
 
-void Application::Render()
+void Blaze::Render()
 {
 	ImGui::Render();
 	renderer->Render();
 }
 
-void Application::RegisterWindowClass()
+void Blaze::RegisterWindowClass()
 {
 	WNDCLASSEXW windowClassDescription = {};
 	HINSTANCE hInstance = GetModuleHandle(NULL);
@@ -113,7 +113,7 @@ void Application::RegisterWindowClass()
 	assert(atom > 0);
 }
 
-LRESULT Application::WindowsCallback(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT Blaze::WindowsCallback(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch(message)
 	{
