@@ -21,7 +21,7 @@ class RenderStage
 public:
 	RenderStage();
 
-	virtual void RecordStage(ComPtr<ID3D12GraphicsCommandList2> commandList) = 0;
+	virtual void RecordStage(ComPtr<ID3D12GraphicsCommandList4> commandList) = 0;
 
 protected:
 	DXPipeline* pipeline;

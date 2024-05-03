@@ -49,7 +49,7 @@ bool Mesh::HasTextures()
 void Mesh::UploadBuffers()
 {
 	DXCommands* copyCommands = DXAccess::GetCommands(D3D12_COMMAND_LIST_TYPE_COPY);
-	ComPtr<ID3D12GraphicsCommandList2> copyCommandList = copyCommands->GetGraphicsCommandList();
+	ComPtr<ID3D12GraphicsCommandList4> copyCommandList = copyCommands->GetGraphicsCommandList();
 	copyCommands->ResetCommandList();
 
 	// 1. Record commands to upload vertex & index buffers //

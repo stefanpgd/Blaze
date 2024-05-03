@@ -53,7 +53,7 @@ Renderer::Renderer(const std::wstring& applicationName, unsigned int windowWidth
 void Renderer::Render()
 {
 	unsigned int backBufferIndex = window->GetCurrentBackBufferIndex();
-	ComPtr<ID3D12GraphicsCommandList2> commandList = directCommands->GetGraphicsCommandList();
+	ComPtr<ID3D12GraphicsCommandList4> commandList = directCommands->GetGraphicsCommandList();
 	ID3D12DescriptorHeap* heaps[] = { CBVHeap->GetAddress() };
 
 	ComPtr<ID3D12Resource> renderTargetBuffer = window->GetCurrentScreenBuffer();

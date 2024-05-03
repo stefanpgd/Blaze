@@ -90,7 +90,7 @@ ComPtr<ID3D12CommandList> DXCommands::GetCommandList()
 	return commands;
 }
 
-ComPtr<ID3D12GraphicsCommandList2> DXCommands::GetGraphicsCommandList()
+ComPtr<ID3D12GraphicsCommandList4> DXCommands::GetGraphicsCommandList()
 {
 	return commandList;
 }

@@ -26,7 +26,7 @@ inline void ThrowIfFailed(HRESULT hr)
 
 inline void TransitionResource(ID3D12Resource* resource, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after)
 {
-	ComPtr<ID3D12GraphicsCommandList2> commandList = DXAccess::GetCommands(D3D12_COMMAND_LIST_TYPE_DIRECT)->GetGraphicsCommandList();
+	ComPtr<ID3D12GraphicsCommandList4> commandList = DXAccess::GetCommands(D3D12_COMMAND_LIST_TYPE_DIRECT)->GetGraphicsCommandList();
 	CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(resource, before, after);
 	commandList->ResourceBarrier(1, &barrier);
 }
@@ -41,7 +41,7 @@ inline void TransitionResource(ID3D12Resource* resource, D3D12_RESOURCE_STATES b
 // Heaps aren't only GPU... there are multiple types in different places
 // Default Heap = (GPU) VRAM
 // Upload Heap = system RAM
-inline void UpdateBufferResource(ComPtr<ID3D12GraphicsCommandList2> commandList, ID3D12Resource** destinationResource, ID3D12Resource** intermediateResource,
+inline void UpdateBufferResource(ComPtr<ID3D12GraphicsCommandList4> commandList, ID3D12Resource** destinationResource, ID3D12Resource** intermediateResource,
 	unsigned int numberOfElements, unsigned int elementSize, const void* bufferData, D3D12_RESOURCE_FLAGS flags)
 {
 	if(!bufferData)
@@ -80,7 +80,7 @@ inline void UploadPixelShaderResource(ComPtr<ID3D12Resource>& destinationResourc
 {
 	ComPtr<ID3D12Device5> device = DXAccess::GetDevice();
 	DXCommands* copyCommands = DXAccess::GetCommands(D3D12_COMMAND_LIST_TYPE_COPY);
-	ComPtr<ID3D12GraphicsCommandList2> commandList = copyCommands->GetGraphicsCommandList();
+	ComPtr<ID3D12GraphicsCommandList4> commandList = copyCommands->GetGraphicsCommandList();
 
 	D3D12_HEAP_PROPERTIES gpuHeap = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
 	D3D12_HEAP_PROPERTIES uploadHeap = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
@@ -134,7 +134,7 @@ inline void UpdateInFlightCBV(ComPtr<ID3D12Resource>& destinationResource, unsig
 	DXCommands* directCommands = DXAccess::GetCommands(D3D12_COMMAND_LIST_TYPE_DIRECT);
 	directCommands->Flush();
 
-	ComPtr<ID3D12GraphicsCommandList2> commandList = directCommands->GetGraphicsCommandList();
+	ComPtr<ID3D12GraphicsCommandList4> commandList = directCommands->GetGraphicsCommandList();
 	directCommands->ResetCommandList(DXAccess::GetCurrentBackBufferIndex());
 
 	ComPtr<ID3D12Resource> intermediateResource;
@@ -161,7 +161,7 @@ inline void UpdateInFlightCBV(ComPtr<ID3D12Resource>& destinationResource, unsig
 inline void BindAndClearRenderTarget(Window* window, CD3DX12_CPU_DESCRIPTOR_HANDLE* renderTarget, CD3DX12_CPU_DESCRIPTOR_HANDLE* depthStencil = nullptr, float* clearColor = nullptr)
 {
 	DXCommands* directCommands = DXAccess::GetCommands(D3D12_COMMAND_LIST_TYPE_DIRECT);
-	ComPtr<ID3D12GraphicsCommandList2> commandList = directCommands->GetGraphicsCommandList();
+	ComPtr<ID3D12GraphicsCommandList4> commandList = directCommands->GetGraphicsCommandList();
 	const float defaultClearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 	if(clearColor)
