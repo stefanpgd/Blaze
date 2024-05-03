@@ -15,6 +15,8 @@
 #include <imgui_impl_win32.h>
 #include <imgui_impl_dx12.h>
 
+#include "Graphics/Mesh.h"  
+
 namespace RendererInternal
 {
 	Window* window = nullptr;
@@ -30,6 +32,8 @@ namespace RendererInternal
 	Texture* defaultTexture = nullptr;
 }
 using namespace RendererInternal;
+
+Mesh* screenMesh;
 
 Renderer::Renderer(const std::wstring& applicationName, unsigned int windowWidth,
 	unsigned int windowHeight)
@@ -48,6 +52,26 @@ Renderer::Renderer(const std::wstring& applicationName, unsigned int windowWidth
 	window = new Window(applicationName, windowWidth, windowHeight);
 
 	InitializeImGui();
+
+	// PLACEHOLDER to test RT Geometry //
+	Vertex* screenVertices = new Vertex[4];
+	screenVertices[0].Position = glm::vec3(-1.0f, -1.0f, 0.0f);
+	screenVertices[1].Position = glm::vec3(-1.0f, 1.0f, 0.0f);
+	screenVertices[2].Position = glm::vec3(1.0f, 1.0f, 0.0f);
+	screenVertices[3].Position = glm::vec3(1.0f, -1.0f, 0.0f);
+
+	screenVertices[0].UVCoord = glm::vec2(0.0f, 1.0f);
+	screenVertices[1].UVCoord = glm::vec2(0.0f, 0.0f);
+	screenVertices[2].UVCoord = glm::vec2(1.0f, 0.0f);
+	screenVertices[3].UVCoord = glm::vec2(1.0f, 1.0f);
+
+	unsigned int* screenIndices = new unsigned int[6]
+		{	2, 1, 0, 3, 2, 0 };
+
+	screenMesh = new Mesh(screenVertices, 4, screenIndices, 6, true);
+
+	delete[] screenVertices;
+	delete[] screenIndices;
 }
 
 void Renderer::Render()

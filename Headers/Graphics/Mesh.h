@@ -12,10 +12,7 @@ using namespace Microsoft::WRL;
 struct Vertex
 {
 	glm::vec3 Position;
-	glm::vec3 Normal;
-	glm::vec3 Tangent;
-	glm::vec3 Color;
-	glm::vec2 TexCoord;
+	glm::vec2 UVCoord;
 };
 
 class Texture;
@@ -23,18 +20,17 @@ class Texture;
 class Mesh
 {
 public:
-	Mesh(Vertex* vertices, unsigned int vertexCount, unsigned int* indices, unsigned int indexCount);
+	Mesh(Vertex* vertices, unsigned int vertexCount, unsigned int* indices, 
+		unsigned int indexCount, bool isRayTracingGeometry = false);
 
 	const D3D12_VERTEX_BUFFER_VIEW& GetVertexBufferView();
 	const D3D12_INDEX_BUFFER_VIEW& GetIndexBufferView();
-	const CD3DX12_GPU_DESCRIPTOR_HANDLE GetMaterialView();
 	const unsigned int GetIndicesCount();
-
-	bool HasTextures();
-	unsigned int GetTextureID();
 
 private:
 	void UploadBuffers();
+
+	void BuildRayTracingBLAS();
 
 public:
 	std::string Name;
@@ -49,11 +45,12 @@ private:
 
 	std::vector<Vertex> vertices;
 	std::vector<unsigned int> indices;
+
+	unsigned int verticesCount = 0;
 	unsigned int indicesCount = 0;
 
-
-	bool hasTextures = false;
-
-	int materialCBVIndex = -1;
-	ComPtr<ID3D12Resource> materialBuffer;
+	// Ray Tracing //
+	bool isRayTracingGeometry;
+	ComPtr<ID3D12Resource> blasScratch;
+	ComPtr<ID3D12Resource> blasResult;
 };
