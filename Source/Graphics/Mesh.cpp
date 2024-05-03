@@ -3,6 +3,7 @@
 #include "Graphics/DXUtilities.h"
 #include "Graphics/Texture.h"
 #include "Graphics/DXCommands.h"
+#include "Framework/Mathematics.h"
 #include <cassert>
 
 Mesh::Mesh(Vertex* verts, unsigned int vertexCount, unsigned int* indi, 
@@ -23,6 +24,7 @@ Mesh::Mesh(Vertex* verts, unsigned int vertexCount, unsigned int* indi,
 	if(isRayTracingGeometry)
 	{
 		BuildRayTracingBLAS();
+		BuildRayTracingTLAS();
 	}
 }
 
@@ -136,6 +138,77 @@ void Mesh::BuildRayTracingBLAS()
 	commands->ResetCommandList();
 
 	commandList->BuildRaytracingAccelerationStructure(&BLASdescription, 0, nullptr);
+
+	commands->ExecuteCommandList();
+	commands->Signal();
+	commands->WaitForFenceValue();
+}
+
+void Mesh::BuildRayTracingTLAS()
+{
+	ComPtr<ID3D12Device5> device = DXAccess::GetDevice();
+
+	// Ty, Adam Marrs - https://github.com/acmarrs/IntroToDXR/blob/master/src/Graphics.cpp
+	D3D12_RAYTRACING_INSTANCE_DESC instanceDesc = {};
+	instanceDesc.InstanceID = 0;
+	instanceDesc.InstanceContributionToHitGroupIndex = 0;
+	instanceDesc.InstanceMask = 0xFF;
+	instanceDesc.Transform[0][0] = instanceDesc.Transform[1][1] = instanceDesc.Transform[2][2] = 1;
+	instanceDesc.AccelerationStructure = blasResult->GetGPUVirtualAddress();
+
+	// Create The TLAS instance buffer //
+	CD3DX12_HEAP_PROPERTIES heapDesc = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+	D3D12_RESOURCE_DESC instanceResource = CD3DX12_RESOURCE_DESC::Buffer(sizeof(instanceDesc));
+
+	HRESULT hr = device->CreateCommittedResource(&heapDesc, D3D12_HEAP_FLAG_NONE, &instanceResource, 
+		D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&tlasInstanceDesc));
+
+	if(FAILED(hr))
+	{
+		LOG(Log::MessageType::Error, "Error: failed to create buffer resource!");
+	}
+
+	// Note to self, you can memcpy data directly to the GPU? 
+	// Map data to GPU //
+	UINT8* pData;
+	tlasInstanceDesc->Map(0, nullptr, (void**)&pData);
+	memcpy(pData, &instanceDesc, sizeof(instanceDesc));
+	tlasInstanceDesc->Unmap(0, nullptr);
+
+	// Get memory required for TLAS //
+	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
+	inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
+	inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+	inputs.InstanceDescs = tlasInstanceDesc->GetGPUVirtualAddress();
+	inputs.NumDescs = 1;
+	inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE;
+	
+	D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO prebuildInfo = {};
+	device->GetRaytracingAccelerationStructurePrebuildInfo(&inputs, &prebuildInfo); D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE;
+
+	// Use memory required to make room for resources //
+	D3D12_HEAP_PROPERTIES gpuHeap = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+	D3D12_RESOURCE_DESC scratchDesc = CD3DX12_RESOURCE_DESC::Buffer(prebuildInfo.ScratchDataSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+	D3D12_RESOURCE_DESC resultDesc = CD3DX12_RESOURCE_DESC::Buffer(prebuildInfo.ResultDataMaxSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+
+	ThrowIfFailed(device->CreateCommittedResource(&gpuHeap, D3D12_HEAP_FLAG_NONE,
+		&scratchDesc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&tlasScratch)));
+
+	ThrowIfFailed(device->CreateCommittedResource(&gpuHeap, D3D12_HEAP_FLAG_NONE,
+		&resultDesc, D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE, nullptr, IID_PPV_ARGS(&tlasResult)));
+
+	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC TLASdescription = {};
+	TLASdescription.Inputs = inputs;
+	TLASdescription.ScratchAccelerationStructureData = tlasScratch->GetGPUVirtualAddress();
+	TLASdescription.DestAccelerationStructureData = tlasResult->GetGPUVirtualAddress();
+
+	DXCommands* commands = DXAccess::GetCommands(D3D12_COMMAND_LIST_TYPE_DIRECT);
+	ComPtr<ID3D12GraphicsCommandList4> commandList = commands->GetGraphicsCommandList();
+
+	commands->Flush();
+	commands->ResetCommandList();
+
+	commandList->BuildRaytracingAccelerationStructure(&TLASdescription, 0, nullptr);
 
 	commands->ExecuteCommandList();
 	commands->Signal();
