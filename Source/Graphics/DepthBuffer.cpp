@@ -25,7 +25,7 @@ void DepthBuffer::Resize(unsigned int width, unsigned int height)
 	const DXGI_FORMAT format = DXGI_FORMAT_D32_FLOAT;
 
 	// 2. Create a new Depth Buffer //
-	ComPtr<ID3D12Device2> device = DXAccess::GetDevice();
+	ComPtr<ID3D12Device5> device = DXAccess::GetDevice();
 	DXDescriptorHeap* DSVHeap = DXAccess::GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 	DXDescriptorHeap* SRVHeap = DXAccess::GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 

@@ -154,7 +154,7 @@ void Window::UpdateRenderBuffers()
 	// 3. Update Render Buffer RTVs & SRVs //
 	DXDescriptorHeap* RTVHeap = DXAccess::GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	DXDescriptorHeap* CBVHeap = DXAccess::GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	ComPtr<ID3D12Device2> device = DXAccess::GetDevice();
+	ComPtr<ID3D12Device5> device = DXAccess::GetDevice();
 
 	for(int i = 0; i < BackBufferCount; i++)
 	{
@@ -192,7 +192,7 @@ void Window::UpdateScreenBuffers()
 	ThrowIfFailed(swapChain->ResizeBuffers(BackBufferCount, windowWidth, windowHeight, swapChainDesc.BufferDesc.Format, swapChainDesc.Flags));
 
 	// 3. Create new RTVs //
-	ComPtr<ID3D12Device2> device = DXAccess::GetDevice();
+	ComPtr<ID3D12Device5> device = DXAccess::GetDevice();
 	DXDescriptorHeap* RTVHeap = DXAccess::GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
 	for(int i = 0; i < BackBufferCount; i++)
@@ -213,7 +213,7 @@ void Window::UpdateDepthBuffer()
 	depthBuffer.Reset();
 
 	// 2. Create a new Depth Buffer //
-	ComPtr<ID3D12Device2> device = DXAccess::GetDevice();
+	ComPtr<ID3D12Device5> device = DXAccess::GetDevice();
 	DXDescriptorHeap* dsvHeap = DXAccess::GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
 	D3D12_CLEAR_VALUE clearValue = {};

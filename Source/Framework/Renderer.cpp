@@ -96,7 +96,7 @@ void Renderer::InitializeImGui()
 }
 
 #pragma region DXAccess Implementations
-ComPtr<ID3D12Device2> DXAccess::GetDevice()
+ComPtr<ID3D12Device5> DXAccess::GetDevice()
 {
 	if(!device)
 	{

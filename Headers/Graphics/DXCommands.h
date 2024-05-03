@@ -31,7 +31,7 @@ private:
 	void CreateSynchronizationObjects();
 
 private:
-	ComPtr<ID3D12Device2> device;
+	ComPtr<ID3D12Device5> device;
 
 	ComPtr<ID3D12CommandQueue> commandQueue;
 	ComPtr<ID3D12GraphicsCommandList2> commandList;

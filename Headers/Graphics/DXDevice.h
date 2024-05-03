@@ -10,12 +10,12 @@ class DXDevice
 public:
 	DXDevice();
 
-	ComPtr<ID3D12Device2> Get();
-	ID3D12Device2* GetAddress();
+	ComPtr<ID3D12Device5> Get();
+	ID3D12Device5* GetAddress();
 
 private:
 	void DebugLayer();
 	void SetupMessageSeverities();
 
-	ComPtr<ID3D12Device2> device;
+	ComPtr<ID3D12Device5> device;
 };

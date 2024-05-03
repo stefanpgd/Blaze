@@ -50,7 +50,7 @@ inline void UpdateBufferResource(ComPtr<ID3D12GraphicsCommandList2> commandList,
 		assert(false);
 	}
 
-	ComPtr<ID3D12Device2> device = DXAccess::GetDevice();
+	ComPtr<ID3D12Device5> device = DXAccess::GetDevice();
 	unsigned int bufferSize = numberOfElements * elementSize;
 
 	CD3DX12_RESOURCE_DESC bufferDescription = CD3DX12_RESOURCE_DESC::Buffer(bufferSize, flags);
@@ -78,7 +78,7 @@ inline void UpdateBufferResource(ComPtr<ID3D12GraphicsCommandList2> commandList,
 inline void UploadPixelShaderResource(ComPtr<ID3D12Resource>& destinationResource, ComPtr<ID3D12Resource>& intermediateResource, D3D12_RESOURCE_DESC& resourceDescription, 
 	D3D12_SUBRESOURCE_DATA& subresource)
 {
-	ComPtr<ID3D12Device2> device = DXAccess::GetDevice();
+	ComPtr<ID3D12Device5> device = DXAccess::GetDevice();
 	DXCommands* copyCommands = DXAccess::GetCommands(D3D12_COMMAND_LIST_TYPE_COPY);
 	ComPtr<ID3D12GraphicsCommandList2> commandList = copyCommands->GetGraphicsCommandList();
 
@@ -144,7 +144,7 @@ inline void UpdateInFlightCBV(ComPtr<ID3D12Resource>& destinationResource, unsig
 	directCommands->Signal();
 	directCommands->WaitForFenceValue(DXAccess::GetCurrentBackBufferIndex());
 
-	ComPtr<ID3D12Device2> device = DXAccess::GetDevice();
+	ComPtr<ID3D12Device5> device = DXAccess::GetDevice();
 
 	D3D12_CONSTANT_BUFFER_VIEW_DESC desc = {};
 	desc.BufferLocation = destinationResource->GetGPUVirtualAddress();
