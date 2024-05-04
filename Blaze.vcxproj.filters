@@ -193,9 +193,9 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Source\Shaders\screen.vertex.hlsl" />
-    <FxCompile Include="Source\Shaders\screen.pixel.hlsl" />
     <FxCompile Include="Source\Shaders\miss.hlsl" />
+    <FxCompile Include="Source\Shaders\rayGeneration.hlsl" />
+    <FxCompile Include="Source\Shaders\closestHit.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="Dependencies\Microsoft\dxil.dll" />
