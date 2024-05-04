@@ -200,6 +200,7 @@
     <ClInclude Include="Headers\Utilities\Logger.h" />
     <ClInclude Include="Headers\Graphics\RenderStage.h" />
     <ClInclude Include="Headers\Framework\Input.h" />
+    <ClInclude Include="Headers\Graphics\DXCommon.h" />
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="Dependencies\Microsoft\d3dcompiler_47.dll">
