@@ -90,6 +90,9 @@
     <ClCompile Include="Source\Framework\Input.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Graphics\DXRayTracingPipeline.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\Framework\Blaze.h">
@@ -185,12 +188,17 @@
     <ClInclude Include="Headers\Graphics\DXCommon.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <CopyFileToFolders Include="Dependencies\Microsoft\d3dcompiler_47.dll" />
+    <ClInclude Include="Headers\Graphics\DXRayTracingPipeline.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\screen.vertex.hlsl" />
     <FxCompile Include="Source\Shaders\screen.pixel.hlsl" />
+    <FxCompile Include="Source\Shaders\miss.hlsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="Dependencies\Microsoft\dxil.dll" />
+    <CopyFileToFolders Include="Dependencies\Microsoft\dxcompiler.dll" />
   </ItemGroup>
 </Project>
