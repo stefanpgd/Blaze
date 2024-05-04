@@ -1,10 +1,8 @@
 #pragma once
+
+#include "Graphics/DXCommon.h"
 #include "Graphics/Window.h"
 
-#include <wrl.h>
-using namespace Microsoft::WRL;
-
-#include <d3d12.h>
 #include <cstdint>
 
 class DXCommands

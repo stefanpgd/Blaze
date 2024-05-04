@@ -6,9 +6,7 @@ class DXDescriptorHeap;
 class Texture;
 class Window;
 
-#include <wrl.h>
-#include <d3d12.h>
-using namespace Microsoft::WRL;
+#include "Graphics/DXCommon.h"
 
 namespace DXAccess
 {
@@ -19,5 +17,4 @@ namespace DXAccess
 
 	unsigned int GetCurrentBackBufferIndex();
 	Texture* GetDefaultTexture();
-
 }

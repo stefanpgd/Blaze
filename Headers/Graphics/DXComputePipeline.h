@@ -1,9 +1,7 @@
 #pragma once
 
+#include "Graphics/DXCommon.h"
 #include <string>
-#include <d3d12.h>
-#include <wrl.h>
-using namespace Microsoft::WRL;
 
 class DXRootSignature;
 

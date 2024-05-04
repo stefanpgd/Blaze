@@ -1,10 +1,6 @@
 #pragma once
 
-#include <wrl.h>
-using namespace Microsoft::WRL;
-
-#include <d3d12.h>
-#include <d3dx12.h>
+#include "Graphics/DXCommon.h"
 
 class DXDescriptorHeap
 {
