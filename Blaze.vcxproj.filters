@@ -90,9 +90,6 @@
     <ClCompile Include="Source\Framework\Input.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Graphics\DXRayTracingPipeline.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\Framework\Blaze.h">
@@ -188,7 +185,7 @@
     <ClInclude Include="Headers\Graphics\DXCommon.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\Graphics\DXRayTracingPipeline.h">
+    <ClInclude Include="Headers\Graphics\DXRUtilities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

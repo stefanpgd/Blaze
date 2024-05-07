@@ -143,7 +143,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Graphics\DXRayTracingPipeline.cpp" />
     <ClCompile Include="Source\Framework\Input.cpp" />
     <ClCompile Include="Source\Framework\Editor.cpp" />
     <ClCompile Include="Dependencies\ImGui\imgui.cpp" />
@@ -171,7 +170,7 @@
     <ClCompile Include="Source\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Headers\Graphics\DXRayTracingPipeline.h" />
+    <ClInclude Include="Headers\Graphics\DXRUtilities.h" />
     <ClInclude Include="Headers\Framework\Editor.h" />
     <ClInclude Include="Headers\Utilities\Random.h" />
     <ClInclude Include="Dependencies\ImGui\imconfig.h" />

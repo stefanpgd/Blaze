@@ -158,7 +158,8 @@ inline void UpdateInFlightCBV(ComPtr<ID3D12Resource>& destinationResource, unsig
 /// First clears the passed Render Target & DepthStencil buffer
 /// Depth Stencil only gets cleared when its passed along
 /// </summary>
-inline void BindAndClearRenderTarget(Window* window, CD3DX12_CPU_DESCRIPTOR_HANDLE* renderTarget, CD3DX12_CPU_DESCRIPTOR_HANDLE* depthStencil = nullptr, float* clearColor = nullptr)
+inline void BindAndClearRenderTarget(Window* window, CD3DX12_CPU_DESCRIPTOR_HANDLE* renderTarget, 
+	CD3DX12_CPU_DESCRIPTOR_HANDLE* depthStencil = nullptr, float* clearColor = nullptr)
 {
 	DXCommands* directCommands = DXAccess::GetCommands(D3D12_COMMAND_LIST_TYPE_DIRECT);
 	ComPtr<ID3D12GraphicsCommandList4> commandList = directCommands->GetGraphicsCommandList();
@@ -182,4 +183,24 @@ inline void BindAndClearRenderTarget(Window* window, CD3DX12_CPU_DESCRIPTOR_HAND
 	commandList->RSSetViewports(1, &window->GetViewport());
 	commandList->RSSetScissorRects(1, &window->GetScissorRect());
 	commandList->OMSetRenderTargets(1, renderTarget, FALSE, depthStencil);
+}
+
+/// <summary>
+/// Used to Allocate and directly map data into a resource that should be located in the upload heap.
+/// Note that it doesn't seem to be able to directly map resources on the default heap of the GPU.
+/// </summary>
+inline void AllocateAndMapResource(ComPtr<ID3D12Resource>& resource, void* data, unsigned int bufferSizeInBytes, 
+	D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE)
+{
+	ComPtr<ID3D12Device5> device = DXAccess::GetDevice();
+	CD3DX12_HEAP_PROPERTIES heapDesc = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+	D3D12_RESOURCE_DESC instanceResource = CD3DX12_RESOURCE_DESC::Buffer(bufferSizeInBytes, flags);
+
+	ThrowIfFailed(device->CreateCommittedResource(&heapDesc, D3D12_HEAP_FLAG_NONE, &instanceResource,
+		D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(resource.GetAddressOf())));
+
+	UINT8* pData;
+	resource->Map(0, nullptr, (void**)&pData);
+	memcpy(pData, data, bufferSizeInBytes);
+	resource->Unmap(0, nullptr);
 }

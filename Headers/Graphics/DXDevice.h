@@ -5,7 +5,7 @@
 class DXDevice
 {
 public:
-	DXDevice();
+	DXDevice(bool checkForRayTracingSupport = false);
 
 	ComPtr<ID3D12Device5> Get();
 	ID3D12Device5* GetAddress();
