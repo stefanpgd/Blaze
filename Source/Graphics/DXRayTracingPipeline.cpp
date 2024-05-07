@@ -3,9 +3,12 @@
 #include "Graphics/DXAccess.h"
 #include "Graphics/DXUtilities.h"
 
-DXRayTracingPipeline::DXRayTracingPipeline()
+DXRayTracingPipeline::DXRayTracingPipeline(DXRayTracingPipelineSettings settings) : settings(settings)
 {
-	CreateRootSignature(rayGenRootSignature.GetAddressOf(), nullptr, 0);
+	// Generate Root Signatures //
+	CreateRootSignature(rayGenRootSignature.GetAddressOf(), settings.rayGenParameters, settings.rayGenParameterCount);
+	CreateRootSignature(hitRootSignature.GetAddressOf(), settings.hitParameters, settings.hitParameterCount);
+	CreateRootSignature(missRootSignature.GetAddressOf(), settings.missParameters, settings.missParameterCount);
 }
 
 void DXRayTracingPipeline::CreateRootSignature(ID3D12RootSignature** rootSignature, 
