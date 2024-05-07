@@ -24,8 +24,14 @@ private:
 	void CreateRootSignature(ID3D12RootSignature** rootSignature,
 		D3D12_ROOT_PARAMETER* parameterData, unsigned int parameterCount);
 
+	void CompileShaderLibrary(IDxcBlob** shader, std::wstring shaderName);
+
 private:
 	DXRayTracingPipelineSettings settings;
+
+	IDxcCompiler* compiler;
+	IDxcLibrary* library;
+	ComPtr<IDxcIncludeHandler> dxcIncludeHandler;
 
 	ComPtr<IDxcBlob> rayGenLibrary;
 	ComPtr<IDxcBlob> hitLibrary;
@@ -34,4 +40,7 @@ private:
 	ComPtr<ID3D12RootSignature> rayGenRootSignature;
 	ComPtr<ID3D12RootSignature> hitRootSignature;
 	ComPtr<ID3D12RootSignature> missRootSignature;
+
+	ComPtr<ID3D12StateObject> pipeline;
+	ComPtr<ID3D12StateObjectProperties> pipelineProprties;
 };
