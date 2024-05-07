@@ -152,6 +152,7 @@
     <ClCompile Include="Dependencies\ImGui\imgui_impl_win32.cpp" />
     <ClCompile Include="Dependencies\ImGui\imgui_tables.cpp" />
     <ClCompile Include="Dependencies\ImGui\imgui_widgets.cpp" />
+    <ClCompile Include="Source\Graphics\DXRayTracingPipeline.cpp" />
     <ClCompile Include="Source\Graphics\RenderStage.cpp" />
     <ClCompile Include="Source\Graphics\DXStructuredBuffer.cpp" />
     <ClCompile Include="Source\Graphics\DXComputePipeline.cpp" />
@@ -170,7 +171,8 @@
     <ClCompile Include="Source\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Headers\Graphics\DXRUtilities.h" />
+    <ClInclude Include="Headers\Graphics\DXRayTracingPipeline.h" />
+    <ClInclude Include="Headers\Graphics\DXRayTracingUtilities.h" />
     <ClInclude Include="Headers\Framework\Editor.h" />
     <ClInclude Include="Headers\Utilities\Random.h" />
     <ClInclude Include="Dependencies\ImGui\imconfig.h" />

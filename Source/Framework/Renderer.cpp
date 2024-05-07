@@ -16,6 +16,7 @@
 #include <imgui_impl_dx12.h>
 
 #include "Graphics/Mesh.h"  
+#include "Graphics/DXRayTracingPipeline.h"
 
 namespace RendererInternal
 {
@@ -34,6 +35,7 @@ namespace RendererInternal
 using namespace RendererInternal;
 
 Mesh* screenMesh;
+DXRayTracingPipeline* pipeline;
 
 Renderer::Renderer(const std::wstring& applicationName, unsigned int windowWidth,
 	unsigned int windowHeight)
@@ -72,6 +74,8 @@ Renderer::Renderer(const std::wstring& applicationName, unsigned int windowWidth
 
 	delete[] screenVertices;
 	delete[] screenIndices;
+
+	pipeline = new DXRayTracingPipeline();
 }
 
 void Renderer::Render()

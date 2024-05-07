@@ -1,12 +1,11 @@
 #include "Graphics/Mesh.h"
 #include "Graphics/DXAccess.h"
 #include "Graphics/DXUtilities.h"
-#include "Graphics/DXRUtilities.h"
+#include "Graphics/DXRayTracingUtilities.h"
 #include "Graphics/Texture.h"
 #include "Graphics/DXCommands.h"
 #include "Framework/Mathematics.h"
 #include <cassert>
-
 
 Mesh::Mesh(Vertex* verts, unsigned int vertexCount, unsigned int* indi, 
 	unsigned int indexCount, bool isRayTracingGeometry) : isRayTracingGeometry(isRayTracingGeometry)
@@ -87,7 +86,6 @@ void Mesh::BuildRayTracingBLAS()
 {
 	ComPtr<ID3D12Device5> device = DXAccess::GetDevice();
 
-	// 1. Define the Geometry that will be part of the BLAS //
 	D3D12_RAYTRACING_GEOMETRY_DESC geometry;
 	geometry.Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE; 
 	geometry.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
@@ -104,7 +102,6 @@ void Mesh::BuildRayTracingBLAS()
 	geometry.Triangles.IndexFormat = DXGI_FORMAT_R32_UINT;
 	geometry.Triangles.IndexCount = indicesCount;
 
-	// 2. Determine the memory needed to build the structure, which includes setting up info about the BLS //
 	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
 	inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
 	inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
