@@ -1,13 +1,7 @@
-struct HitInfo
-{
-    float4 ShadedColorAndHitT;
-};
+#include "Common.hlsl"
 
-// Miss shader gets called whenever the ray never intersected any geometry
-// We get to implement what behaviour thus should occur, like returning the color of an HDR/EXR
-// or in this case, a static color
 [shader("miss")]
-void Miss(inout HitInfo payload)
+void Miss(inout HitInfo payload : SV_RayPayload)
 {
-    payload.ShadedColorAndHitT = float4(0.2f, 0.2f, 0.2f, -1.f);
+    payload.colorAndDistance = float4(0.2f, 0.2f, 0.8f, -1.f);
 }
