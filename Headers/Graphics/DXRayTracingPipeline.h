@@ -21,6 +21,8 @@ public:
 	DXRayTracingPipeline(DXRayTracingPipelineSettings settings);
 
 private:
+	void CreatePipeline();
+
 	void CreateRootSignature(ID3D12RootSignature** rootSignature,
 		D3D12_ROOT_PARAMETER* parameterData, unsigned int parameterCount);
 

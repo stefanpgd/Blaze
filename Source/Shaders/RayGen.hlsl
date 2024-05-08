@@ -8,7 +8,7 @@ struct HitInfo
 // Then call TraceRay(), which starts the rest of the pipeline
 // Afterwards, a payload gets returned which allows us to output a color to the screen with the info received
 [shader("raygeneration")]
-void main()
+void RayGen()
 {
     uint2 launchIndex = DispatchRaysIndex().xy; // current Ray X-Y
     uint2 LaunchDimensions = DispatchRaysDimensions().xy; // screen size

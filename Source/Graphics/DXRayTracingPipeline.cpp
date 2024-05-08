@@ -2,6 +2,7 @@
 #include "Utilities/Logger.h"
 #include "Graphics/DXAccess.h"
 #include "Graphics/DXUtilities.h"
+#include "Graphics/DXRayTracingUtilities.h"
 
 DXRayTracingPipeline::DXRayTracingPipeline(DXRayTracingPipelineSettings settings) : settings(settings)
 {
@@ -17,12 +18,34 @@ DXRayTracingPipeline::DXRayTracingPipeline(DXRayTracingPipelineSettings settings
 	dxcHelper.CreateInstance(CLSID_DxcLibrary, &library);
 	library->CreateIncludeHandler(&dxcIncludeHandler);
 
-	CompileShaderLibrary(rayGenLibrary.GetAddressOf(), L"RayGeneration.hlsl");
+	CompileShaderLibrary(rayGenLibrary.GetAddressOf(), L"RayGen.hlsl");
 	CompileShaderLibrary(hitLibrary.GetAddressOf(), L"ClosestHit.hlsl");
 	CompileShaderLibrary(missLibrary.GetAddressOf(), L"Miss.hlsl");
+
+	// Create pipeline & get properties //
+	CreatePipeline();
 }
 
-void DXRayTracingPipeline::CreateRootSignature(ID3D12RootSignature** rootSignature, 
+void DXRayTracingPipeline::CreatePipeline()
+{
+	std::vector<D3D12_STATE_SUBOBJECT> subobjects;
+	unsigned int objectCount = 0;
+
+	AddLibrarySubobject(subobjects, objectCount, rayGenLibrary.Get(), L"RayGen");
+	AddLibrarySubobject(subobjects, objectCount, hitLibrary.Get(), L"ClosestHit");
+	AddLibrarySubobject(subobjects, objectCount, missLibrary.Get(), L"Miss");
+
+	AddHitGroupSubobject(subobjects, objectCount, L"HitGroup", L"ClosestHit");
+
+	AddRootAssociationSubobject(subobjects, objectCount, rayGenRootSignature.Get(), L"RayGen");
+	AddRootAssociationSubobject(subobjects, objectCount, missRootSignature.Get(), L"Miss");
+	AddRootAssociationSubobject(subobjects, objectCount, hitRootSignature.Get(), L"HitGroup");
+
+	AddShaderPlayloadSubobject(subobjects, objectCount, sizeof(float) * 4,
+		sizeof(float) * 2, L"RayGen", L"Miss", L"HitGroup");
+}
+
+void DXRayTracingPipeline::CreateRootSignature(ID3D12RootSignature** rootSignature,
 	D3D12_ROOT_PARAMETER* parameterData, unsigned int parameterCount)
 {
 	D3D12_ROOT_SIGNATURE_DESC rootDesc = {};
