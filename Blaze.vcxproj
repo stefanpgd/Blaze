@@ -143,6 +143,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Graphics\RenderStages\RayTraceStage.cpp" />
     <ClCompile Include="Source\Framework\Input.cpp" />
     <ClCompile Include="Source\Framework\Editor.cpp" />
     <ClCompile Include="Dependencies\ImGui\imgui.cpp" />
@@ -204,6 +205,7 @@
     <ClInclude Include="Headers\Graphics\RenderStage.h" />
     <ClInclude Include="Headers\Framework\Input.h" />
     <ClInclude Include="Headers\Graphics\DXCommon.h" />
+    <ClInclude Include="Headers\Graphics\RenderStages\RayTraceStage.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\ClosestHit.hlsl">

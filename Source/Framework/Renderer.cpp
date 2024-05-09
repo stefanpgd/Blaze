@@ -15,8 +15,10 @@
 #include <imgui_impl_win32.h>
 #include <imgui_impl_dx12.h>
 
+// NEW //
 #include "Graphics/Mesh.h"  
 #include "Graphics/DXRayTracingPipeline.h"
+#include "Graphics/RenderStages/RayTraceStage.h"
 
 namespace RendererInternal
 {
@@ -36,6 +38,7 @@ using namespace RendererInternal;
 
 Mesh* screenMesh;
 DXRayTracingPipeline* pipeline;
+RayTraceStage* rayTraceStage;
 
 Renderer::Renderer(const std::wstring& applicationName, unsigned int windowWidth,
 	unsigned int windowHeight)
@@ -88,6 +91,8 @@ Renderer::Renderer(const std::wstring& applicationName, unsigned int windowWidth
 	settings.rayGenParameterCount = _countof(rayGenParameters);
 
 	pipeline = new DXRayTracingPipeline(settings);
+
+	rayTraceStage = new RayTraceStage(screenMesh->GetTLASAddress());
 }
 
 void Renderer::Render()

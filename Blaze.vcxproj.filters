@@ -93,6 +93,9 @@
     <ClCompile Include="Source\Graphics\DXRayTracingPipeline.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Graphics\RenderStages\RayTraceStage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\Framework\Blaze.h">
@@ -194,11 +197,15 @@
     <ClInclude Include="Headers\Graphics\DXRayTracingPipeline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Headers\Graphics\RenderStages\RayTraceStage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\Miss.hlsl" />
     <FxCompile Include="Source\Shaders\RayGen.hlsl" />
     <FxCompile Include="Source\Shaders\ClosestHit.hlsl" />
+    <FxCompile Include="Source\Shaders\Common.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="Dependencies\Microsoft\dxil.dll" />

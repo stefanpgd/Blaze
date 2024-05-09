@@ -44,6 +44,11 @@ const unsigned int Mesh::GetIndicesCount()
 	return indicesCount;
 }
 
+D3D12_GPU_VIRTUAL_ADDRESS Mesh::GetTLASAddress()
+{
+	return tlasResult->GetGPUVirtualAddress();
+}
+
 void Mesh::UploadBuffers()
 {
 	DXCommands* copyCommands = DXAccess::GetCommands(D3D12_COMMAND_LIST_TYPE_COPY);
