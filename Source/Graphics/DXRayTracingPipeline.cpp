@@ -24,8 +24,9 @@ DXRayTracingPipeline::DXRayTracingPipeline(DXRayTracingPipelineSettings settings
 	CompileShaderLibrary(hitLibrary, L"ClosestHit.hlsl");
 	CompileShaderLibrary(missLibrary, L"Miss.hlsl");
 
-	// Create pipeline & get properties //
+	// Create pipeline & make shader binding table //
 	CreatePipeline();
+	CreateShaderBindingTable();
 }
 
 void DXRayTracingPipeline::CreatePipeline()
@@ -76,6 +77,39 @@ void DXRayTracingPipeline::CreatePipeline()
 
 	ThrowIfFailed(DXAccess::GetDevice()->CreateStateObject(&pipelineDesc, IID_PPV_ARGS(&pipeline)));
 	ThrowIfFailed(pipeline->QueryInterface(IID_PPV_ARGS(&pipelineProperties)));
+}
+
+void DXRayTracingPipeline::CreateShaderBindingTable()
+{
+	/*
+	The Shader Table layout is as follows:
+		Entry 0 - Ray Generation shader
+		Entry 1 - Miss shader
+		Entry 2 - Closest Hit shader
+	All shader records in the Shader Table must have the same size, so shader record size will be based on the largest required entry.
+	The ray generation program requires the largest entry:
+		32 bytes - D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES
+	  +  8 bytes - a CBV/SRV/UAV descriptor table pointer (64-bits)
+	  = 40 bytes ->> aligns to 64 bytes
+	The entry size must be aligned up to D3D12_RAYTRACING_SHADER_BINDING_TABLE_RECORD_BYTE_ALIGNMENT
+	*/
+
+	// Step 1 - Figuring out how much bytes we need to allocate for the SBT //
+	uint32_t shaderTableSize = 0;
+	uint32_t shaderTableRecordSize = 0;
+	uint32_t shaderIdSize = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
+
+	shaderTableRecordSize = shaderIdSize;
+	shaderTableRecordSize += 8; // UAV-SRV Descriptor Table //
+
+	// Aligns record to be 64-byte, ensuring alignment //
+	shaderTableRecordSize = ALIGN(D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT, shaderTableRecordSize); 
+
+	shaderTableSize = shaderTableRecordSize * 3; // 3 shader entries //
+	shaderTableSize = ALIGN(D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT, shaderTableSize); // Ensures data is still 64-byte aligned //
+
+	// Step 2 - Allocating memory for the SBT //
+	AllocateUploadResource(shaderTable, shaderTableSize);
 }
 
 void DXRayTracingPipeline::CreateRootSignature(ComPtr<ID3D12RootSignature>& rootSignature,

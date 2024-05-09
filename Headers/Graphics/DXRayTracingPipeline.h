@@ -26,14 +26,19 @@ public:
 
 private:
 	void CreatePipeline();
+	void CreateShaderBindingTable();
 
 	void CreateRootSignature(ComPtr<ID3D12RootSignature>& rootSignature,
 		D3D12_ROOT_PARAMETER* parameterData, unsigned int parameterCount, bool isLocal);
-
+	
 	void CompileShaderLibrary(ComPtr<IDxcBlob>& shaderLibrary, std::wstring shaderName);
 
 private:
 	DXRayTracingPipelineSettings settings;
+
+	ComPtr<ID3D12StateObject> pipeline;
+	ComPtr<ID3D12StateObjectProperties> pipelineProperties;
+	ComPtr<ID3D12Resource> shaderTable;
 
 	IDxcCompiler* compiler;
 	IDxcLibrary* library;
@@ -49,7 +54,4 @@ private:
 
 	ComPtr<ID3D12RootSignature> localDummyRootSignature;
 	ComPtr<ID3D12RootSignature> globalDummyRootSignature;
-
-	ComPtr<ID3D12StateObject> pipeline;
-	ComPtr<ID3D12StateObjectProperties> pipelineProperties;
 };

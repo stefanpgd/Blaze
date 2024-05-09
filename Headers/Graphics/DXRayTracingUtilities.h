@@ -3,6 +3,8 @@
 #include "DXCommon.h"
 #include "DXAccess.h"
 
+#define ALIGN(_alignment, _val) (((_val + _alignment - 1) / _alignment) * _alignment)
+
 #pragma region Acceleration Structure Helpers
 
 inline void AllocateAccelerationStructureMemory(const D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS& inputs,
@@ -46,7 +48,6 @@ inline void BuildAccelerationStructure(const D3D12_BUILD_RAYTRACING_ACCELERATION
 }
 
 #pragma endregion
-
 
 #pragma region State Object Helpers
 
