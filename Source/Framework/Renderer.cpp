@@ -79,7 +79,7 @@ Renderer::Renderer(const std::wstring& applicationName, unsigned int windowWidth
 
 	CD3DX12_DESCRIPTOR_RANGE rayGenRanges[2];
 	rayGenRanges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
-	rayGenRanges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 1);
+	rayGenRanges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 
 	CD3DX12_ROOT_PARAMETER rayGenParameters[1];
 	rayGenParameters[0].InitAsDescriptorTable(_countof(rayGenRanges), &rayGenRanges[0]);
