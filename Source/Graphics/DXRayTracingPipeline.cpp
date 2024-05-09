@@ -29,6 +29,16 @@ DXRayTracingPipeline::DXRayTracingPipeline(DXRayTracingPipelineSettings settings
 	CreateShaderBindingTable();
 }
 
+ID3D12StateObject* DXRayTracingPipeline::GetPipelineState()
+{
+	return pipeline.Get();
+}
+
+D3D12_DISPATCH_RAYS_DESC* DXRayTracingPipeline::GetDispatchRayDescription()
+{
+	return &dispatchRayDescription;
+}
+
 void DXRayTracingPipeline::CreatePipeline()
 {
 	std::wstring rayGenSymbol = L"RayGen";
@@ -131,6 +141,22 @@ void DXRayTracingPipeline::CreateShaderBindingTable()
 	memcpy(pData, pipelineProperties->GetShaderIdentifier(L"HitGroup"), shaderIdSize);
 
 	shaderTable->Unmap(0, nullptr);
+
+	// Step 4 - Use the same information to describe the dispatch Ray
+	dispatchRayDescription.RayGenerationShaderRecord.StartAddress = shaderTable->GetGPUVirtualAddress();
+	dispatchRayDescription.RayGenerationShaderRecord.SizeInBytes = shaderTableRecordSize;
+
+	dispatchRayDescription.MissShaderTable.StartAddress = shaderTable->GetGPUVirtualAddress() + shaderTableRecordSize;
+	dispatchRayDescription.MissShaderTable.SizeInBytes = shaderTableRecordSize;
+	dispatchRayDescription.MissShaderTable.StrideInBytes = shaderTableRecordSize;
+
+	dispatchRayDescription.HitGroupTable.StartAddress = shaderTable->GetGPUVirtualAddress() + (shaderTableRecordSize * 2);
+	dispatchRayDescription.HitGroupTable.SizeInBytes = shaderTableRecordSize;
+	dispatchRayDescription.HitGroupTable.StrideInBytes = shaderTableRecordSize;
+
+	dispatchRayDescription.Width = DXAccess::GetWindow()->GetWindowWidth();
+	dispatchRayDescription.Height = DXAccess::GetWindow()->GetWindowHeight();
+	dispatchRayDescription.Depth = 1;
 }
 
 void DXRayTracingPipeline::CreateRootSignature(ComPtr<ID3D12RootSignature>& rootSignature,

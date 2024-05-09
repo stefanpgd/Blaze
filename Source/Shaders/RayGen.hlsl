@@ -18,14 +18,16 @@ void RayGen()
     uint2 launchIndex = DispatchRaysIndex().xy;
     float2 dims = float2(DispatchRaysDimensions().xy);
     float2 d = (((launchIndex.xy + 0.5f) / dims.xy) * 2.f - 1.f);
+    
+    float2 uv = launchIndex.xy / dims.xy;
 
-    RayDesc ray;
-    ray.Origin = float3(d.x, -d.y, 1);
-    ray.Direction = float3(0, 0, -1);
-    ray.TMin = 0;
-    ray.TMax = 100000;
+    //RayDesc ray;
+    //ray.Origin = float3(d.x, -d.y, 1);
+    //ray.Direction = float3(0, 0, -1);
+    //ray.TMin = 0;
+    //ray.TMax = 100000;
+    //
+    //TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, payload);
     
-    TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, payload);
-    
-    gOutput[launchIndex] = float4(payload.colorAndDistance.rgb, 1.f);
+    gOutput[launchIndex] = float4(uv, 0.0f, 1.0f);
 }

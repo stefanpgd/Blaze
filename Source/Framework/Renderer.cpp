@@ -79,21 +79,6 @@ Renderer::Renderer(const std::wstring& applicationName, unsigned int windowWidth
 	delete[] screenIndices;
 
 	rayTraceStage = new RayTraceStage(screenMesh->GetTLASAddress());
-
-	DXRayTracingPipelineSettings settings;
-	settings.uavSrvHeap = rayTraceStage->GetResourceHeap();
-
-	CD3DX12_DESCRIPTOR_RANGE rayGenRanges[2];
-	rayGenRanges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
-	rayGenRanges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
-
-	CD3DX12_ROOT_PARAMETER rayGenParameters[1];
-	rayGenParameters[0].InitAsDescriptorTable(_countof(rayGenRanges), &rayGenRanges[0]);
-
-	settings.rayGenParameters = &rayGenParameters[0];
-	settings.rayGenParameterCount = _countof(rayGenParameters);
-
-	pipeline = new DXRayTracingPipeline(settings);
 }
 
 void Renderer::Render()
@@ -107,11 +92,13 @@ void Renderer::Render()
 	CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle = window->GetDepthDSV();
 
 	directCommands->ResetCommandList(backBufferIndex);
-	commandList->SetDescriptorHeaps(1, heaps);
 
 	TransitionResource(renderTargetBuffer.Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 	BindAndClearRenderTarget(window, &rtvHandle, &dsvHandle);
 
+	rayTraceStage->RecordStage(commandList);
+
+	commandList->SetDescriptorHeaps(1, heaps);
 	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());
 	TransitionResource(renderTargetBuffer.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 

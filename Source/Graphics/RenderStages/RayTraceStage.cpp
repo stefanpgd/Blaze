@@ -1,20 +1,33 @@
 #include "Graphics/RenderStages/RayTraceStage.h"
+#include "Graphics/DXRayTracingPipeline.h"
 #include "Graphics/DXUtilities.h"
 
 RayTraceStage::RayTraceStage(D3D12_GPU_VIRTUAL_ADDRESS tlasAddress)
 {
 	CreateOutputBuffer();
 	CreateShaderResourceHeap(tlasAddress);
+
+	InitializePipeline();
 }
 
 void RayTraceStage::RecordStage(ComPtr<ID3D12GraphicsCommandList4> commandList)
 {
+	// Resources //
+	ComPtr<ID3D12Resource> renderTargetBuffer = DXAccess::GetWindow()->GetCurrentScreenBuffer();
 
-}
+	ID3D12DescriptorHeap* heaps[] = { rayTraceHeap->GetAddress() };
+	commandList->SetDescriptorHeaps(1, heaps);
 
-DXDescriptorHeap* RayTraceStage::GetResourceHeap()
-{
-	return rayTraceHeap;
+	TransitionResource(rayTraceOutput.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+
+	commandList->SetPipelineState1(rayTracePipeline->GetPipelineState());
+	commandList->DispatchRays(rayTracePipeline->GetDispatchRayDescription());
+
+	TransitionResource(rayTraceOutput.Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE);
+
+	TransitionResource(renderTargetBuffer.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_DEST);
+	commandList->CopyResource(renderTargetBuffer.Get(), rayTraceOutput.Get());
+	TransitionResource(renderTargetBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET);
 }
 
 void RayTraceStage::CreateOutputBuffer()
@@ -59,4 +72,22 @@ void RayTraceStage::CreateShaderResourceHeap(D3D12_GPU_VIRTUAL_ADDRESS tlasAddre
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	srvDesc.RaytracingAccelerationStructure.Location = tlasAddress;
 	device->CreateShaderResourceView(nullptr, &srvDesc, handle);
+}
+
+void RayTraceStage::InitializePipeline()
+{
+	DXRayTracingPipelineSettings settings;
+	settings.uavSrvHeap = rayTraceHeap;
+
+	CD3DX12_DESCRIPTOR_RANGE rayGenRanges[2];
+	rayGenRanges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
+	rayGenRanges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
+
+	CD3DX12_ROOT_PARAMETER rayGenParameters[1];
+	rayGenParameters[0].InitAsDescriptorTable(_countof(rayGenRanges), &rayGenRanges[0]);
+
+	settings.rayGenParameters = &rayGenParameters[0];
+	settings.rayGenParameterCount = _countof(rayGenParameters);
+
+	rayTracePipeline = new DXRayTracingPipeline(settings);
 }

@@ -30,6 +30,9 @@ class DXRayTracingPipeline
 public:
 	DXRayTracingPipeline(DXRayTracingPipelineSettings settings);
 
+	ID3D12StateObject* GetPipelineState();
+	D3D12_DISPATCH_RAYS_DESC* GetDispatchRayDescription();
+
 private:
 	void CreatePipeline();
 	void CreateShaderBindingTable();
@@ -60,4 +63,6 @@ private:
 
 	ComPtr<ID3D12RootSignature> localDummyRootSignature;
 	ComPtr<ID3D12RootSignature> globalDummyRootSignature;
+
+	D3D12_DISPATCH_RAYS_DESC dispatchRayDescription;
 };
