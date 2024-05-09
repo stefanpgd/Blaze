@@ -13,6 +13,10 @@ struct DXRayTracingPipelineSettings
 
 	CD3DX12_ROOT_PARAMETER* missParameters = nullptr;
 	unsigned int missParameterCount = 0;
+
+	float payLoadSize = sizeof(float) * 4;
+	float attributeSize = sizeof(float) * 2;
+	float maxRayRecursionDepth = 1;
 };
 
 class DXRayTracingPipeline

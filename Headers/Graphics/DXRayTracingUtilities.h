@@ -110,11 +110,50 @@ inline void AddRootAssociationSubobject(std::vector<D3D12_STATE_SUBOBJECT>& subo
 	index++;
 }
 
-inline void AddShaderPlayloadSubobject(std::vector<D3D12_STATE_SUBOBJECT>& subobjects, unsigned int& objectCount,
-	unsigned int payLoadSize, unsigned int attributeSize, std::wstring rayGenSymbol,
-	std::wstring missSymbol, std::wstring hitGroupSymbol)
+inline void AddShaderPayloadSubobject(std::vector<D3D12_STATE_SUBOBJECT>& subobjects, unsigned int& index,
+	unsigned int payLoadSize, unsigned int attributeSize, const WCHAR** shaderExports, unsigned int exportCount)
 {
+	D3D12_RAYTRACING_SHADER_CONFIG* shaderDesc = new D3D12_RAYTRACING_SHADER_CONFIG();
+	shaderDesc->MaxPayloadSizeInBytes = payLoadSize;	// RGB and HitT
+	shaderDesc->MaxAttributeSizeInBytes = attributeSize;
 
+	D3D12_STATE_SUBOBJECT shaderConfigObject = {};
+	shaderConfigObject.Type = D3D12_STATE_SUBOBJECT_TYPE_RAYTRACING_SHADER_CONFIG;
+	shaderConfigObject.pDesc = shaderDesc;
+
+	subobjects[index] = shaderConfigObject;
+	index++;
+
+	D3D12_SUBOBJECT_TO_EXPORTS_ASSOCIATION* shaderPayloadAssociation = new D3D12_SUBOBJECT_TO_EXPORTS_ASSOCIATION();
+	shaderPayloadAssociation->pExports = shaderExports;
+	shaderPayloadAssociation->NumExports = exportCount;
+	shaderPayloadAssociation->pSubobjectToAssociate = &subobjects[(index - 1)];
+
+	D3D12_STATE_SUBOBJECT shaderPayloadAssociationObject = {};
+	shaderPayloadAssociationObject.Type = D3D12_STATE_SUBOBJECT_TYPE_SUBOBJECT_TO_EXPORTS_ASSOCIATION;
+	shaderPayloadAssociationObject.pDesc = shaderPayloadAssociation;
+
+	subobjects[index] = shaderPayloadAssociationObject;
+	index++;
+}
+
+inline void AddDummyRootSignatureSubobjects(std::vector<D3D12_STATE_SUBOBJECT>& subobjects, unsigned int& index,
+	ComPtr<ID3D12RootSignature>& globalRootSignature, ComPtr<ID3D12RootSignature>& localRootSignature)
+{
+	D3D12_STATE_SUBOBJECT globalRootSig;
+	globalRootSig.Type = D3D12_STATE_SUBOBJECT_TYPE_GLOBAL_ROOT_SIGNATURE;
+	globalRootSig.pDesc = globalRootSignature.GetAddressOf();
+
+	subobjects[index] = globalRootSig;
+	index++;
+
+	// The pipeline construction always requires an empty local root signature
+	D3D12_STATE_SUBOBJECT dummyLocalRootSig;
+	dummyLocalRootSig.Type = D3D12_STATE_SUBOBJECT_TYPE_LOCAL_ROOT_SIGNATURE;
+	dummyLocalRootSig.pDesc = localRootSignature.GetAddressOf();
+
+	subobjects[index] = dummyLocalRootSig;
+	index++;
 }
 
 #pragma endregion
