@@ -51,5 +51,5 @@ private:
 	ComPtr<ID3D12RootSignature> globalDummyRootSignature;
 
 	ComPtr<ID3D12StateObject> pipeline;
-	ComPtr<ID3D12StateObjectProperties> pipelineProprties;
+	ComPtr<ID3D12StateObjectProperties> pipelineProperties;
 };

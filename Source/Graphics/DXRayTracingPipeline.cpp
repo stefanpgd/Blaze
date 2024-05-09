@@ -30,19 +30,30 @@ DXRayTracingPipeline::DXRayTracingPipeline(DXRayTracingPipelineSettings settings
 
 void DXRayTracingPipeline::CreatePipeline()
 {
+	std::wstring rayGenSymbol = L"RayGen";
+	std::wstring missSymbol = L"Miss";
+	std::wstring closestHitSymbol = L"ClosestHit";
+	std::wstring hitGroupSymbol = L"HitGroup";
+
 	int objectCount = 15;
 	std::vector<D3D12_STATE_SUBOBJECT> subobjects(objectCount);
 	unsigned int index = 0;
 
-	std::wstring rayGenSymbol = L"RayGen";
-
 	AddLibrarySubobject(subobjects, index, rayGenLibrary, &rayGenSymbol);
-	
-	const WCHAR* shaderExports[] = { rayGenSymbol.c_str()};
-	AddShaderPayloadSubobject(subobjects, index, settings.payLoadSize, settings.attributeSize, shaderExports, 1);
+	AddLibrarySubobject(subobjects, index, missLibrary, &missSymbol);
+	AddLibrarySubobject(subobjects, index, hitLibrary, &closestHitSymbol);
+
+	AddHitGroupSubobject(subobjects, index, &hitGroupSymbol, &closestHitSymbol);
+
+	const WCHAR* shaderExports[] = { rayGenSymbol.c_str(), missSymbol.c_str(), closestHitSymbol.c_str() };
+	AddShaderPayloadSubobject(subobjects, index, settings.payLoadSize, settings.attributeSize, shaderExports, 3);
 
 	const WCHAR* rayExport[] = { rayGenSymbol.c_str() };
+	const WCHAR* missExport[] = { missSymbol.c_str() };
+	const WCHAR* hitGroupExport[] = { hitGroupSymbol.c_str() };
 	AddRootAssociationSubobject(subobjects, index, rayGenRootSignature, rayExport, 1);
+	AddRootAssociationSubobject(subobjects, index, missRootSignature, missExport, 1);
+	AddRootAssociationSubobject(subobjects, index, hitRootSignature, hitGroupExport, 1);
 
 	// The pipeline construction always requires an empty global root signature
 	AddDummyRootSignatureSubobjects(subobjects, index, globalDummyRootSignature, localDummyRootSignature);
@@ -64,6 +75,7 @@ void DXRayTracingPipeline::CreatePipeline()
 	pipelineDesc.pSubobjects = subobjects.data();
 
 	ThrowIfFailed(DXAccess::GetDevice()->CreateStateObject(&pipelineDesc, IID_PPV_ARGS(&pipeline)));
+	ThrowIfFailed(pipeline->QueryInterface(IID_PPV_ARGS(&pipelineProperties)));
 }
 
 void DXRayTracingPipeline::CreateRootSignature(ComPtr<ID3D12RootSignature>& rootSignature,

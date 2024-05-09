@@ -72,7 +72,7 @@ inline void AddLibrarySubobject(std::vector<D3D12_STATE_SUBOBJECT>& subobjects, 
 	index++;
 }
 
-inline void AddHitGroupSubobject(std::vector<D3D12_STATE_SUBOBJECT>& subobjects, unsigned int& objectCount,
+inline void AddHitGroupSubobject(std::vector<D3D12_STATE_SUBOBJECT>& subobjects, unsigned int& index,
 	std::wstring* hitGroupName, std::wstring* closestHitSymbol)
 {
 	D3D12_HIT_GROUP_DESC* hitGroupDescription = new D3D12_HIT_GROUP_DESC();
@@ -83,8 +83,8 @@ inline void AddHitGroupSubobject(std::vector<D3D12_STATE_SUBOBJECT>& subobjects,
 	hitGroupObject.Type = D3D12_STATE_SUBOBJECT_TYPE_HIT_GROUP;
 	hitGroupObject.pDesc = hitGroupDescription;
 
-	subobjects.push_back(hitGroupObject);
-	objectCount++;
+	subobjects[index] = hitGroupObject;
+	index++;
 }
 
 inline void AddRootAssociationSubobject(std::vector<D3D12_STATE_SUBOBJECT>& subobjects, unsigned int& index,
