@@ -32,25 +32,11 @@ void DXRayTracingPipeline::CreatePipeline()
 {
 	int objectCount = 15;
 	std::vector<D3D12_STATE_SUBOBJECT> subobjects(objectCount);
-	int index = 0;
+	unsigned int index = 0;
 
-	D3D12_EXPORT_DESC* rayGenExport = new D3D12_EXPORT_DESC();
-	rayGenExport->Name = L"RayGen";
-	rayGenExport->ExportToRename = nullptr;
-	rayGenExport->Flags = D3D12_EXPORT_FLAG_NONE;
-	
-	D3D12_DXIL_LIBRARY_DESC	rayGenLibraryDescription = {};
-	rayGenLibraryDescription.DXILLibrary.BytecodeLength = rayGenLibrary->GetBufferSize();
-	rayGenLibraryDescription.DXILLibrary.pShaderBytecode = rayGenLibrary->GetBufferPointer();
-	rayGenLibraryDescription.NumExports = 1;
-	rayGenLibraryDescription.pExports = rayGenExport;
-	
-	D3D12_STATE_SUBOBJECT rayGenSubobject = {};
-	rayGenSubobject.Type = D3D12_STATE_SUBOBJECT_TYPE_DXIL_LIBRARY;
-	rayGenSubobject.pDesc = &rayGenLibraryDescription;
-	
-	subobjects[index] = rayGenSubobject;
-	index++;
+	std::wstring rayGenSymbol = L"RayGen";
+
+	AddLibrarySubobject(subobjects, index, rayGenLibrary, &rayGenSymbol);
 	
 	// SHADER CONFIG //
 	// Add a state subobject for the shader payload configuration
@@ -80,26 +66,8 @@ void DXRayTracingPipeline::CreatePipeline()
 	subobjects[index] = shaderPayloadAssociationObject;
 	index++;
 
-	D3D12_STATE_SUBOBJECT rayGenRootSubobject = {};
-	rayGenRootSubobject.Type = D3D12_STATE_SUBOBJECT_TYPE_LOCAL_ROOT_SIGNATURE;
-	rayGenRootSubobject.pDesc = rayGenRootSignature.GetAddressOf();
-
-	subobjects[index] = rayGenRootSubobject;
-	index++;
-
-	const WCHAR* exports[] = { L"RayGen" };
-
-	D3D12_SUBOBJECT_TO_EXPORTS_ASSOCIATION rootAssociation = {};
-	rootAssociation.NumExports = 1;
-	rootAssociation.pExports = exports;
-	rootAssociation.pSubobjectToAssociate = &subobjects[index - 1];
-
-	D3D12_STATE_SUBOBJECT rootAssociationSubobject = {};
-	rootAssociationSubobject.Type = D3D12_STATE_SUBOBJECT_TYPE_SUBOBJECT_TO_EXPORTS_ASSOCIATION;
-	rootAssociationSubobject.pDesc = &rootAssociation;
-
-	subobjects[index] = rootAssociationSubobject;
-	index++;
+	const WCHAR* rayExport[] = { rayGenSymbol.c_str() };
+	AddRootAssociationSubobject(subobjects, index, rayGenRootSignature, rayExport, 1);
 
 	// The pipeline construction always requires an empty global root signature
 	D3D12_STATE_SUBOBJECT globalRootSig;

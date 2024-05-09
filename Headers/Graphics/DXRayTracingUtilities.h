@@ -50,8 +50,8 @@ inline void BuildAccelerationStructure(const D3D12_BUILD_RAYTRACING_ACCELERATION
 
 #pragma region State Object Helpers
 
-inline void AddLibrarySubobject(std::vector<D3D12_STATE_SUBOBJECT>& subobjects, unsigned int& objectCount,
-	IDxcBlob* library, std::wstring* shaderSymbol)
+inline void AddLibrarySubobject(std::vector<D3D12_STATE_SUBOBJECT>& subobjects, unsigned int& index,
+	ComPtr<IDxcBlob>& library, std::wstring* shaderSymbol)
 {
 	D3D12_EXPORT_DESC* exportDescription = new D3D12_EXPORT_DESC();
 	exportDescription->Name = shaderSymbol->c_str();
@@ -61,7 +61,6 @@ inline void AddLibrarySubobject(std::vector<D3D12_STATE_SUBOBJECT>& subobjects, 
 	D3D12_DXIL_LIBRARY_DESC* libraryDescription = new D3D12_DXIL_LIBRARY_DESC();
 	libraryDescription->DXILLibrary.pShaderBytecode = library->GetBufferPointer();
 	libraryDescription->DXILLibrary.BytecodeLength = library->GetBufferSize();
-					 
 	libraryDescription->NumExports = 1;
 	libraryDescription->pExports = exportDescription;
 
@@ -69,8 +68,8 @@ inline void AddLibrarySubobject(std::vector<D3D12_STATE_SUBOBJECT>& subobjects, 
 	libraryObject.Type = D3D12_STATE_SUBOBJECT_TYPE_DXIL_LIBRARY;
 	libraryObject.pDesc = libraryDescription;
 
-	subobjects.push_back(libraryObject);
-	objectCount++;
+	subobjects[index] = libraryObject;
+	index++;
 }
 
 inline void AddHitGroupSubobject(std::vector<D3D12_STATE_SUBOBJECT>& subobjects, unsigned int& objectCount,
@@ -88,31 +87,27 @@ inline void AddHitGroupSubobject(std::vector<D3D12_STATE_SUBOBJECT>& subobjects,
 	objectCount++;
 }
 
-inline void AddRootAssociationSubobject(std::vector<D3D12_STATE_SUBOBJECT>& subobjects, unsigned int& objectCount,
-	ComPtr<ID3D12RootSignature>& rootSignature, std::wstring shaderSymbol)
+inline void AddRootAssociationSubobject(std::vector<D3D12_STATE_SUBOBJECT>& subobjects, unsigned int& index,
+	ComPtr<ID3D12RootSignature>& rootSignature, const WCHAR** rootExports, unsigned int exportCount)
 {
 	D3D12_STATE_SUBOBJECT rootSignatureSubobject = {};
 	rootSignatureSubobject.Type = D3D12_STATE_SUBOBJECT_TYPE_LOCAL_ROOT_SIGNATURE;
-	void* ptr = new void*;
-	ptr = rootSignature.Get();
-	rootSignatureSubobject.pDesc = &ptr;
+	rootSignatureSubobject.pDesc = rootSignature.GetAddressOf();
 
-	subobjects.push_back(rootSignatureSubobject);
-	objectCount++;
-
-	const WCHAR* exports[] = { shaderSymbol.c_str()};
+	subobjects[index] = rootSignatureSubobject;
+	index++;
 
 	D3D12_SUBOBJECT_TO_EXPORTS_ASSOCIATION* rootAssociation = new D3D12_SUBOBJECT_TO_EXPORTS_ASSOCIATION();
-	rootAssociation->NumExports = 1;
-	rootAssociation->pExports = exports;
-	rootAssociation->pSubobjectToAssociate = &subobjects[objectCount - 1];
+	rootAssociation->NumExports = exportCount;
+	rootAssociation->pExports = rootExports;
+	rootAssociation->pSubobjectToAssociate = &subobjects[index - 1];
 
 	D3D12_STATE_SUBOBJECT rootAssociationSubobject = {};
 	rootAssociationSubobject.Type = D3D12_STATE_SUBOBJECT_TYPE_SUBOBJECT_TO_EXPORTS_ASSOCIATION;
 	rootAssociationSubobject.pDesc = rootAssociation;
 
-	subobjects.push_back(rootAssociationSubobject);
-	objectCount++;
+	subobjects[index] = rootAssociationSubobject;
+	index++;
 }
 
 inline void AddShaderPlayloadSubobject(std::vector<D3D12_STATE_SUBOBJECT>& subobjects, unsigned int& objectCount,
