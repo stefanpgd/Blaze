@@ -12,6 +12,11 @@ void RayTraceStage::RecordStage(ComPtr<ID3D12GraphicsCommandList4> commandList)
 
 }
 
+DXDescriptorHeap* RayTraceStage::GetResourceHeap()
+{
+	return rayTraceHeap;
+}
+
 void RayTraceStage::CreateOutputBuffer()
 {
 	ComPtr<ID3D12Device5> device = DXAccess::GetDevice();

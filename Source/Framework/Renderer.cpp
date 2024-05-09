@@ -78,7 +78,10 @@ Renderer::Renderer(const std::wstring& applicationName, unsigned int windowWidth
 	delete[] screenVertices;
 	delete[] screenIndices;
 
+	rayTraceStage = new RayTraceStage(screenMesh->GetTLASAddress());
+
 	DXRayTracingPipelineSettings settings;
+	settings.uavSrvHeap = rayTraceStage->GetResourceHeap();
 
 	CD3DX12_DESCRIPTOR_RANGE rayGenRanges[2];
 	rayGenRanges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
@@ -91,8 +94,6 @@ Renderer::Renderer(const std::wstring& applicationName, unsigned int windowWidth
 	settings.rayGenParameterCount = _countof(rayGenParameters);
 
 	pipeline = new DXRayTracingPipeline(settings);
-
-	rayTraceStage = new RayTraceStage(screenMesh->GetTLASAddress());
 }
 
 void Renderer::Render()

@@ -2,6 +2,8 @@
 
 #include "DXCommon.h"
 
+class DXDescriptorHeap;
+
 struct DXRayTracingPipelineSettings
 {
 	// Root Signature Settings //
@@ -14,9 +16,13 @@ struct DXRayTracingPipelineSettings
 	CD3DX12_ROOT_PARAMETER* missParameters = nullptr;
 	unsigned int missParameterCount = 0;
 
+	// Pipeline Settings //
 	float payLoadSize = sizeof(float) * 4;
 	float attributeSize = sizeof(float) * 2;
 	float maxRayRecursionDepth = 1;
+
+	// Information relevant for SBT //
+	DXDescriptorHeap* uavSrvHeap; // That contains Output & TLAS
 };
 
 class DXRayTracingPipeline

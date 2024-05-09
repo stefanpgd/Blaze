@@ -81,11 +81,12 @@ void DXRayTracingPipeline::CreatePipeline()
 
 void DXRayTracingPipeline::CreateShaderBindingTable()
 {
+	// The idea of the Shader Binding Table is sort of shaping an array with where all the 
+	// information of our pipeline can be found. It's our dictionary
+	// For example we know we've shaders that require buffers like the TLAS
+	// So where can our program find that? Well we bind the pointer to our descriptorHeap in this program for example
+
 	/*
-	The Shader Table layout is as follows:
-		Entry 0 - Ray Generation shader
-		Entry 1 - Miss shader
-		Entry 2 - Closest Hit shader
 	All shader records in the Shader Table must have the same size, so shader record size will be based on the largest required entry.
 	The ray generation program requires the largest entry:
 		32 bytes - D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES
@@ -110,6 +111,26 @@ void DXRayTracingPipeline::CreateShaderBindingTable()
 
 	// Step 2 - Allocating memory for the SBT //
 	AllocateUploadResource(shaderTable, shaderTableSize);
+
+	// Step 3 - Map data from resources into the SBT //
+	uint8_t* pData;
+	ThrowIfFailed(shaderTable->Map(0, nullptr, (void**)&pData));
+
+	// Shader Record 0 - Ray Generation program and local root parameter data 
+	memcpy(pData, pipelineProperties->GetShaderIdentifier(L"RayGen"), shaderIdSize);
+
+	// Set the root parameter data, Point to start of descriptor heap //
+	*reinterpret_cast<D3D12_GPU_DESCRIPTOR_HANDLE*>(pData + shaderIdSize) = settings.uavSrvHeap->GetGPUHandleAt(0);
+
+	// Shader Record 1 - Miss Record 
+	pData += shaderTableRecordSize;
+	memcpy(pData, pipelineProperties->GetShaderIdentifier(L"Miss"), shaderIdSize);
+
+	// Shader Record 2 - HitGroup Record 
+	pData += shaderTableRecordSize;
+	memcpy(pData, pipelineProperties->GetShaderIdentifier(L"HitGroup"), shaderIdSize);
+
+	shaderTable->Unmap(0, nullptr);
 }
 
 void DXRayTracingPipeline::CreateRootSignature(ComPtr<ID3D12RootSignature>& rootSignature,

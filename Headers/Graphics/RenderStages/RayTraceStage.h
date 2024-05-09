@@ -10,6 +10,8 @@ public:
 	RayTraceStage(D3D12_GPU_VIRTUAL_ADDRESS tlasAddress);
 
 	void RecordStage(ComPtr<ID3D12GraphicsCommandList4> commandList) override;
+	
+	DXDescriptorHeap* GetResourceHeap();
 
 private:
 	void CreateOutputBuffer();
