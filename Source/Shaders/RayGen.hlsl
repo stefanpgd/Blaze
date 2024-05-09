@@ -21,13 +21,13 @@ void RayGen()
     
     float2 uv = launchIndex.xy / dims.xy;
 
-    //RayDesc ray;
-    //ray.Origin = float3(d.x, -d.y, 1);
-    //ray.Direction = float3(0, 0, -1);
-    //ray.TMin = 0;
-    //ray.TMax = 100000;
-    //
-    //TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, payload);
+    RayDesc ray;
+    ray.Origin = float3(d.x, -d.y, 50);
+    ray.Direction = float3(0, 0, -1);
+    ray.TMin = 0;
+    ray.TMax = 100000;
     
-    gOutput[launchIndex] = float4(uv, 0.0f, 1.0f);
+    TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, payload);
+    
+    gOutput[launchIndex] = float4(payload.colorAndDistance.rgb, 1.0f);
 }

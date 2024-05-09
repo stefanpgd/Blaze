@@ -60,10 +60,10 @@ Renderer::Renderer(const std::wstring& applicationName, unsigned int windowWidth
 
 	// PLACEHOLDER to test RT Geometry //
 	Vertex* screenVertices = new Vertex[4];
-	screenVertices[0].Position = glm::vec3(-1.0f, -1.0f, 0.0f);
-	screenVertices[1].Position = glm::vec3(-1.0f, 1.0f, 0.0f);
-	screenVertices[2].Position = glm::vec3(1.0f, 1.0f, 0.0f);
-	screenVertices[3].Position = glm::vec3(1.0f, -1.0f, 0.0f);
+	screenVertices[0].Position = glm::vec3(-0.5f, -0.5f, 0.0f);
+	screenVertices[1].Position = glm::vec3(-0.5f, 0.5f, 0.0f);
+	screenVertices[2].Position = glm::vec3(0.5f, 0.5f, 0.0f);
+	screenVertices[3].Position = glm::vec3(0.5f, -0.5f, 0.0f);
 
 	screenVertices[0].UVCoord = glm::vec2(0.0f, 1.0f);
 	screenVertices[1].UVCoord = glm::vec2(0.0f, 0.0f);
