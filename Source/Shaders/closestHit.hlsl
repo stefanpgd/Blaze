@@ -1,19 +1,22 @@
 #include "Common.hlsl"
 
+struct Vertex
+{
+    float3 position;
+    float2 uv;
+};
+StructuredBuffer<Vertex> VertexData : register(t0);
+
 [shader("closesthit")]
 void ClosestHit(inout HitInfo payload, Attributes attrib)
 {
-    // The input received is a float2 representing barycentric coordinates u & v
-    // where:
-    // x = 1 - u - v
-    // y = u
-    // z = v
+    uint vertID = PrimitiveIndex() * 3;
+    Vertex a = VertexData[vertID];
+    Vertex b = VertexData[vertID + 1];
+    Vertex c = VertexData[vertID + 2];
     
-    float3 a = float3(1, 0, 0);
-    float3 b = float3(0, 1, 0);
-    float3 c = float3(0, 0, 1);
+    float3 baryCoords = float3(1.0f - attrib.bary.x - attrib.bary.y, attrib.bary.x, attrib.bary.y);
+    float2 uv = a.uv * baryCoords.x + b.uv * baryCoords.y + c.uv * baryCoords.z;
     
-    float3 hit = a * (1.0 - attrib.bary.x - attrib.bary.y) + b * attrib.bary.x + c * attrib.bary.y;
-    
-    payload.colorAndDistance = float4(hit, RayTCurrent());
+    payload.colorAndDistance = float4(uv, 0.0f, RayTCurrent());
 }

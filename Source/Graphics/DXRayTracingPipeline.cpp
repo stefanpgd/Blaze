@@ -139,6 +139,7 @@ void DXRayTracingPipeline::CreateShaderBindingTable()
 	// Shader Record 2 - HitGroup Record 
 	pData += shaderTableRecordSize;
 	memcpy(pData, pipelineProperties->GetShaderIdentifier(L"HitGroup"), shaderIdSize);
+	*reinterpret_cast<UINT64*>(pData + shaderIdSize) = settings.vertexBuffer->GetGPUVirtualAddress();
 
 	shaderTable->Unmap(0, nullptr);
 

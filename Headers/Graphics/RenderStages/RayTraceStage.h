@@ -2,23 +2,26 @@
 
 #include "Graphics/RenderStage.h"
 
+class Mesh;
 class DXDescriptorHeap;
 class DXRayTracingPipeline;
 
 class RayTraceStage : public RenderStage
 {
 public:
-	RayTraceStage(D3D12_GPU_VIRTUAL_ADDRESS tlasAddress);
+	RayTraceStage(Mesh* mesh);
 
 	void RecordStage(ComPtr<ID3D12GraphicsCommandList4> commandList) override;
 	
 private:
 	void CreateOutputBuffer();
-	void CreateShaderResourceHeap(D3D12_GPU_VIRTUAL_ADDRESS tlasAddress);
+	void CreateShaderResourceHeap();
 
 	void InitializePipeline();
 
 private:
+	Mesh* mesh;
+
 	DXRayTracingPipeline* rayTracePipeline;
 
 	ComPtr<ID3D12Resource> rayTraceOutput;

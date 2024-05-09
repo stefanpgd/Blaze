@@ -44,6 +44,11 @@ const unsigned int Mesh::GetIndicesCount()
 	return indicesCount;
 }
 
+ID3D12Resource* Mesh::GetVertexBuffer()
+{
+	return vertexBuffer.Get();
+}
+
 D3D12_GPU_VIRTUAL_ADDRESS Mesh::GetTLASAddress()
 {
 	return tlasResult->GetGPUVirtualAddress();

@@ -1,11 +1,12 @@
 #include "Graphics/RenderStages/RayTraceStage.h"
 #include "Graphics/DXRayTracingPipeline.h"
 #include "Graphics/DXUtilities.h"
+#include "Graphics/Mesh.h"
 
-RayTraceStage::RayTraceStage(D3D12_GPU_VIRTUAL_ADDRESS tlasAddress)
+RayTraceStage::RayTraceStage(Mesh* mesh) : mesh(mesh)
 {
 	CreateOutputBuffer();
-	CreateShaderResourceHeap(tlasAddress);
+	CreateShaderResourceHeap();
 
 	InitializePipeline();
 }
@@ -53,7 +54,7 @@ void RayTraceStage::CreateOutputBuffer()
 		 D3D12_RESOURCE_STATE_COPY_SOURCE, nullptr, IID_PPV_ARGS(&rayTraceOutput));
 }
 
-void RayTraceStage::CreateShaderResourceHeap(D3D12_GPU_VIRTUAL_ADDRESS tlasAddress)
+void RayTraceStage::CreateShaderResourceHeap()
 {
 	rayTraceHeap = new DXDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 2, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
 
@@ -70,7 +71,7 @@ void RayTraceStage::CreateShaderResourceHeap(D3D12_GPU_VIRTUAL_ADDRESS tlasAddre
 	srvDesc.Format = DXGI_FORMAT_UNKNOWN;
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_RAYTRACING_ACCELERATION_STRUCTURE;
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc.RaytracingAccelerationStructure.Location = tlasAddress;
+	srvDesc.RaytracingAccelerationStructure.Location = mesh->GetTLASAddress();
 	device->CreateShaderResourceView(nullptr, &srvDesc, handle);
 }
 
@@ -78,6 +79,7 @@ void RayTraceStage::InitializePipeline()
 {
 	DXRayTracingPipelineSettings settings;
 	settings.uavSrvHeap = rayTraceHeap;
+	settings.vertexBuffer = mesh->GetVertexBuffer();
 
 	CD3DX12_DESCRIPTOR_RANGE rayGenRanges[2];
 	rayGenRanges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
@@ -88,6 +90,12 @@ void RayTraceStage::InitializePipeline()
 
 	settings.rayGenParameters = &rayGenParameters[0];
 	settings.rayGenParameterCount = _countof(rayGenParameters);
+
+	CD3DX12_ROOT_PARAMETER hitParameters[1];
+	hitParameters[0].InitAsShaderResourceView(0, 0);
+
+	settings.hitParameters = &hitParameters[0];
+	settings.hitParameterCount = _countof(hitParameters);
 
 	rayTracePipeline = new DXRayTracingPipeline(settings);
 }

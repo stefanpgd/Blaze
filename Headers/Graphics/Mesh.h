@@ -24,6 +24,7 @@ public:
 	const D3D12_INDEX_BUFFER_VIEW& GetIndexBufferView();
 	const unsigned int GetIndicesCount();
 
+	ID3D12Resource* GetVertexBuffer();
 	D3D12_GPU_VIRTUAL_ADDRESS GetTLASAddress();
 
 private:
