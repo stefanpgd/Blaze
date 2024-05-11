@@ -170,6 +170,7 @@
     <ClCompile Include="Source\Framework\Renderer.cpp" />
     <ClCompile Include="Source\Framework\Blaze.cpp" />
     <ClCompile Include="Source\main.cpp" />
+    <ClCompile Include="Source\Graphics\DXTopLevelAS.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\Graphics\DXRayTracingPipeline.h" />
@@ -206,6 +207,7 @@
     <ClInclude Include="Headers\Framework\Input.h" />
     <ClInclude Include="Headers\Graphics\DXCommon.h" />
     <ClInclude Include="Headers\Graphics\RenderStages\RayTraceStage.h" />
+    <ClInclude Include="Headers\Graphics\DXTopLevelAS.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\ClosestHit.hlsl">

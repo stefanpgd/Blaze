@@ -25,7 +25,6 @@ Mesh::Mesh(Vertex* verts, unsigned int vertexCount, unsigned int* indi,
 	if(isRayTracingGeometry)
 	{
 		BuildRayTracingBLAS();
-		BuildRayTracingTLAS();
 	}
 }
 
@@ -49,9 +48,9 @@ ID3D12Resource* Mesh::GetVertexBuffer()
 	return vertexBuffer.Get();
 }
 
-D3D12_GPU_VIRTUAL_ADDRESS Mesh::GetTLASAddress()
+ID3D12Resource* Mesh::GetBLAS()
 {
-	return tlasResult->GetGPUVirtualAddress();
+	return blasResult.Get();
 }
 
 void Mesh::UploadBuffers()
@@ -124,27 +123,3 @@ void Mesh::BuildRayTracingBLAS()
 	BuildAccelerationStructure(inputs, blasScratch, blasResult);
 }
 
-void Mesh::BuildRayTracingTLAS()
-{
-	ComPtr<ID3D12Device5> device = DXAccess::GetDevice();
-
-	// Ty, Adam Marrs - https://github.com/acmarrs/IntroToDXR/blob/master/src/Graphics.cpp
-	D3D12_RAYTRACING_INSTANCE_DESC instanceDesc = {};
-	instanceDesc.InstanceID = 0;
-	instanceDesc.InstanceContributionToHitGroupIndex = 0;
-	instanceDesc.InstanceMask = 0xFF;
-	instanceDesc.Transform[0][0] = instanceDesc.Transform[1][1] = instanceDesc.Transform[2][2] = 1;
-	instanceDesc.AccelerationStructure = blasResult->GetGPUVirtualAddress();
-
-	AllocateAndMapResource(tlasInstanceDesc, &instanceDesc, sizeof(instanceDesc));
-
-	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
-	inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
-	inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
-	inputs.InstanceDescs = tlasInstanceDesc->GetGPUVirtualAddress();
-	inputs.NumDescs = 1;
-	inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE;
-	
-	AllocateAccelerationStructureMemory(inputs, tlasScratch.GetAddressOf(), tlasResult.GetAddressOf());
-	BuildAccelerationStructure(inputs, tlasScratch, tlasResult);
-}

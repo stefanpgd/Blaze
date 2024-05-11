@@ -96,6 +96,9 @@
     <ClCompile Include="Source\Graphics\RenderStages\RayTraceStage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Graphics\DXTopLevelAS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\Framework\Blaze.h">
@@ -198,6 +201,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Headers\Graphics\RenderStages\RayTraceStage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Graphics\DXTopLevelAS.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

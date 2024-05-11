@@ -25,13 +25,12 @@ public:
 	const unsigned int GetIndicesCount();
 
 	ID3D12Resource* GetVertexBuffer();
-	D3D12_GPU_VIRTUAL_ADDRESS GetTLASAddress();
+	ID3D12Resource* GetBLAS();
 
 private:
 	void UploadBuffers();
 
 	void BuildRayTracingBLAS();
-	void BuildRayTracingTLAS(); // TODO: Move to Model.cpp once we have it
 
 public:
 	std::string Name;
@@ -54,8 +53,4 @@ private:
 	bool isRayTracingGeometry;
 	ComPtr<ID3D12Resource> blasScratch;
 	ComPtr<ID3D12Resource> blasResult;
-
-	ComPtr<ID3D12Resource> tlasInstanceDesc;
-	ComPtr<ID3D12Resource> tlasScratch;
-	ComPtr<ID3D12Resource> tlasResult;
 };

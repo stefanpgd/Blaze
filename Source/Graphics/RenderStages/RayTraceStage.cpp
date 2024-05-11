@@ -1,10 +1,13 @@
 #include "Graphics/RenderStages/RayTraceStage.h"
 #include "Graphics/DXRayTracingPipeline.h"
+#include "Graphics/DXTopLevelAS.h"
 #include "Graphics/DXUtilities.h"
 #include "Graphics/Mesh.h"
 
 RayTraceStage::RayTraceStage(Mesh* mesh) : mesh(mesh)
 {
+	TLAS = new DXTopLevelAS(mesh);
+	
 	CreateOutputBuffer();
 	CreateShaderResourceHeap();
 
@@ -71,7 +74,7 @@ void RayTraceStage::CreateShaderResourceHeap()
 	srvDesc.Format = DXGI_FORMAT_UNKNOWN;
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_RAYTRACING_ACCELERATION_STRUCTURE;
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc.RaytracingAccelerationStructure.Location = mesh->GetTLASAddress();
+	srvDesc.RaytracingAccelerationStructure.Location = TLAS->GetTLASAddress();
 	device->CreateShaderResourceView(nullptr, &srvDesc, handle);
 }
 

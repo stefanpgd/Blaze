@@ -5,6 +5,7 @@
 class Mesh;
 class DXDescriptorHeap;
 class DXRayTracingPipeline;
+class DXTopLevelAS;
 
 class RayTraceStage : public RenderStage
 {
@@ -23,6 +24,7 @@ private:
 	Mesh* mesh;
 
 	DXRayTracingPipeline* rayTracePipeline;
+	DXTopLevelAS* TLAS;
 
 	ComPtr<ID3D12Resource> rayTraceOutput;
 	DXDescriptorHeap* rayTraceHeap;
