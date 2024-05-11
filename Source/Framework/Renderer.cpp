@@ -40,6 +40,7 @@ Mesh* screenMesh;
 DXRayTracingPipeline* pipeline;
 RayTraceStage* rayTraceStage;
 
+// TODO: Allow for resizing
 Renderer::Renderer(const std::wstring& applicationName, unsigned int windowWidth,
 	unsigned int windowHeight)
 {
