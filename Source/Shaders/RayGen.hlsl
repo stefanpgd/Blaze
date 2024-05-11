@@ -14,9 +14,9 @@ float3 GetRayDirection(float normalizedX, float normalizedY)
     
     float3 screenCenter = position + (direction * planeOffset);
     
-    float3 screenP0 = screenCenter + float3(-0.5, -0.5, 0.0f);
-    float3 screenP1 = screenCenter + float3(0.5, -0.5, 0.0f);
-    float3 screenP2 = screenCenter + float3(-0.5, 0.5, 0.0f);
+    float3 screenP0 = screenCenter + float3(-0.5, 0.5, 0.0f);
+    float3 screenP1 = screenCenter + float3(0.5, 0.5, 0.0f);
+    float3 screenP2 = screenCenter + float3(-0.5, -0.5, 0.0f);
     
     float3 screenU = screenP1 - screenP0;
     float3 screenV = screenP2 - screenP0;
@@ -46,10 +46,10 @@ void RayGen()
     float3 position = float3(0.0f, 0.0f, 5.0f);
     float3 rayDir = GetRayDirection(uv.x, uv.y);
     
-    
     RayDesc ray;
     ray.Origin = position;
     ray.Direction = rayDir;
+    
     ray.TMin = 0;
     ray.TMax = 100000;
     
