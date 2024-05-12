@@ -5,6 +5,7 @@
 
 #include "Graphics/DXCommon.h"
 #include "Framework/Mathematics.h"
+#include <tiny_gltf.h>
 
 struct Vertex
 {
@@ -17,6 +18,9 @@ class Texture;
 class Mesh
 {
 public:
+	Mesh(tinygltf::Model& model, tinygltf::Primitive& primitive, 
+		glm::mat4& transform, bool isRayTracingGeometry = false);
+
 	Mesh(Vertex* vertices, unsigned int vertexCount, unsigned int* indices, 
 		unsigned int indexCount, bool isRayTracingGeometry = false);
 
@@ -30,8 +34,12 @@ public:
 
 private:
 	void UploadBuffers();
-
 	void BuildRayTracingBLAS();
+
+	// TinyGLTF Loading //
+	void LoadAttribute(tinygltf::Model& model, tinygltf::Primitive& primitive, const std::string& attributeType);
+	void LoadIndices(tinygltf::Model& model, tinygltf::Primitive& primitive);
+	void ApplyNodeTransform(const glm::mat4 transform);
 
 public:
 	std::string Name;

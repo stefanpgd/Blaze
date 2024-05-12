@@ -7,7 +7,24 @@
 #include "Framework/Mathematics.h"
 #include <cassert>
 
-Mesh::Mesh(Vertex* verts, unsigned int vertexCount, unsigned int* indi, 
+Mesh::Mesh(tinygltf::Model& model, tinygltf::Primitive& primitive, glm::mat4& transform, bool isRayTracingGeometry)
+{
+	LoadAttribute(model, primitive, "POSITION");
+	LoadAttribute(model, primitive, "TEXCOORD_0");
+
+	LoadIndices(model, primitive);
+
+	ApplyNodeTransform(transform);
+
+	UploadBuffers();
+
+	if(isRayTracingGeometry)
+	{
+		BuildRayTracingBLAS();
+	}
+}
+
+Mesh::Mesh(Vertex* verts, unsigned int vertexCount, unsigned int* indi,
 	unsigned int indexCount, bool isRayTracingGeometry) : isRayTracingGeometry(isRayTracingGeometry)
 {
 	for(int i = 0; i < vertexCount; i++)
@@ -126,4 +143,102 @@ void Mesh::BuildRayTracingBLAS()
 
 	AllocateAccelerationStructureMemory(inputs, blasScratch.GetAddressOf(), blasResult.GetAddressOf());
 	BuildAccelerationStructure(inputs, blasScratch, blasResult);
+}
+
+void Mesh::LoadAttribute(tinygltf::Model& model, tinygltf::Primitive& primitive, const std::string& attributeType)
+{
+	auto attribute = primitive.attributes.find(attributeType);
+
+	// Check if within the primitives's attributes the type is present. For example 'Normals'
+	// If not, stop here, the model isn't valid
+	if(attribute == primitive.attributes.end())
+	{
+		std::string message = "Attribute Type: '" + attributeType + "' missing from model.";
+		LOG(Log::MessageType::Debug, message);
+		return;
+	}
+
+	// Accessor: Tells use which view we need, what type of data is in it, and the amount/count of data.
+	// BufferView: Tells which buffer we need, and where we need to be in the buffer
+	// Buffer: Binary data of our mesh
+	tinygltf::Accessor& accessor = model.accessors[primitive.attributes.at(attributeType)];
+	tinygltf::BufferView& view = model.bufferViews[accessor.bufferView];
+	tinygltf::Buffer& buffer = model.buffers[view.buffer];
+
+	// Component: default type like float, int
+	// Type: a structure made out of components, e.g VEC2 ( 2x float )
+	unsigned int componentSize = tinygltf::GetComponentSizeInBytes(accessor.componentType);
+	unsigned int objectSize = tinygltf::GetNumComponentsInType(accessor.type);
+	unsigned int dataSize = componentSize * objectSize;
+
+	// Accessor byteoffset: Offset to first element of type
+	// BufferView byteoffset: Offset to get to this primitives buffer data in the overall buffer
+	unsigned int bufferStart = accessor.byteOffset + view.byteOffset;
+
+	// Stride: Distance in buffer till next elelemt occurs
+	unsigned int stride = accessor.ByteStride(view);
+
+	// In case it hasn't happened, resize the vertex buffer since we're 
+	// going to directly memcpy the data into an already existing buffer
+	if(vertices.size() < accessor.count)
+	{
+		vertices.resize(accessor.count);
+	}
+
+	for(int i = 0; i < accessor.count; i++)
+	{
+		Vertex& vertex = vertices[i];
+		size_t bufferLocation = bufferStart + (i * stride);
+
+		// TODO: Add 'offsetto' to this and use pointers to vertices instead of a reference
+		if(attributeType == "POSITION")
+		{
+			memcpy(&vertex.Position, &buffer.data[bufferLocation], dataSize);
+		}
+		else if(attributeType == "TEXCOORD_0")
+		{
+			memcpy(&vertex.UVCoord, &buffer.data[bufferLocation], dataSize);
+		}
+	}
+}
+
+void Mesh::LoadIndices(tinygltf::Model& model, tinygltf::Primitive& primitive)
+{
+	tinygltf::Accessor& accessor = model.accessors[primitive.indices];
+	tinygltf::BufferView& view = model.bufferViews[accessor.bufferView];
+	tinygltf::Buffer& buffer = model.buffers[view.buffer];
+
+	unsigned int componentSize = tinygltf::GetComponentSizeInBytes(accessor.componentType);
+	unsigned int objectSize = tinygltf::GetNumComponentsInType(accessor.type);
+	unsigned int dataSize = componentSize * objectSize;
+
+	unsigned int bufferStart = accessor.byteOffset + view.byteOffset;
+	unsigned int stride = accessor.ByteStride(view);
+
+	for(int i = 0; i < accessor.count; i++)
+	{
+		size_t bufferLocation = bufferStart + (i * stride);
+
+		if(componentSize == 2)
+		{
+			short index;
+			memcpy(&index, &buffer.data[bufferLocation], dataSize);
+			indices.push_back(index);
+		}
+		else if(componentSize == 4)
+		{
+			unsigned int index;
+			memcpy(&index, &buffer.data[bufferLocation], dataSize);
+			indices.push_back(index);
+		}
+	}
+}
+
+void Mesh::ApplyNodeTransform(const glm::mat4 transform)
+{
+	for(Vertex& vertex : vertices)
+	{
+		glm::vec4 vert = glm::vec4(vertex.Position.x, vertex.Position.y, vertex.Position.z, 1.0f);
+		vertex.Position = transform * vert;
+	}
 }

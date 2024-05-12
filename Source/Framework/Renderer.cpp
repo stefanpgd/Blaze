@@ -15,7 +15,7 @@
 #include <imgui_impl_win32.h>
 #include <imgui_impl_dx12.h>
 
-// NEW //
+#include "Graphics/Model.h"  
 #include "Graphics/Mesh.h"  
 #include "Graphics/DXRayTracingPipeline.h"
 #include "Graphics/RenderStages/RayTraceStage.h"
@@ -36,7 +36,7 @@ namespace RendererInternal
 }
 using namespace RendererInternal;
 
-Mesh* screenMesh;
+Model* screenModel;
 DXRayTracingPipeline* pipeline;
 RayTraceStage* rayTraceStage;
 
@@ -74,12 +74,15 @@ Renderer::Renderer(const std::wstring& applicationName, unsigned int windowWidth
 	unsigned int* screenIndices = new unsigned int[6]
 		{	0, 1, 2, 1, 3, 2 };
 
-	screenMesh = new Mesh(screenVertices, 4, screenIndices, 6, true);
+	screenModel = new Model(screenVertices, 4, screenIndices, 6, true);
+	Model* bunny = new Model("Assets/Models/stanfordbunny.gltf", true);
 
 	delete[] screenVertices;
 	delete[] screenIndices;
 
-	rayTraceStage = new RayTraceStage(screenMesh);
+	rayTraceStage = new RayTraceStage(bunny->GetMesh(0));
+
+
 }
 
 void Renderer::Render()
