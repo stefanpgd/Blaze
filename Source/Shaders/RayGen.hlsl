@@ -9,15 +9,20 @@ RaytracingAccelerationStructure SceneBVH : register(t0);
 
 float3 GetRayDirection(float normalizedX, float normalizedY)
 {
+    // Aspect Ratio //
+    float2 dims = float2(DispatchRaysDimensions().xy);
+    float aspectRatio = dims.x / dims.y;
+    float xOffset = (aspectRatio - 1.0f) * 0.5f;
+    
     float3 position = float3(0.0f, 0.0f, 5.0f);
     float3 direction = float3(0.0f, 0.0f, -1.0f);
-    float3 planeOffset = 1.0f;
+    float3 planeOffset = 2.0f;
     
     float3 screenCenter = position + (direction * planeOffset);
     
-    float3 screenP0 = screenCenter + float3(-0.5, 0.5, 0.0f);
-    float3 screenP1 = screenCenter + float3(0.5, 0.5, 0.0f);
-    float3 screenP2 = screenCenter + float3(-0.5, -0.5, 0.0f);
+    float3 screenP0 = screenCenter + float3(-0.5 - xOffset, 0.5, 0.0f);
+    float3 screenP1 = screenCenter + float3(0.5 + xOffset, 0.5, 0.0f);
+    float3 screenP2 = screenCenter + float3(-0.5 - xOffset, -0.5, 0.0f);
     
     float3 screenU = screenP1 - screenP0;
     float3 screenV = screenP2 - screenP0;

@@ -81,8 +81,6 @@ Renderer::Renderer(const std::wstring& applicationName, unsigned int windowWidth
 	delete[] screenIndices;
 
 	rayTraceStage = new RayTraceStage(bunny->GetMesh(0));
-
-
 }
 
 void Renderer::Render()
