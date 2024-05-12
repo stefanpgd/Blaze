@@ -44,7 +44,7 @@ void RayGen()
     float2 uv = launchIndex.xy / dims.xy;
 
     // 1 - setup a screen place
-    float3 position = float3(0.0f, 0.0f, 5.0f);
+    float3 position = float3(0.0f, 0.0f, 7.5f);
     float3 rayDir = GetRayDirection(uv.x, uv.y);
     
     RayDesc ray;
@@ -56,7 +56,33 @@ void RayGen()
     
     TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, payload);
     
-    colorBuffer[launchIndex] += float4(payload.colorAndDistance.rgb, 1.0f);
+    float3 color = payload.colorAndDistance.rgb;
+    
+    const int maxBounces = 3;
+    int bounces = 0;
+    
+    for(int i = 0; i < maxBounces; i++)
+    {
+        float t = payload.colorAndDistance.a;
+        
+        if(t <= 0.0f)
+        {
+            continue; // Don't bounce incase with hit the sky
+        }
+
+        float3 hitpoint = ray.Origin + ray.Direction * t;
+        
+        float3 newDir = reflect(ray.Direction, payload.normal);
+        float3 newPos = hitpoint + newDir * 0.001f; // Epsilon..
+        
+        ray.Origin = newPos;
+        ray.Direction = newDir;
+
+        TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, payload);
+        color *= payload.colorAndDistance.rgb;
+    }
+    
+    colorBuffer[launchIndex] += float4(color, 1.0f);
     int sampleCount = colorBuffer[launchIndex].a;
     
     gOutput[launchIndex] = float4(colorBuffer[launchIndex].rgb / sampleCount, 1.0f);

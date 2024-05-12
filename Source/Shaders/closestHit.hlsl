@@ -28,7 +28,8 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
     float3 normalColor = (normal * 0.5) + 0.5;
     
     float3 lightDir = normalize(float3(0.0, 1.0f, 0.5));
-    float3 colorOutput = float3(1.0f, 1.0f, 1.0f) * dot(normal, lightDir);
+    float3 colorOutput = float3(1.0f, 1.0f, 1.0f);
     
     payload.colorAndDistance = float4(colorOutput, RayTCurrent());
+    payload.normal = normal;
 }

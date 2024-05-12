@@ -134,5 +134,7 @@ void RayTraceStage::InitializePipeline()
 	settings.hitParameters = &hitParameters[0];
 	settings.hitParameterCount = _countof(hitParameters);
 
+	settings.payLoadSize = sizeof(float) * 7; // RGB, Hit T, Normal 
+
 	rayTracePipeline = new DXRayTracingPipeline(settings);
 }
