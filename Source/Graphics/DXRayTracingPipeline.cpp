@@ -91,6 +91,9 @@ void DXRayTracingPipeline::CreatePipeline()
 
 void DXRayTracingPipeline::CreateShaderBindingTable()
 {
+	// TODO: Consider making some wrapper called SBTBuilder 
+	// that takes in calls like 'Bind shader' and responds accordingly
+
 	// The idea of the Shader Binding Table is sort of shaping an array with where all the 
 	// information of our pipeline can be found. It's our dictionary
 	// For example we know we've shaders that require buffers like the TLAS
@@ -112,6 +115,7 @@ void DXRayTracingPipeline::CreateShaderBindingTable()
 
 	shaderTableRecordSize = shaderIdSize;
 	shaderTableRecordSize += 8; // UAV-SRV Descriptor Table //
+	shaderTableRecordSize += 8; // UAV-SRV Descriptor Table - 2 //
 
 	// Aligns record to be 64-byte, ensuring alignment //
 	shaderTableRecordSize = ALIGN(D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT, shaderTableRecordSize); 
@@ -140,6 +144,7 @@ void DXRayTracingPipeline::CreateShaderBindingTable()
 	pData += shaderTableRecordSize;
 	memcpy(pData, pipelineProperties->GetShaderIdentifier(L"HitGroup"), shaderIdSize);
 	*reinterpret_cast<UINT64*>(pData + shaderIdSize) = settings.vertexBuffer->GetGPUVirtualAddress();
+	*reinterpret_cast<UINT64*>(pData + shaderIdSize + 8) = settings.indexBuffer->GetGPUVirtualAddress();
 
 	shaderTable->Unmap(0, nullptr);
 

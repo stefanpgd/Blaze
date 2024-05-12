@@ -24,6 +24,7 @@ struct DXRayTracingPipelineSettings
 	// Information relevant for SBT //
 	DXDescriptorHeap* uavSrvHeap; // That contains Output & TLAS
 	ID3D12Resource* vertexBuffer; // Todo: find out a way to pass a list of buffers / TLAS
+	ID3D12Resource* indexBuffer; // Todo: find out a way to pass a list of buffers / TLAS
 };
 
 class DXRayTracingPipeline

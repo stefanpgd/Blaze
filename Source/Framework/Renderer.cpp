@@ -60,27 +60,21 @@ Renderer::Renderer(const std::wstring& applicationName, unsigned int windowWidth
 	InitializeImGui();
 
 	// PLACEHOLDER to test RT Geometry //
-	Vertex* screenVertices = new Vertex[6];
+	Vertex* screenVertices = new Vertex[4];
 	screenVertices[0].Position = glm::vec3(-0.5f, 0.5f, 0.0f);
 	screenVertices[1].Position = glm::vec3(0.5f, 0.5f, 0.0f);
 	screenVertices[2].Position = glm::vec3(-0.5f, -0.5f, 0.0f);
-
-	screenVertices[3].Position = glm::vec3(-0.5f, -0.5f, 0.0f);
-	screenVertices[4].Position = glm::vec3(0.5f, 0.5f, 0.0f);
-	screenVertices[5].Position = glm::vec3(0.5f, -0.5f, 0.0f);
+	screenVertices[3].Position = glm::vec3(0.5f, -0.5f, 0.0f);
 
 	screenVertices[0].UVCoord = glm::vec2(0.0f, 0.0f);
 	screenVertices[1].UVCoord = glm::vec2(1.0f, 0.0f);
 	screenVertices[2].UVCoord = glm::vec2(0.0f, 1.0f);
-	
-	screenVertices[3].UVCoord = glm::vec2(0.0f, 1.0f);
-	screenVertices[4].UVCoord = glm::vec2(1.0f, 0.0f);
-	screenVertices[5].UVCoord = glm::vec2(1.0f, 1.0f);
+	screenVertices[3].UVCoord = glm::vec2(1.0f, 1.0f);
 
 	unsigned int* screenIndices = new unsigned int[6]
-		{	0, 1, 2, 3, 4, 5 };
+		{	0, 1, 2, 1, 3, 2 };
 
-	screenMesh = new Mesh(screenVertices, 6, screenIndices, 6, true);
+	screenMesh = new Mesh(screenVertices, 4, screenIndices, 6, true);
 
 	delete[] screenVertices;
 	delete[] screenIndices;

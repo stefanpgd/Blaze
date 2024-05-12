@@ -83,6 +83,7 @@ void RayTraceStage::InitializePipeline()
 	DXRayTracingPipelineSettings settings;
 	settings.uavSrvHeap = rayTraceHeap;
 	settings.vertexBuffer = mesh->GetVertexBuffer();
+	settings.indexBuffer = mesh->GetIndexBuffer();
 
 	CD3DX12_DESCRIPTOR_RANGE rayGenRanges[2];
 	rayGenRanges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
@@ -94,8 +95,9 @@ void RayTraceStage::InitializePipeline()
 	settings.rayGenParameters = &rayGenParameters[0];
 	settings.rayGenParameterCount = _countof(rayGenParameters);
 
-	CD3DX12_ROOT_PARAMETER hitParameters[1];
+	CD3DX12_ROOT_PARAMETER hitParameters[2];
 	hitParameters[0].InitAsShaderResourceView(0, 0);
+	hitParameters[1].InitAsShaderResourceView(1, 0);
 
 	settings.hitParameters = &hitParameters[0];
 	settings.hitParameterCount = _countof(hitParameters);

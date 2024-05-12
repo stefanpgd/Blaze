@@ -25,6 +25,7 @@ public:
 	const unsigned int GetIndicesCount();
 
 	ID3D12Resource* GetVertexBuffer();
+	ID3D12Resource* GetIndexBuffer();
 	ID3D12Resource* GetBLAS();
 
 private:

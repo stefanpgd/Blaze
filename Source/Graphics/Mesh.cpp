@@ -48,6 +48,11 @@ ID3D12Resource* Mesh::GetVertexBuffer()
 	return vertexBuffer.Get();
 }
 
+ID3D12Resource* Mesh::GetIndexBuffer()
+{
+	return indexBuffer.Get();
+}
+
 ID3D12Resource* Mesh::GetBLAS()
 {
 	return blasResult.Get();
@@ -116,10 +121,9 @@ void Mesh::BuildRayTracingBLAS()
 	inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
 
 	inputs.pGeometryDescs = &geometry;
-	inputs.NumDescs = 1;
+	inputs.NumDescs = 1; // TODO: Maybe consider storing all the geometry descriptions, then let the Model build the desc?
 	inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE; // there are also other options like 'Fast Build'
 
 	AllocateAccelerationStructureMemory(inputs, blasScratch.GetAddressOf(), blasResult.GetAddressOf());
 	BuildAccelerationStructure(inputs, blasScratch, blasResult);
 }
-
