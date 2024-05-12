@@ -9,6 +9,8 @@ RayTraceStage::RayTraceStage(Mesh* mesh) : mesh(mesh)
 	TLAS = new DXTopLevelAS(mesh);
 	
 	CreateOutputBuffer();
+	CreateColorBuffer();
+
 	CreateShaderResourceHeap();
 
 	InitializePipeline();
@@ -57,18 +59,47 @@ void RayTraceStage::CreateOutputBuffer()
 		 D3D12_RESOURCE_STATE_COPY_SOURCE, nullptr, IID_PPV_ARGS(&rayTraceOutput));
 }
 
+void RayTraceStage::CreateColorBuffer()
+{
+	ComPtr<ID3D12Device5> device = DXAccess::GetDevice();
+	Window* window = DXAccess::GetWindow();
+
+	D3D12_RESOURCE_DESC resourceDescription = {};
+	resourceDescription.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	resourceDescription.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	resourceDescription.DepthOrArraySize = 1;
+	resourceDescription.MipLevels = 1;
+	resourceDescription.SampleDesc.Count = 1;
+
+	resourceDescription.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+	resourceDescription.Width = window->GetWindowWidth();
+	resourceDescription.Height = window->GetWindowHeight();
+	resourceDescription.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+
+	CD3DX12_HEAP_PROPERTIES defaultHeap = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+
+	device->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &resourceDescription,
+		 D3D12_RESOURCE_STATE_COPY_SOURCE, nullptr, IID_PPV_ARGS(&colorBuffer));
+}
+
 void RayTraceStage::CreateShaderResourceHeap()
 {
-	rayTraceHeap = new DXDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 2, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
+	rayTraceHeap = new DXDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 3, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
 
 	ComPtr<ID3D12Device5> device = DXAccess::GetDevice();
 	D3D12_CPU_DESCRIPTOR_HANDLE handle = rayTraceHeap->GetCPUHandleAt(0);
 
-	D3D12_UNORDERED_ACCESS_VIEW_DESC uavDescription = {};
-	uavDescription.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
-	device->CreateUnorderedAccessView(rayTraceOutput.Get(), nullptr, &uavDescription, handle);
+	D3D12_UNORDERED_ACCESS_VIEW_DESC outputDescription = {};
+	outputDescription.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+	device->CreateUnorderedAccessView(rayTraceOutput.Get(), nullptr, &outputDescription, handle);
 
 	handle = rayTraceHeap->GetCPUHandleAt(1);
+
+	D3D12_UNORDERED_ACCESS_VIEW_DESC colorBufferDescription = {};
+	colorBufferDescription.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+	device->CreateUnorderedAccessView(colorBuffer.Get(), nullptr, &colorBufferDescription, handle);
+
+	handle = rayTraceHeap->GetCPUHandleAt(2);
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc;
 	srvDesc.Format = DXGI_FORMAT_UNKNOWN;
@@ -85,9 +116,10 @@ void RayTraceStage::InitializePipeline()
 	settings.vertexBuffer = mesh->GetVertexBuffer();
 	settings.indexBuffer = mesh->GetIndexBuffer();
 
-	CD3DX12_DESCRIPTOR_RANGE rayGenRanges[2];
+	CD3DX12_DESCRIPTOR_RANGE rayGenRanges[3];
 	rayGenRanges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
-	rayGenRanges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
+	rayGenRanges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 1, 0);
+	rayGenRanges[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 
 	CD3DX12_ROOT_PARAMETER rayGenParameters[1];
 	rayGenParameters[0].InitAsDescriptorTable(_countof(rayGenRanges), &rayGenRanges[0]);

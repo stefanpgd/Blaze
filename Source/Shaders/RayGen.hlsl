@@ -2,6 +2,7 @@
 
 // Raytracing output texture, accessed as a UAV
 RWTexture2D<float4> gOutput : register(u0);
+RWTexture2D<float4> colorBuffer : register(u1);
 
 // Raytracing acceleration structure, accessed as a SRV
 RaytracingAccelerationStructure SceneBVH : register(t0);
@@ -55,5 +56,6 @@ void RayGen()
     
     TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, payload);
     
-    gOutput[launchIndex] = float4(payload.colorAndDistance.rgb, 1.0f);
+    colorBuffer[launchIndex] = float4(payload.colorAndDistance.rgb, 1.0f);
+    gOutput[launchIndex] = colorBuffer[launchIndex];
 }

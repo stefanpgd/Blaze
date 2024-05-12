@@ -16,6 +16,7 @@ public:
 	
 private:
 	void CreateOutputBuffer();
+	void CreateColorBuffer();
 	void CreateShaderResourceHeap();
 
 	void InitializePipeline();
@@ -27,6 +28,7 @@ private:
 	DXTopLevelAS* TLAS;
 
 	ComPtr<ID3D12Resource> rayTraceOutput;
+	ComPtr<ID3D12Resource> colorBuffer;
 	DXDescriptorHeap* rayTraceHeap;
 
 	D3D12_DISPATCH_RAYS_DESC dispatchRayDescription;
