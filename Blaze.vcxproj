@@ -112,7 +112,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\glm;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\Microsoft;$(SolutionDir)Headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\glm;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\tinyGLTF;$(SolutionDir)Dependencies\Microsoft;$(SolutionDir)Headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -130,7 +130,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\glm;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\Microsoft;$(SolutionDir)Headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\stb;$(SolutionDir)Dependencies\glm;$(SolutionDir)Dependencies\ImGui;$(SolutionDir)Dependencies\tinyGLTF;$(SolutionDir)Dependencies\Microsoft;$(SolutionDir)Headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -143,6 +143,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Dependencies\tinyglTF\tiny_gltf.cpp" />
+    <ClCompile Include="Source\Graphics\Model.cpp" />
     <ClCompile Include="Source\Graphics\RenderStages\RayTraceStage.cpp" />
     <ClCompile Include="Source\Framework\Input.cpp" />
     <ClCompile Include="Source\Framework\Editor.cpp" />
@@ -208,6 +210,7 @@
     <ClInclude Include="Headers\Graphics\DXCommon.h" />
     <ClInclude Include="Headers\Graphics\RenderStages\RayTraceStage.h" />
     <ClInclude Include="Headers\Graphics\DXTopLevelAS.h" />
+    <ClInclude Include="Headers\Graphics\Model.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\ClosestHit.hlsl">
