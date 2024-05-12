@@ -11,6 +11,7 @@ Mesh::Mesh(tinygltf::Model& model, tinygltf::Primitive& primitive, glm::mat4& tr
 {
 	LoadAttribute(model, primitive, "POSITION");
 	LoadAttribute(model, primitive, "TEXCOORD_0");
+	LoadAttribute(model, primitive, "NORMAL");
 
 	LoadIndices(model, primitive);
 
@@ -145,6 +146,7 @@ void Mesh::BuildRayTracingBLAS()
 	BuildAccelerationStructure(inputs, blasScratch, blasResult);
 }
 
+#pragma region TinyGLTF Loading
 void Mesh::LoadAttribute(tinygltf::Model& model, tinygltf::Primitive& primitive, const std::string& attributeType)
 {
 	auto attribute = primitive.attributes.find(attributeType);
@@ -199,6 +201,10 @@ void Mesh::LoadAttribute(tinygltf::Model& model, tinygltf::Primitive& primitive,
 		{
 			memcpy(&vertex.UVCoord, &buffer.data[bufferLocation], dataSize);
 		}
+		else if(attributeType == "NORMAL")
+		{
+			memcpy(&vertex.Normal, &buffer.data[bufferLocation], dataSize);
+		}
 	}
 }
 
@@ -240,5 +246,9 @@ void Mesh::ApplyNodeTransform(const glm::mat4 transform)
 	{
 		glm::vec4 vert = glm::vec4(vertex.Position.x, vertex.Position.y, vertex.Position.z, 1.0f);
 		vertex.Position = transform * vert;
+
+		glm::vec4 norm = glm::vec4(vertex.Normal.x, vertex.Normal.y, vertex.Normal.z, 0.0f);
+		vertex.Normal = glm::normalize(transform * norm);
 	}
 }
+#pragma endregion

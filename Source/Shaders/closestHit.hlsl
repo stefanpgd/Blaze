@@ -4,6 +4,7 @@ struct Vertex
 {
     float3 position;
     float2 uv;
+    float3 normal;
 };
 StructuredBuffer<Vertex> VertexData : register(t0);
 StructuredBuffer<uint> indices : register(t1);
@@ -22,7 +23,9 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
     Vertex c = VertexData[indices[vertID + 2]];
     
     float3 baryCoords = float3(1.0f - attrib.bary.x - attrib.bary.y, attrib.bary.x, attrib.bary.y);
-    float2 uv = a.uv * baryCoords.x + b.uv * baryCoords.y + c.uv * baryCoords.z;
+    float3 normal = a.normal * baryCoords.x + b.normal * baryCoords.y + c.normal * baryCoords.z;
     
-    payload.colorAndDistance = float4(uv, 0.0f, RayTCurrent());
+    float3 normalColor = (normal * 0.5) + 0.5;
+    
+    payload.colorAndDistance = float4(normalColor, RayTCurrent());
 }
