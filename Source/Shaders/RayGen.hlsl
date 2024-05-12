@@ -56,6 +56,8 @@ void RayGen()
     
     TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, payload);
     
-    colorBuffer[launchIndex] = float4(payload.colorAndDistance.rgb, 1.0f);
-    gOutput[launchIndex] = colorBuffer[launchIndex];
+    colorBuffer[launchIndex] += float4(payload.colorAndDistance.rgb, 1.0f);
+    int sampleCount = colorBuffer[launchIndex].a;
+    
+    gOutput[launchIndex] = float4(colorBuffer[launchIndex].rgb / sampleCount, 1.0f);
 }
