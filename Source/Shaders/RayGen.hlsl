@@ -65,7 +65,11 @@ void RayGen()
     uint2 launchIndex = DispatchRaysIndex().xy;
     float2 dims = float2(DispatchRaysDimensions().xy);
     float2 d = (((launchIndex.xy + 0.5f) / dims.xy) * 2.f - 1.f);
-    float2 uv = launchIndex.xy / dims.xy;
+    
+    float xOffset = Random01((launchIndex.x + launchIndex.y * dims.x) * settings.time);
+    float yOffset = Random01(((launchIndex.x + launchIndex.y * dims.x) + launchIndex.x) * settings.time);
+    
+    float2 uv = (launchIndex.xy + float2(xOffset, yOffset)) / dims.xy;
 
     // 1 - setup a screen place
     float3 position = float3(0.0f, 0.0f, 7.5f);
@@ -108,9 +112,8 @@ void RayGen()
     
     colorBuffer[launchIndex] += float4(color, 1.0f);
     
-    
-    float noise = Random01((launchIndex.x + launchIndex.y * dims.x) * settings.time);
-    colorBuffer[launchIndex] = float4(noise, noise, noise, 1.0f);
+    float noise = Random01((launchIndex.x + launchIndex.y * dims.x));
+    //colorBuffer[launchIndex] = float4(xOffset, yOffset, 0.0f, 1.0f);
     int sampleCount = colorBuffer[launchIndex].a;
     
     gOutput[launchIndex] = float4(colorBuffer[launchIndex].rgb / sampleCount, 1.0f);
