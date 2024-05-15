@@ -7,6 +7,12 @@ class DXDescriptorHeap;
 class DXRayTracingPipeline;
 class DXTopLevelAS;
 
+struct RayTraceSettings
+{
+	float time = 1.0f;
+	float stub[63];
+};
+
 class RayTraceStage : public RenderStage
 {
 public:
@@ -23,12 +29,14 @@ private:
 
 private:
 	Mesh* mesh;
+	RayTraceSettings settings;
 
 	DXRayTracingPipeline* rayTracePipeline;
 	DXTopLevelAS* TLAS;
 
 	ComPtr<ID3D12Resource> rayTraceOutput;
 	ComPtr<ID3D12Resource> colorBuffer;
+	ComPtr<ID3D12Resource> settingsBuffer;
 	DXDescriptorHeap* rayTraceHeap;
 
 	D3D12_DISPATCH_RAYS_DESC dispatchRayDescription;

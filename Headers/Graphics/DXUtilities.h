@@ -215,3 +215,15 @@ inline void AllocateAndMapResource(ComPtr<ID3D12Resource>& resource, void* data,
 	memcpy(pData, data, bufferSizeInBytes);
 	resource->Unmap(0, nullptr);
 }
+
+/// <summary>
+/// Similar to 'AllocateAndMapResource', but it leaevs out the initalization, instead it directly maps
+/// the data to the allocated resource.
+/// </summary>
+inline void UpdateUploadHeapResource(ComPtr<ID3D12Resource>& resource, void* data, unsigned int bufferSizeInBytes)
+{
+	UINT8* pData;
+	resource->Map(0, nullptr, (void**)&pData);
+	memcpy(pData, data, bufferSizeInBytes);
+	resource->Unmap(0, nullptr);
+}

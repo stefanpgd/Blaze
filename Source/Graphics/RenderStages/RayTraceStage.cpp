@@ -1,7 +1,8 @@
 #include "Graphics/RenderStages/RayTraceStage.h"
 #include "Graphics/DXRayTracingPipeline.h"
-#include "Graphics/DXTopLevelAS.h"
+
 #include "Graphics/DXUtilities.h"
+#include "Graphics/DXTopLevelAS.h"
 #include "Graphics/Mesh.h"
 
 RayTraceStage::RayTraceStage(Mesh* mesh) : mesh(mesh)
@@ -11,13 +12,21 @@ RayTraceStage::RayTraceStage(Mesh* mesh) : mesh(mesh)
 	CreateOutputBuffer();
 	CreateColorBuffer();
 
+	// TODO: Temporarily here, move it to something proper
+	AllocateAndMapResource(settingsBuffer, &settings, sizeof(RayTraceSettings));
+
 	CreateShaderResourceHeap();
+
 
 	InitializePipeline();
 }
 
 void RayTraceStage::RecordStage(ComPtr<ID3D12GraphicsCommandList4> commandList)
 {
+	// TODO: Move to an update call
+	settings.time += 0.0068;
+	UpdateUploadHeapResource(settingsBuffer, &settings, sizeof(RayTraceSettings));
+
 	// Resources //
 	ComPtr<ID3D12Resource> renderTargetBuffer = DXAccess::GetWindow()->GetCurrentScreenBuffer();
 
@@ -84,7 +93,7 @@ void RayTraceStage::CreateColorBuffer()
 
 void RayTraceStage::CreateShaderResourceHeap()
 {
-	rayTraceHeap = new DXDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 3, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
+	rayTraceHeap = new DXDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 4, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
 
 	ComPtr<ID3D12Device5> device = DXAccess::GetDevice();
 	D3D12_CPU_DESCRIPTOR_HANDLE handle = rayTraceHeap->GetCPUHandleAt(0);
@@ -107,6 +116,13 @@ void RayTraceStage::CreateShaderResourceHeap()
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	srvDesc.RaytracingAccelerationStructure.Location = TLAS->GetTLASAddress();
 	device->CreateShaderResourceView(nullptr, &srvDesc, handle);
+
+	handle = rayTraceHeap->GetCPUHandleAt(3);
+
+	D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
+	cbvDesc.BufferLocation = settingsBuffer->GetGPUVirtualAddress();
+	cbvDesc.SizeInBytes = sizeof(RayTraceSettings);
+	device->CreateConstantBufferView(&cbvDesc, handle);
 }
 
 void RayTraceStage::InitializePipeline()
@@ -116,10 +132,11 @@ void RayTraceStage::InitializePipeline()
 	settings.vertexBuffer = mesh->GetVertexBuffer();
 	settings.indexBuffer = mesh->GetIndexBuffer();
 
-	CD3DX12_DESCRIPTOR_RANGE rayGenRanges[3];
-	rayGenRanges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
-	rayGenRanges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 1, 0);
-	rayGenRanges[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
+	CD3DX12_DESCRIPTOR_RANGE rayGenRanges[4];
+	rayGenRanges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0); // Screen //
+	rayGenRanges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 1, 0); // Color Buffer //
+	rayGenRanges[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0); // Acceleration Structure //
+	rayGenRanges[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0, 0); // General Settings //
 
 	CD3DX12_ROOT_PARAMETER rayGenParameters[1];
 	rayGenParameters[0].InitAsDescriptorTable(_countof(rayGenRanges), &rayGenRanges[0]);

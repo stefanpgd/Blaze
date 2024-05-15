@@ -7,6 +7,25 @@ RWTexture2D<float4> colorBuffer : register(u1);
 // Raytracing acceleration structure, accessed as a SRV
 RaytracingAccelerationStructure SceneBVH : register(t0);
 
+struct Settings
+{
+    float time;
+};
+ConstantBuffer<Settings> settings : register(b0);
+
+float Random01(uint seed)
+{
+    // Hash function from H. Schechter & R. Bridson, goo.gl/RXiKaH
+    seed ^= 2747636419u;
+    seed *= 2654435769u;
+    seed ^= seed >> 16;
+    seed *= 2654435769u;
+    seed ^= seed >> 16;
+    seed *= 2654435769u;
+    
+    return float(seed) / 4294967295.0; // 2^32-1
+}
+
 float3 GetRayDirection(float normalizedX, float normalizedY)
 {
     // Aspect Ratio //
@@ -88,6 +107,10 @@ void RayGen()
     }
     
     colorBuffer[launchIndex] += float4(color, 1.0f);
+    
+    
+    float noise = Random01((launchIndex.x + launchIndex.y * dims.x) * settings.time);
+    colorBuffer[launchIndex] = float4(noise, noise, noise, 1.0f);
     int sampleCount = colorBuffer[launchIndex].a;
     
     gOutput[launchIndex] = float4(colorBuffer[launchIndex].rgb / sampleCount, 1.0f);
