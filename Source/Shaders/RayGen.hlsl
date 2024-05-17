@@ -26,6 +26,11 @@ float Random01(uint seed)
     return float(seed) / 4294967295.0; // 2^32-1
 }
 
+float RandomInRange(uint seed, float min, float max)
+{
+    return min + (max - min) * Random01(seed);
+}
+
 float3 GetRayDirection(float normalizedX, float normalizedY)
 {
     // Aspect Ratio //
@@ -53,21 +58,36 @@ float3 GetRayDirection(float normalizedX, float normalizedY)
     return rayDirection;
 }
 
+float3 RandomUnitVector(uint seed)
+{
+    float x = RandomInRange(seed, -1.0f, 1.0f);
+    float y = RandomInRange(seed + 1024, -1.0f, 1.0f);
+    float z = RandomInRange(seed + 2048, -1.0f, 1.0f);
+    
+    float3 vec = float3(x, y, z);
+    return normalize(vec);
+}
+
+static float PI = 3.14159265;
+
 [shader("raygeneration")]
 void RayGen()
 {
-  // Initialize the ray payload
+    uint2 launchIndex = DispatchRaysIndex().xy;
+    float2 dims = float2(DispatchRaysDimensions().xy);
+    
+    // Initialize the ray payload
     HitInfo payload;
     payload.colorAndDistance = float4(0, 0, 0, 0);
 
+    uint seed = (launchIndex.x + launchIndex.y * dims.x) * settings.time;
+    uint seed2 = ((launchIndex.x + launchIndex.y * dims.x) + launchIndex.x) * settings.time;
+    
     // Get the location within the dispatched 2D grid of work items
     // (often maps to pixels, so this could represent a pixel coordinate).
-    uint2 launchIndex = DispatchRaysIndex().xy;
-    float2 dims = float2(DispatchRaysDimensions().xy);
-    float2 d = (((launchIndex.xy + 0.5f) / dims.xy) * 2.f - 1.f);
     
-    float xOffset = Random01((launchIndex.x + launchIndex.y * dims.x) * settings.time);
-    float yOffset = Random01(((launchIndex.x + launchIndex.y * dims.x) + launchIndex.x) * settings.time);
+    float xOffset = Random01(seed);
+    float yOffset = Random01(seed2);
     
     float2 uv = (launchIndex.xy + float2(xOffset, yOffset)) / dims.xy;
 
@@ -85,35 +105,32 @@ void RayGen()
     TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, payload);
     
     float3 color = payload.colorAndDistance.rgb;
+    float t = payload.colorAndDistance.a;
     
-    const int maxBounces = 3;
-    int bounces = 0;
-    
-    for(int i = 0; i < maxBounces; i++)
+    if(t >= 0.0f)
     {
-        float t = payload.colorAndDistance.a;
+        // Do diffuse stuff //
+        float3 intersection = ray.Origin = ray.Direction * t;
+        float3 direction = RandomUnitVector(seed);
         
-        if(t <= 0.0f)
+        if(dot(direction, payload.normal) < 0.0f)
         {
-            continue; // Don't bounce incase with hit the sky
+            direction = direction * -1.0f;
         }
-
-        float3 hitpoint = ray.Origin + ray.Direction * t;
         
-        float3 newDir = reflect(ray.Direction, payload.normal);
-        float3 newPos = hitpoint + newDir * 0.001f; // Epsilon..
+        ray.Origin = intersection;
+        ray.Direction = direction;
         
-        ray.Origin = newPos;
-        ray.Direction = newDir;
-
+        float3 BRDF = color / PI; 
+        float cosI = dot(payload.normal, direction);
+        
         TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, payload);
-        color *= payload.colorAndDistance.rgb;
+        float3 irradiance = payload.colorAndDistance.rgb * cosI;
+        
+        color = PI * 2.0f * BRDF * irradiance;
     }
-    
+        
     colorBuffer[launchIndex] += float4(color, 1.0f);
-    
-    float noise = Random01((launchIndex.x + launchIndex.y * dims.x));
-    //colorBuffer[launchIndex] = float4(xOffset, yOffset, 0.0f, 1.0f);
     int sampleCount = colorBuffer[launchIndex].a;
     
     gOutput[launchIndex] = float4(colorBuffer[launchIndex].rgb / sampleCount, 1.0f);
