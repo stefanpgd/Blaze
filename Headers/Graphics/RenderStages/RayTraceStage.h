@@ -10,7 +10,8 @@ class DXTopLevelAS;
 struct RayTraceSettings
 {
 	float time = 1.0f;
-	float stub[63];
+	unsigned int frameCount;
+	float stub[62];
 };
 
 class RayTraceStage : public RenderStage

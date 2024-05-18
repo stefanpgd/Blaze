@@ -25,6 +25,8 @@ void RayTraceStage::RecordStage(ComPtr<ID3D12GraphicsCommandList4> commandList)
 {
 	// TODO: Move to an update call
 	settings.time += 0.0068;
+	settings.frameCount++;
+
 	UpdateUploadHeapResource(settingsBuffer, &settings, sizeof(RayTraceSettings));
 
 	// Resources //

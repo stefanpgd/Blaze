@@ -10,20 +10,17 @@ RaytracingAccelerationStructure SceneBVH : register(t0);
 struct Settings
 {
     float time;
+    uint frameCount;
 };
 ConstantBuffer<Settings> settings : register(b0);
 
-float Random01(uint seed)
+float Random01(inout uint seed) 
 {
-    // Hash function from H. Schechter & R. Bridson, goo.gl/RXiKaH
-    seed ^= 2747636419u;
-    seed *= 2654435769u;
-    seed ^= seed >> 16;
-    seed *= 2654435769u;
-    seed ^= seed >> 16;
-    seed *= 2654435769u;
-    
-    return float(seed) / 4294967295.0; // 2^32-1
+    // XorShift32
+    seed ^= (seed << 13);
+    seed ^= (seed >> 17);
+    seed ^= (seed << 5);
+    return seed / 4294967296.0; 
 }
 
 float RandomInRange(uint seed, float min, float max)
@@ -76,18 +73,18 @@ void RayGen()
     uint2 launchIndex = DispatchRaysIndex().xy;
     float2 dims = float2(DispatchRaysDimensions().xy);
     
+    uint pixelIndex = launchIndex.x + launchIndex.y * dims.x;
+    uint seed = (settings.frameCount * 26927) + (pixelIndex * 78713);
+    
     // Initialize the ray payload
     HitInfo payload;
     payload.colorAndDistance = float4(0, 0, 0, 0);
 
-    uint seed = (launchIndex.x + launchIndex.y * dims.x) * settings.time;
-    uint seed2 = ((launchIndex.x + launchIndex.y * dims.x) + launchIndex.x) * settings.time;
-    
     // Get the location within the dispatched 2D grid of work items
     // (often maps to pixels, so this could represent a pixel coordinate).
     
     float xOffset = Random01(seed);
-    float yOffset = Random01(seed2);
+    float yOffset = Random01(seed);
     
     float2 uv = (launchIndex.xy + float2(xOffset, yOffset)) / dims.xy;
 
@@ -129,7 +126,9 @@ void RayGen()
         
         color = PI * 2.0f * BRDF * irradiance;
     }
-        
+    
+    float r = Random01(seed);
+    
     colorBuffer[launchIndex] += float4(color, 1.0f);
     int sampleCount = colorBuffer[launchIndex].a;
     
