@@ -66,6 +66,56 @@ float3 RandomUnitVector(inout uint seed)
     return normalize(vec);
 }
 
+float3 DiffuseScatter(in RayDesc ray, inout uint seed)
+{
+    // We get a primary ray to start with, afterwards we overwrite it with new info
+    
+    float bounceRadiance = float3(1.0f, 1.0f, 1.0f);
+    const int maxDepth = 15;
+    
+    HitInfo payload;
+    payload.colorAndDistance = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    
+    for(int depth = 0; depth < maxDepth + 1; depth++)
+    {
+        if(depth >= maxDepth)
+        {
+            // Ran out of bounces/'energy' //
+            bounceRadiance *= float3(0.0f, 0.0f, 0.0f); 
+            break;
+        }
+        
+        TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, payload);
+        float t = payload.colorAndDistance.a;
+        
+        if(t < 0.0f)
+        {
+            // we hit the skydome //
+            bounceRadiance = payload.colorAndDistance.rgb; 
+            break;
+        }
+        
+        // We must have hit another diffuse surface //
+        float3 intersection = ray.Origin + ray.Direction * t;
+        float3 direction = RandomUnitVector(seed);
+        
+        if(dot(direction, payload.normal) < 0.0f)
+        {
+            direction = direction * -1.0f;
+        }
+        
+        ray.Origin = intersection;
+        ray.Direction = direction;
+        
+        float3 BRDF = payload.colorAndDistance.rgb / PI;
+        float cosI = dot(payload.normal, direction);
+        
+        bounceRadiance *= BRDF * cosI;
+    }
+    
+    return bounceRadiance;
+}
+
 [shader("raygeneration")]
 void RayGen()
 {
@@ -95,7 +145,7 @@ void RayGen()
     ray.Origin = position;
     ray.Direction = rayDir;
     
-    ray.TMin = 0;
+    ray.TMin = 0.001f;
     ray.TMax = 100000;
     
     TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, payload);
@@ -103,10 +153,12 @@ void RayGen()
     float3 color = payload.colorAndDistance.rgb;
     float t = payload.colorAndDistance.a;
     
+    const uint maxDepth = 4;
+    
     if(t >= 0.0f)
     {
         // Do diffuse stuff //
-        float3 intersection = ray.Origin = ray.Direction * t;
+        float3 intersection = ray.Origin + ray.Direction * t;
         float3 direction = RandomUnitVector(seed);
         
         if(dot(direction, payload.normal) < 0.0f)
@@ -119,9 +171,7 @@ void RayGen()
         
         float3 BRDF = color / PI; 
         float cosI = dot(payload.normal, direction);
-        
-        TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, payload);
-        float3 irradiance = payload.colorAndDistance.rgb * cosI;
+        float3 irradiance = DiffuseScatter(ray, seed) * cosI;
         
         color = PI * 2.0f * BRDF * irradiance;
     }

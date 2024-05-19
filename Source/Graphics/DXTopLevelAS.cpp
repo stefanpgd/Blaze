@@ -29,7 +29,7 @@ void DXTopLevelAS::BuildTLAS()
 		instanceDesc.AccelerationStructure = mesh->GetBLAS()->GetGPUVirtualAddress();
 
 		glm::mat4 test = glm::mat4(1.0f);
-		test = glm::translate(test, glm::vec3(-1.5 + 1.5 * i, 0.0f, 0.0f));
+		test = glm::translate(test, glm::vec3(-1.85f + 1.85f * i, 0.0f, 0.0f));
 
 		for(int x = 0; x < 3; x++)
 		{

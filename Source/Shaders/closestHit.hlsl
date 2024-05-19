@@ -25,7 +25,20 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
     float3 baryCoords = float3(1.0f - attrib.bary.x - attrib.bary.y, attrib.bary.x, attrib.bary.y);
     float3 normal = a.normal * baryCoords.x + b.normal * baryCoords.y + c.normal * baryCoords.z;
     
-    float3 colorOutput = float3(1.0f, 1.0f, 1.0f);
+    float3 colorOutput = float3(0.0f, 0.0f, 0.0f);
+    
+    if(InstanceID() == 0)
+    {
+        colorOutput = float3(1, 0.549, 0);
+    }
+    else if(InstanceID() == 1)
+    {
+        colorOutput = float3(1.0f, 1.0f, 1.0f);
+    }
+    else
+    {
+        colorOutput = float3(0, 0.859, 1);
+    }
     
     payload.colorAndDistance = float4(colorOutput, RayTCurrent());
     payload.normal = normal;
