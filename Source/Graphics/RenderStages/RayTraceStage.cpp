@@ -4,6 +4,9 @@
 #include "Graphics/DXUtilities.h"
 #include "Graphics/DXTopLevelAS.h"
 #include "Graphics/Mesh.h"
+#include "Graphics/Texture.h"
+
+#include <tinyexr.h>
 
 RayTraceStage::RayTraceStage(Mesh* mesh) : mesh(mesh)
 {
@@ -15,8 +18,26 @@ RayTraceStage::RayTraceStage(Mesh* mesh) : mesh(mesh)
 	// TODO: Temporarily here, move it to something proper
 	AllocateAndMapResource(settingsBuffer, &settings, sizeof(RayTraceSettings));
 
-	CreateShaderResourceHeap();
+	// TODO: Probably move the loading of EXRs into its own thing
+	std::string path = "Assets/EXRs/studio.exr";
+	const char* err = nullptr;
 
+	float* image;
+	int imageWidth;
+	int imageHeight;
+
+	int result = LoadEXR(&image, &imageWidth, &imageHeight, path.c_str(), &err);
+	if(result != TINYEXR_SUCCESS)
+	{
+		LOG(Log::MessageType::Error, "Failed to load EXR...");
+		fprintf(stderr, "ERR : %s\n", err);
+		FreeEXRErrorMessage(err);
+	}
+
+	EXRTexture = new Texture(image, imageWidth, imageHeight, DXGI_FORMAT_R32G32B32A32_FLOAT, sizeof(float) * 4);
+	delete image;
+
+	CreateShaderResourceHeap();
 
 	InitializePipeline();
 }
@@ -136,6 +157,7 @@ void RayTraceStage::InitializePipeline()
 	settings.maxRayRecursionDepth = 12;
 	settings.TLAS = TLAS;
 
+	// RayGen Root //
 	CD3DX12_DESCRIPTOR_RANGE rayGenRanges[4];
 	rayGenRanges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0); // Screen 
 	rayGenRanges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 1, 0); // Color Buffer 
@@ -148,6 +170,7 @@ void RayTraceStage::InitializePipeline()
 	settings.rayGenParameters = &rayGenParameters[0];
 	settings.rayGenParameterCount = _countof(rayGenParameters);
 
+	// Hit Root //
 	CD3DX12_ROOT_PARAMETER hitParameters[3];
 	hitParameters[0].InitAsShaderResourceView(0, 0); // Vertex buffer
 	hitParameters[1].InitAsShaderResourceView(1, 0); // Index buffer

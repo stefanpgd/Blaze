@@ -6,6 +6,7 @@ class Mesh;
 class DXDescriptorHeap;
 class DXRayTracingPipeline;
 class DXTopLevelAS;
+class Texture;
 
 struct RayTraceSettings
 {
@@ -31,6 +32,7 @@ private:
 private:
 	Mesh* mesh;
 	RayTraceSettings settings;
+	Texture* EXRTexture;
 
 	DXRayTracingPipeline* rayTracePipeline;
 	DXTopLevelAS* TLAS;
