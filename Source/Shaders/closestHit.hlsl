@@ -23,7 +23,7 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
     float3 normal = a.normal * baryCoords.x + b.normal * baryCoords.y + c.normal * baryCoords.z;
     
     payload.depth += 1;
-    const uint maxDepth = 6;
+    const uint maxDepth = 5;
     
     if(payload.depth >= maxDepth)
     {

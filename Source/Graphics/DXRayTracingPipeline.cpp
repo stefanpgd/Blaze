@@ -4,6 +4,7 @@
 #include "Graphics/DXUtilities.h"
 #include "Graphics/DXRayTracingUtilities.h"
 #include "Graphics/DXTopLevelAS.h"
+#include "Graphics/Texture.h"
 
 DXRayTracingPipeline::DXRayTracingPipeline(DXRayTracingPipelineSettings settings) : settings(settings)
 {
@@ -140,6 +141,7 @@ void DXRayTracingPipeline::CreateShaderBindingTable()
 	// Shader Record 1 - Miss Record 
 	pData += shaderTableRecordSize;
 	memcpy(pData, pipelineProperties->GetShaderIdentifier(L"Miss"), shaderIdSize);
+	*reinterpret_cast<D3D12_GPU_DESCRIPTOR_HANDLE*>(pData + shaderIdSize) = settings.uavSrvHeap->GetGPUHandleAt(4);
 
 	// Shader Record 2 - HitGroup Record 
 	pData += shaderTableRecordSize;

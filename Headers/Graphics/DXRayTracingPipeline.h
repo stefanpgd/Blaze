@@ -4,6 +4,7 @@
 
 class DXTopLevelAS;
 class DXDescriptorHeap;
+class Texture;
 
 struct DXRayTracingPipelineSettings
 {
@@ -27,6 +28,7 @@ struct DXRayTracingPipelineSettings
 	ID3D12Resource* vertexBuffer; // Todo: find out a way to pass a list of buffers / TLAS
 	ID3D12Resource* indexBuffer; // Todo: find out a way to pass a list of buffers / TLAS
 	DXTopLevelAS* TLAS;
+	Texture* environmentMap;
 };
 
 class DXRayTracingPipeline

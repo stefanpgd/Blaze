@@ -19,7 +19,7 @@ RayTraceStage::RayTraceStage(Mesh* mesh) : mesh(mesh)
 	AllocateAndMapResource(settingsBuffer, &settings, sizeof(RayTraceSettings));
 
 	// TODO: Probably move the loading of EXRs into its own thing
-	std::string path = "Assets/EXRs/studio.exr";
+	std::string path = "Assets/EXRs/castle.exr";
 	const char* err = nullptr;
 
 	float* image;
@@ -29,8 +29,9 @@ RayTraceStage::RayTraceStage(Mesh* mesh) : mesh(mesh)
 	int result = LoadEXR(&image, &imageWidth, &imageHeight, path.c_str(), &err);
 	if(result != TINYEXR_SUCCESS)
 	{
-		LOG(Log::MessageType::Error, "Failed to load EXR...");
-		fprintf(stderr, "ERR : %s\n", err);
+		std::string error(err);
+		LOG(Log::MessageType::Error, "Failed to load EXR:");
+		LOG(Log::MessageType::Error, error.c_str());
 		FreeEXRErrorMessage(err);
 	}
 
@@ -116,7 +117,7 @@ void RayTraceStage::CreateColorBuffer()
 
 void RayTraceStage::CreateShaderResourceHeap()
 {
-	rayTraceHeap = new DXDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 4, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
+	rayTraceHeap = new DXDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 5, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
 
 	ComPtr<ID3D12Device5> device = DXAccess::GetDevice();
 	D3D12_CPU_DESCRIPTOR_HANDLE handle = rayTraceHeap->GetCPUHandleAt(0);
@@ -146,6 +147,16 @@ void RayTraceStage::CreateShaderResourceHeap()
 	cbvDesc.BufferLocation = settingsBuffer->GetGPUVirtualAddress();
 	cbvDesc.SizeInBytes = sizeof(RayTraceSettings);
 	device->CreateConstantBufferView(&cbvDesc, handle);
+
+	handle = rayTraceHeap->GetCPUHandleAt(4);
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC exrDesc = {};
+	exrDesc.Format = EXRTexture->GetFormat();
+	exrDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	exrDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	exrDesc.Texture2D.MipLevels = 1;
+
+	device->CreateShaderResourceView(EXRTexture->GetResource().Get(), &exrDesc, handle);
 }
 
 void RayTraceStage::InitializePipeline()
@@ -156,6 +167,7 @@ void RayTraceStage::InitializePipeline()
 	settings.indexBuffer = mesh->GetIndexBuffer();
 	settings.maxRayRecursionDepth = 12;
 	settings.TLAS = TLAS;
+	settings.environmentMap = EXRTexture;
 
 	// RayGen Root //
 	CD3DX12_DESCRIPTOR_RANGE rayGenRanges[4];
@@ -178,6 +190,16 @@ void RayTraceStage::InitializePipeline()
 
 	settings.hitParameters = &hitParameters[0];
 	settings.hitParameterCount = _countof(hitParameters);
+
+	// Miss Root //
+	CD3DX12_DESCRIPTOR_RANGE missRanges[1];
+	missRanges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0); // Screen 
+
+	CD3DX12_ROOT_PARAMETER missParameters[1];
+	missParameters[0].InitAsDescriptorTable(_countof(missRanges), &missRanges[0]);
+
+	settings.missParameters = &missParameters[0];
+	settings.missParameterCount = _countof(missParameters);
 
 	settings.payLoadSize = sizeof(float) * 5; // RGB, Depth, Seed
 
