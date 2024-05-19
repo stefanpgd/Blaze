@@ -10,5 +10,6 @@ void Miss(inout HitInfo payload : SV_RayPayload)
     
     float3 result = lerp(a, b, y);
     
-    payload.colorAndDistance = float4(result, -1.f);
+    payload.color = float3(result);
+    payload.depth = -1.f;
 }

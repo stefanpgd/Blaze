@@ -40,6 +40,7 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
         colorOutput = float3(0, 0.859, 1);
     }
     
-    payload.colorAndDistance = float4(colorOutput, RayTCurrent());
+    payload.color = float3(colorOutput);
+    payload.depth = RayTCurrent();
     payload.normal = normal;
 }
