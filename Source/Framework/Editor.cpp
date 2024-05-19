@@ -34,6 +34,14 @@ void Editor::Update(float deltaTime)
 		ImGui::Text(fps.c_str());
 		ImGui::Separator();
 
+		ImGui::PushFont(boldFont);
+		ImGui::Text("Frame count:");
+		ImGui::PopFont();
+
+		std::string frames = std::to_string(frameCount);
+		ImGui::Text(frames.c_str());
+		ImGui::Separator();
+
 		ImGui::EndMainMenuBar();
 	}
 }

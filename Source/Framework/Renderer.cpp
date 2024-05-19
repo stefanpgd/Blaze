@@ -75,7 +75,7 @@ Renderer::Renderer(const std::wstring& applicationName, unsigned int windowWidth
 		{	0, 1, 2, 1, 3, 2 };
 
 	screenModel = new Model(screenVertices, 4, screenIndices, 6, true);
-	Model* dragon = new Model("Assets/Models/Dragon/dragon.gltf", true);
+	Model* dragon = new Model("Assets/Models/Bunny/bunny.gltf", true);
 
 	delete[] screenVertices;
 	delete[] screenIndices;

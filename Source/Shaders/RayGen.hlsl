@@ -14,6 +14,7 @@ struct Settings
 };
 ConstantBuffer<Settings> settings : register(b0);
 
+
 float Random01(inout uint seed) 
 {
     // XorShift32
@@ -23,7 +24,7 @@ float Random01(inout uint seed)
     return seed / 4294967296.0; 
 }
 
-float RandomInRange(uint seed, float min, float max)
+float RandomInRange(inout uint seed, float min, float max)
 {
     return min + (max - min) * Random01(seed);
 }
@@ -55,17 +56,15 @@ float3 GetRayDirection(float normalizedX, float normalizedY)
     return rayDirection;
 }
 
-float3 RandomUnitVector(uint seed)
+float3 RandomUnitVector(inout uint seed)
 {
     float x = RandomInRange(seed, -1.0f, 1.0f);
-    float y = RandomInRange(seed + 1024, -1.0f, 1.0f);
-    float z = RandomInRange(seed + 2048, -1.0f, 1.0f);
+    float y = RandomInRange(seed, -1.0f, 1.0f);
+    float z = RandomInRange(seed, -1.0f, 1.0f);
     
     float3 vec = float3(x, y, z);
     return normalize(vec);
 }
-
-static float PI = 3.14159265;
 
 [shader("raygeneration")]
 void RayGen()

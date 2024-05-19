@@ -11,3 +11,4 @@ struct Attributes
     float2 bary;
 };
 
+static float PI = 3.14159265;
