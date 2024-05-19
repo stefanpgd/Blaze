@@ -71,12 +71,12 @@ void RayGen()
     ray.TMax = 100000;
     
     HitInfo payload;
+    payload.depth = 0;
+    payload.seed = seed;
+    
     TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, payload);
     
-    float3 color = payload.color;
-    float t = payload.depth;
-    
-    colorBuffer[launchIndex] += float4(color, 1.0f);
+    colorBuffer[launchIndex] += float4(payload.color, 1.0f);
     int sampleCount = colorBuffer[launchIndex].a;
     
     gOutput[launchIndex] = float4(colorBuffer[launchIndex].rgb / sampleCount, 1.0f);

@@ -2,6 +2,7 @@
 
 #include "DXCommon.h"
 
+class DXTopLevelAS;
 class DXDescriptorHeap;
 
 struct DXRayTracingPipelineSettings
@@ -25,6 +26,7 @@ struct DXRayTracingPipelineSettings
 	DXDescriptorHeap* uavSrvHeap; // That contains Output & TLAS
 	ID3D12Resource* vertexBuffer; // Todo: find out a way to pass a list of buffers / TLAS
 	ID3D12Resource* indexBuffer; // Todo: find out a way to pass a list of buffers / TLAS
+	DXTopLevelAS* TLAS;
 };
 
 class DXRayTracingPipeline

@@ -133,12 +133,14 @@ void RayTraceStage::InitializePipeline()
 	settings.uavSrvHeap = rayTraceHeap;
 	settings.vertexBuffer = mesh->GetVertexBuffer();
 	settings.indexBuffer = mesh->GetIndexBuffer();
+	settings.maxRayRecursionDepth = 12;
+	settings.TLAS = TLAS;
 
 	CD3DX12_DESCRIPTOR_RANGE rayGenRanges[4];
-	rayGenRanges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0); // Screen //
-	rayGenRanges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 1, 0); // Color Buffer //
-	rayGenRanges[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0); // Acceleration Structure //
-	rayGenRanges[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0, 0); // General Settings //
+	rayGenRanges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0); // Screen 
+	rayGenRanges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 1, 0); // Color Buffer 
+	rayGenRanges[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0); // Acceleration Structure 
+	rayGenRanges[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0, 0); // General Settings 
 
 	CD3DX12_ROOT_PARAMETER rayGenParameters[1];
 	rayGenParameters[0].InitAsDescriptorTable(_countof(rayGenRanges), &rayGenRanges[0]);
@@ -146,14 +148,15 @@ void RayTraceStage::InitializePipeline()
 	settings.rayGenParameters = &rayGenParameters[0];
 	settings.rayGenParameterCount = _countof(rayGenParameters);
 
-	CD3DX12_ROOT_PARAMETER hitParameters[2];
-	hitParameters[0].InitAsShaderResourceView(0, 0);
-	hitParameters[1].InitAsShaderResourceView(1, 0);
+	CD3DX12_ROOT_PARAMETER hitParameters[3];
+	hitParameters[0].InitAsShaderResourceView(0, 0); // Vertex buffer
+	hitParameters[1].InitAsShaderResourceView(1, 0); // Index buffer
+	hitParameters[2].InitAsShaderResourceView(2, 0); // TLAS Scene 
 
 	settings.hitParameters = &hitParameters[0];
 	settings.hitParameterCount = _countof(hitParameters);
 
-	settings.payLoadSize = sizeof(float) * 7; // RGB, Hit T, Normal 
+	settings.payLoadSize = sizeof(float) * 5; // RGB, Depth, Seed
 
 	rayTracePipeline = new DXRayTracingPipeline(settings);
 }

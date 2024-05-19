@@ -2,7 +2,7 @@ struct HitInfo
 {
     float3 color;
     float depth;
-    float3 normal;
+    uint seed;
 };
 
 // Attributes output by the raytracing when hitting a surface,

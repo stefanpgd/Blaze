@@ -3,6 +3,7 @@
 #include "Graphics/DXAccess.h"
 #include "Graphics/DXUtilities.h"
 #include "Graphics/DXRayTracingUtilities.h"
+#include "Graphics/DXTopLevelAS.h"
 
 DXRayTracingPipeline::DXRayTracingPipeline(DXRayTracingPipelineSettings settings) : settings(settings)
 {
@@ -145,6 +146,7 @@ void DXRayTracingPipeline::CreateShaderBindingTable()
 	memcpy(pData, pipelineProperties->GetShaderIdentifier(L"HitGroup"), shaderIdSize);
 	*reinterpret_cast<UINT64*>(pData + shaderIdSize) = settings.vertexBuffer->GetGPUVirtualAddress();
 	*reinterpret_cast<UINT64*>(pData + shaderIdSize + 8) = settings.indexBuffer->GetGPUVirtualAddress();
+	*reinterpret_cast<UINT64*>(pData + shaderIdSize + 16) = settings.TLAS->GetTLASAddress();
 
 	shaderTable->Unmap(0, nullptr);
 
