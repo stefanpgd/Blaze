@@ -143,6 +143,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Dependencies\tinyexr\tinyexr.cpp" />
     <ClCompile Include="Dependencies\tinyglTF\tiny_gltf.cpp" />
     <ClCompile Include="Source\Graphics\Model.cpp" />
     <ClCompile Include="Source\Graphics\RenderStages\RayTraceStage.cpp" />
