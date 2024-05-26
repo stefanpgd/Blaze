@@ -9,6 +9,7 @@ RaytracingAccelerationStructure SceneBVH : register(t0);
 
 struct Settings
 {
+    bool clearBuffers;
     float time;
     uint frameCount;
 };
@@ -54,12 +55,17 @@ float3 GetRayDirection(inout uint seed, uint2 launchIndex, float3 cameraPosition
     return rayDirection;
 }
 
-
 [shader("raygeneration")]
 void RayGen()
 {
     uint2 launchIndex = DispatchRaysIndex().xy;
     uint seed = GetSeed(launchIndex);
+    
+    if(settings.clearBuffers)
+    {
+        colorBuffer[launchIndex] = float4(0.0f, 0.0f, 0.0f, 0.0f);
+        gOutput[launchIndex] = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    }
 
     float3 position = float3(0.0f, 0.0f, 7.5f);
     float3 rayDir = GetRayDirection(seed, launchIndex, position);

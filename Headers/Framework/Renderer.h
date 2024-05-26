@@ -7,13 +7,14 @@ using namespace Microsoft::WRL;
 
 class Scene;
 class RayTraceStage;
+struct ApplicationInfo;
 
 class Renderer
 {
 public:
 	Renderer(const std::wstring& applicationName, unsigned int windowWidth, unsigned int windowHeight);
 	
-	void InitializeStage(Scene* activeScene);
+	void InitializeStage(Scene* activeScene, ApplicationInfo& applicationInfo);
 
 	void Render();
 	void Resize();

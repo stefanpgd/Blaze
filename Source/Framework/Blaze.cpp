@@ -30,7 +30,7 @@ Blaze::Blaze()
 	renderer = new Renderer(applicationName, windowWidth, windowHeight);
 	activeScene = new Scene();
 
-	renderer->InitializeStage(activeScene);
+	renderer->InitializeStage(activeScene, applicationInfo);
 
 	editor = new Editor(this);
 
@@ -80,6 +80,14 @@ void Blaze::Start()
 
 void Blaze::Update(float deltaTime)
 {
+	// We start with this since it could be that the previous frame
+	// was cleared, if so we can put the request to false.
+	// Then the editor can check if there is need for clearing again this frame.
+	if(applicationInfo.clearBuffers)
+	{
+		applicationInfo.clearBuffers = false;
+	}
+
 	Input::Update();
 
 	editor->Update(deltaTime);
@@ -87,6 +95,15 @@ void Blaze::Update(float deltaTime)
 	if(Input::GetKeyDown(KeyCode::Escape))
 	{
 		runApplication = false;
+	}
+
+	applicationInfo.frameCount++;
+	applicationInfo.time += deltaTime;
+
+	// TODO: Remove when Editor actually updates the clearBuffer flag 
+	if(Input::GetKey(KeyCode::W))
+	{
+		applicationInfo.clearBuffers = true;
 	}
 }
 

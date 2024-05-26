@@ -9,17 +9,12 @@ class DXTopLevelAS;
 class Texture;
 class Scene;
 
-struct RayTraceSettings
-{
-	float time = 1.0f;
-	unsigned int frameCount;
-	float stub[62];
-};
+struct ApplicationInfo;
 
 class RayTraceStage : public RenderStage
 {
 public:
-	RayTraceStage(Scene* scene);
+	RayTraceStage(Scene* scene, ApplicationInfo& applicationInfo);
 
 	void RecordStage(ComPtr<ID3D12GraphicsCommandList4> commandList) override;
 	
@@ -31,9 +26,10 @@ private:
 	void InitializePipeline();
 
 private:
+	ApplicationInfo& applicationInfo;
+
 	Scene* activeScene;
 	Mesh* mesh;
-	RayTraceSettings settings;
 	Texture* EXRTexture;
 
 	DXRayTracingPipeline* rayTracePipeline;
@@ -41,7 +37,7 @@ private:
 
 	ComPtr<ID3D12Resource> rayTraceOutput;
 	ComPtr<ID3D12Resource> colorBuffer;
-	ComPtr<ID3D12Resource> settingsBuffer;
+	ComPtr<ID3D12Resource> appInfoBuffer;
 	DXDescriptorHeap* rayTraceHeap;
 
 	D3D12_DISPATCH_RAYS_DESC dispatchRayDescription;

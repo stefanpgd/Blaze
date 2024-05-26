@@ -1,4 +1,5 @@
 #include "Framework/Renderer.h"
+#include "Framework/Blaze.h"
 #include "Framework/Scene.h"
 #include "Graphics/DXRayTracingPipeline.h"
 #include "Graphics/RenderStages/RayTraceStage.h"
@@ -56,10 +57,10 @@ Renderer::Renderer(const std::wstring& applicationName, unsigned int windowWidth
 	InitializeImGui();
 }
 
-void Renderer::InitializeStage(Scene* activeScene)
+void Renderer::InitializeStage(Scene* activeScene, ApplicationInfo& applicationInfo)
 {
 	this->activeScene = activeScene;
-	rayTraceStage = new RayTraceStage(activeScene);
+	rayTraceStage = new RayTraceStage(activeScene, applicationInfo);
 }
 
 void Renderer::Render()

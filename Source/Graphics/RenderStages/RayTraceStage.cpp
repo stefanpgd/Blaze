@@ -1,6 +1,7 @@
 #include "Graphics/RenderStages/RayTraceStage.h"
 #include "Graphics/DXRayTracingPipeline.h"
 #include "Framework/Scene.h"
+#include "Framework/Blaze.h"
 
 #include "Graphics/DXUtilities.h"
 #include "Graphics/DXTopLevelAS.h"
@@ -10,7 +11,7 @@
 
 #include <tinyexr.h>
 
-RayTraceStage::RayTraceStage(Scene* scene) : activeScene(scene)
+RayTraceStage::RayTraceStage(Scene* scene, ApplicationInfo& applicationInfo) : activeScene(scene), applicationInfo(applicationInfo)
 {	
 	mesh = activeScene->GetModels()[0]->GetMesh(0); // TODO: Of course replace with an actual loop over all meshes //
 	TLAS = new DXTopLevelAS(scene);
@@ -19,7 +20,7 @@ RayTraceStage::RayTraceStage(Scene* scene) : activeScene(scene)
 	CreateColorBuffer();
 
 	// TODO: Temporarily here, move it to something proper, like Scene //
-	AllocateAndMapResource(settingsBuffer, &settings, sizeof(RayTraceSettings));
+	AllocateAndMapResource(appInfoBuffer, &applicationInfo, sizeof(ApplicationInfo));
 
 	// TODO: Probably move the loading of EXRs into its own thing
 	std::string path = "Assets/EXRs/wharf.exr";
@@ -49,11 +50,7 @@ RayTraceStage::RayTraceStage(Scene* scene) : activeScene(scene)
 
 void RayTraceStage::RecordStage(ComPtr<ID3D12GraphicsCommandList4> commandList)
 {
-	// TODO: Move to an update call
-	settings.time += 0.0068;
-	settings.frameCount++;
-
-	UpdateUploadHeapResource(settingsBuffer, &settings, sizeof(RayTraceSettings));
+	UpdateUploadHeapResource(appInfoBuffer, &applicationInfo, sizeof(ApplicationInfo));
 
 	// Resources //
 	ComPtr<ID3D12Resource> renderTargetBuffer = DXAccess::GetWindow()->GetCurrentScreenBuffer();
@@ -148,8 +145,8 @@ void RayTraceStage::CreateShaderResourceHeap()
 	handle = rayTraceHeap->GetCPUHandleAt(3);
 
 	D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
-	cbvDesc.BufferLocation = settingsBuffer->GetGPUVirtualAddress();
-	cbvDesc.SizeInBytes = sizeof(RayTraceSettings);
+	cbvDesc.BufferLocation = appInfoBuffer->GetGPUVirtualAddress();
+	cbvDesc.SizeInBytes = sizeof(ApplicationInfo);
 	device->CreateConstantBufferView(&cbvDesc, handle);
 
 	handle = rayTraceHeap->GetCPUHandleAt(4);
