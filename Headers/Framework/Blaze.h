@@ -7,6 +7,7 @@
 
 class Renderer;
 class Editor;
+class Scene;
 
 class Blaze
 {
@@ -34,4 +35,5 @@ private:
 	// Systems //
 	Renderer* renderer;
 	Editor* editor;
+	Scene* activeScene;
 };

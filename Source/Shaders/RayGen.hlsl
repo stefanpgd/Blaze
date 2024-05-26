@@ -79,5 +79,25 @@ void RayGen()
     colorBuffer[launchIndex] += float4(payload.color, 1.0f);
     int sampleCount = colorBuffer[launchIndex].a;
     
-    gOutput[launchIndex] = float4(colorBuffer[launchIndex].rgb / sampleCount, 1.0f);
+    // TODO: Reread back into HDR -> LDR ( Tonemapping / Gamma Correction ) 
+    float3 color = colorBuffer[launchIndex].rgb / sampleCount;
+    
+    color *= 0.545;
+    float a = 2.51f;
+    float b = 0.03f;
+    float c = 2.43f;
+    float d = 0.59f;
+    float e = 0.14f;
+    color.x = (color.x * (a * color.x + b)) / (color.x * (c * color.x + d) + e);
+    color.y = (color.y * (a * color.y + b)) / (color.y * (c * color.y + d) + e);
+    color.z = (color.z * (a * color.z + b)) / (color.z * (c * color.z + d) + e);
+    
+    
+    float gammaInverse = 1.0f / 2.4f;
+    
+    color.x = pow(clamp(color.x, 0.0f, 1.0f), gammaInverse);
+    color.y = pow(clamp(color.y, 0.0f, 1.0f), gammaInverse);
+    color.z = pow(clamp(color.z, 0.0f, 1.0f), gammaInverse);
+    
+    gOutput[launchIndex] = float4(color, 1.0f);
 }

@@ -58,7 +58,7 @@ private:
 	HWND windowHandle;
 	RECT windowRect;
 
-	bool vSync = true;
+	bool vSync = false;
 	bool tearingSupported = true;
 	bool fullscreen = false;
 

@@ -145,6 +145,7 @@
   <ItemGroup>
     <ClCompile Include="Dependencies\tinyexr\tinyexr.cpp" />
     <ClCompile Include="Dependencies\tinyglTF\tiny_gltf.cpp" />
+    <ClCompile Include="Source\Framework\Scene.cpp" />
     <ClCompile Include="Source\Graphics\Model.cpp" />
     <ClCompile Include="Source\Graphics\RenderStages\RayTraceStage.cpp" />
     <ClCompile Include="Source\Framework\Input.cpp" />
@@ -212,6 +213,7 @@
     <ClInclude Include="Headers\Graphics\RenderStages\RayTraceStage.h" />
     <ClInclude Include="Headers\Graphics\DXTopLevelAS.h" />
     <ClInclude Include="Headers\Graphics\Model.h" />
+    <ClInclude Include="Headers\Framework\Scene.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\ClosestHit.hlsl">

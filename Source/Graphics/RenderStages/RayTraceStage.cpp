@@ -1,15 +1,18 @@
 #include "Graphics/RenderStages/RayTraceStage.h"
 #include "Graphics/DXRayTracingPipeline.h"
+#include "Framework/Scene.h"
 
 #include "Graphics/DXUtilities.h"
 #include "Graphics/DXTopLevelAS.h"
+#include "Graphics/Model.h"
 #include "Graphics/Mesh.h"
 #include "Graphics/Texture.h"
 
 #include <tinyexr.h>
 
-RayTraceStage::RayTraceStage(Mesh* mesh) : mesh(mesh)
-{
+RayTraceStage::RayTraceStage(Scene* scene) : activeScene(scene)
+{	
+	mesh = activeScene->GetModels()[0]->GetMesh(0); // TODO: Of course replace with an actual loop over all meshes //
 	TLAS = new DXTopLevelAS(mesh);
 	
 	CreateOutputBuffer();
@@ -19,7 +22,7 @@ RayTraceStage::RayTraceStage(Mesh* mesh) : mesh(mesh)
 	AllocateAndMapResource(settingsBuffer, &settings, sizeof(RayTraceSettings));
 
 	// TODO: Probably move the loading of EXRs into its own thing
-	std::string path = "Assets/EXRs/castle.exr";
+	std::string path = "Assets/EXRs/wharf.exr";
 	const char* err = nullptr;
 
 	float* image;
@@ -32,7 +35,8 @@ RayTraceStage::RayTraceStage(Mesh* mesh) : mesh(mesh)
 		std::string error(err);
 		LOG(Log::MessageType::Error, "Failed to load EXR:");
 		LOG(Log::MessageType::Error, error.c_str());
-		FreeEXRErrorMessage(err);
+
+		assert(false);
 	}
 
 	EXRTexture = new Texture(image, imageWidth, imageHeight, DXGI_FORMAT_R32G32B32A32_FLOAT, sizeof(float) * 4);

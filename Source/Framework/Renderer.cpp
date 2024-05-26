@@ -1,4 +1,7 @@
 #include "Framework/Renderer.h"
+#include "Framework/Scene.h"
+#include "Graphics/DXRayTracingPipeline.h"
+#include "Graphics/RenderStages/RayTraceStage.h"
 
 // DirectX Components //
 #include "Graphics/DXAccess.h"
@@ -9,16 +12,13 @@
 // Renderer Components //
 #include "Graphics/Window.h"
 #include "Graphics/Texture.h"
+#include "Graphics/Model.h"  
+#include "Graphics/Mesh.h"  
 
 #include <cassert>
 #include <imgui.h>
 #include <imgui_impl_win32.h>
 #include <imgui_impl_dx12.h>
-
-#include "Graphics/Model.h"  
-#include "Graphics/Mesh.h"  
-#include "Graphics/DXRayTracingPipeline.h"
-#include "Graphics/RenderStages/RayTraceStage.h"
 
 namespace RendererInternal
 {
@@ -35,10 +35,6 @@ namespace RendererInternal
 	Texture* defaultTexture = nullptr;
 }
 using namespace RendererInternal;
-
-Model* screenModel;
-DXRayTracingPipeline* pipeline;
-RayTraceStage* rayTraceStage;
 
 // TODO: Allow for resizing
 Renderer::Renderer(const std::wstring& applicationName, unsigned int windowWidth,
@@ -58,29 +54,12 @@ Renderer::Renderer(const std::wstring& applicationName, unsigned int windowWidth
 	window = new Window(applicationName, windowWidth, windowHeight);
 
 	InitializeImGui();
+}
 
-	// PLACEHOLDER to test RT Geometry //
-	Vertex* screenVertices = new Vertex[4];
-	screenVertices[0].Position = glm::vec3(-0.5f, 0.5f, 0.0f);
-	screenVertices[1].Position = glm::vec3(0.5f, 0.5f, 0.0f);
-	screenVertices[2].Position = glm::vec3(-0.5f, -0.5f, 0.0f);
-	screenVertices[3].Position = glm::vec3(0.5f, -0.5f, 0.0f);
-
-	screenVertices[0].UVCoord = glm::vec2(0.0f, 0.0f);
-	screenVertices[1].UVCoord = glm::vec2(1.0f, 0.0f);
-	screenVertices[2].UVCoord = glm::vec2(0.0f, 1.0f);
-	screenVertices[3].UVCoord = glm::vec2(1.0f, 1.0f);
-
-	unsigned int* screenIndices = new unsigned int[6]
-		{	0, 1, 2, 1, 3, 2 };
-
-	screenModel = new Model(screenVertices, 4, screenIndices, 6, true);
-	Model* dragon = new Model("Assets/Models/Dragon/dragon.gltf", true);
-
-	delete[] screenVertices;
-	delete[] screenIndices;
-
-	rayTraceStage = new RayTraceStage(dragon->GetMesh(0));
+void Renderer::InitializeStage(Scene* activeScene)
+{
+	this->activeScene = activeScene;
+	rayTraceStage = new RayTraceStage(activeScene);
 }
 
 void Renderer::Render()

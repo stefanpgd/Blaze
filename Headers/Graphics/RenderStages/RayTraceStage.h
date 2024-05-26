@@ -7,6 +7,7 @@ class DXDescriptorHeap;
 class DXRayTracingPipeline;
 class DXTopLevelAS;
 class Texture;
+class Scene;
 
 struct RayTraceSettings
 {
@@ -18,7 +19,7 @@ struct RayTraceSettings
 class RayTraceStage : public RenderStage
 {
 public:
-	RayTraceStage(Mesh* mesh);
+	RayTraceStage(Scene* scene);
 
 	void RecordStage(ComPtr<ID3D12GraphicsCommandList4> commandList) override;
 	
@@ -30,6 +31,7 @@ private:
 	void InitializePipeline();
 
 private:
+	Scene* activeScene;
 	Mesh* mesh;
 	RayTraceSettings settings;
 	Texture* EXRTexture;

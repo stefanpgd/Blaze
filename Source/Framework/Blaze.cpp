@@ -1,6 +1,7 @@
 #include "Framework/Blaze.h"
 #include "Framework/Renderer.h"
 #include "Framework/Editor.h"
+#include "Framework/Scene.h"
 #include "Framework/Input.h"
 #include "Utilities/Logger.h"
 
@@ -27,6 +28,10 @@ Blaze::Blaze()
 	RegisterWindowClass();
 
 	renderer = new Renderer(applicationName, windowWidth, windowHeight);
+	activeScene = new Scene();
+
+	renderer->InitializeStage(activeScene);
+
 	editor = new Editor(this);
 
 	LOG("Successfully initialized - Blaze");
