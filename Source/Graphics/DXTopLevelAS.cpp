@@ -17,6 +17,11 @@ DXTopLevelAS::DXTopLevelAS(Scene* scene) : activeScene(scene)
 	BuildTLAS();
 }
 
+void DXTopLevelAS::RebuildTLAS()
+{
+	BuildTLAS();
+}
+
 void DXTopLevelAS::BuildTLAS()
 {
 	auto models = activeScene->GetModels();
@@ -60,6 +65,12 @@ void DXTopLevelAS::BuildTLAS()
 
 	AllocateAccelerationStructureMemory(inputs, tlasScratch.GetAddressOf(), tlasResult.GetAddressOf());
 	BuildAccelerationStructure(inputs, tlasScratch, tlasResult);
+}
+
+void DXTopLevelAS::SetScene(Scene* scene)
+{
+	activeScene = scene;
+	RebuildTLAS();
 }
 
 D3D12_GPU_VIRTUAL_ADDRESS DXTopLevelAS::GetTLASAddress()

@@ -19,11 +19,13 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
     Vertex b = VertexData[indices[vertID + 1]];
     Vertex c = VertexData[indices[vertID + 2]];
     
+    // TODO: The (model) transform of the object is not been taken into account yet, along the vertex/index data
+    // We need to pass a buffer with all sorts of information per instance, that includes at least the Transform 
     float3 baryCoords = float3(1.0f - attrib.bary.x - attrib.bary.y, attrib.bary.x, attrib.bary.y);
     float3 normal = a.normal * baryCoords.x + b.normal * baryCoords.y + c.normal * baryCoords.z;
     
     payload.depth += 1;
-    const uint maxDepth = 5;
+    const uint maxDepth = 10;
     
     if(payload.depth >= maxDepth)
     {
@@ -64,7 +66,7 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
     
     // Surface we hit is 'Diffuse' so we scatter //
     float3 materialColor = colorOutput;
-    float3 BRDF = materialColor / PI;
+    float3 BRDF = materialColor / PI; // TODO: Read that article Jacco send about the distribution by Pi
     
     float3 intersection = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
     float3 direction = RandomUnitVector(payload.seed);

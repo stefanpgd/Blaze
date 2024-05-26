@@ -19,8 +19,13 @@ public:
 
 	const std::vector<Model*>& GetModels();
 
+public:
+	bool HasGeometryMoved = false;
+	bool HasNewGeometry = false;
+
 private:
 	std::string sceneName;
-	
 	std::vector<Model*> models;
+
+	friend class Editor;
 };

@@ -10,7 +10,6 @@
 #include <cassert>
 #include <chrono>
 
-// ImGui //
 #include <imgui.h>
 #include <imgui_impl_dx12.h>
 #include <imgui_impl_win32.h>
@@ -32,7 +31,7 @@ Blaze::Blaze()
 
 	renderer->InitializeStage(activeScene, applicationInfo);
 
-	editor = new Editor(this);
+	editor = new Editor(this, activeScene);
 
 	LOG("Successfully initialized - Blaze");
 }
@@ -80,6 +79,9 @@ void Blaze::Start()
 
 void Blaze::Update(float deltaTime)
 {
+	applicationInfo.frameCount++;
+	applicationInfo.time += deltaTime;
+
 	// We start with this since it could be that the previous frame
 	// was cleared, if so we can put the request to false.
 	// Then the editor can check if there is need for clearing again this frame.
@@ -91,19 +93,11 @@ void Blaze::Update(float deltaTime)
 	Input::Update();
 
 	editor->Update(deltaTime);
+	renderer->Update();
 
 	if(Input::GetKeyDown(KeyCode::Escape))
 	{
 		runApplication = false;
-	}
-
-	applicationInfo.frameCount++;
-	applicationInfo.time += deltaTime;
-
-	// TODO: Remove when Editor actually updates the clearBuffer flag 
-	if(Input::GetKey(KeyCode::W))
-	{
-		applicationInfo.clearBuffers = true;
 	}
 }
 

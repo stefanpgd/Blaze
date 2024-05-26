@@ -49,4 +49,6 @@ private:
 	Renderer* renderer;
 	Editor* editor;
 	Scene* activeScene;
+
+	friend class Editor;
 };

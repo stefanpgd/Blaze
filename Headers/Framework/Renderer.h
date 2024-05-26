@@ -15,8 +15,9 @@ public:
 	Renderer(const std::wstring& applicationName, unsigned int windowWidth, unsigned int windowHeight);
 	
 	void InitializeStage(Scene* activeScene, ApplicationInfo& applicationInfo);
-
+	void Update();
 	void Render();
+
 	void Resize();
 
 private:

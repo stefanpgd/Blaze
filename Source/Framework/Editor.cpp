@@ -1,10 +1,12 @@
 #include "Framework/Editor.h"
 #include "Framework/Blaze.h"
+#include "Framework/Scene.h"
+#include "Graphics/Model.h"
 
 #include <imgui.h>
 #include <string>
 
-Editor::Editor(Blaze* application) : application(application)
+Editor::Editor(Blaze* application, Scene* scene) : application(application), activeScene(scene)
 {
 	ImGuiStyleSettings();
 }
@@ -12,10 +14,16 @@ Editor::Editor(Blaze* application) : application(application)
 void Editor::Update(float deltaTime)
 {
 	// Record FPS //
-	frameCount++;
-	int index = frameCount % averageFPS.size();
+	int index = application->applicationInfo.frameCount % averageFPS.size();
 	averageFPS[index] = int(1.0f / deltaTime);
 
+	// Record calls for different windows //
+	Menubar();
+	TransformWindow();
+}
+
+void Editor::Menubar()
+{
 	if(ImGui::BeginMainMenuBar())
 	{
 		// FPS // 
@@ -43,6 +51,26 @@ void Editor::Update(float deltaTime)
 		ImGui::Separator();
 
 		ImGui::EndMainMenuBar();
+	}
+}
+
+void Editor::TransformWindow()
+{
+	Model* testModel = activeScene->GetModels()[0];
+	bool geometryMoved = false;
+
+	ImGui::Begin("Test Transform");
+	if(ImGui::DragFloat3("Position", &testModel->transform.Position[0], 0.05f)) { geometryMoved = true; }
+	if(ImGui::DragFloat3("Rotation", &testModel->transform.Rotation[0], 0.5f)) { geometryMoved = true; }
+	if(ImGui::DragFloat3("Scale", &testModel->transform.Scale[0], 0.05f)) { geometryMoved = true; }
+	ImGui::End();
+
+	if(geometryMoved)
+	{
+		// TODO: Maybe consider having one generalized place where stuff like resetting happens
+		// For instance the update call of Blaze? Maybe the renderer??
+		activeScene->HasGeometryMoved = true;
+		application->applicationInfo.clearBuffers = true;
 	}
 }
 

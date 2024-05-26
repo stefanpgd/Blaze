@@ -63,6 +63,11 @@ void Renderer::InitializeStage(Scene* activeScene, ApplicationInfo& applicationI
 	rayTraceStage = new RayTraceStage(activeScene, applicationInfo);
 }
 
+void Renderer::Update()
+{
+	rayTraceStage->Update();
+}
+
 void Renderer::Render()
 {
 	unsigned int backBufferIndex = window->GetCurrentBackBufferIndex();

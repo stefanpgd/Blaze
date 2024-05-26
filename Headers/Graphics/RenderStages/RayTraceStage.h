@@ -16,6 +16,8 @@ class RayTraceStage : public RenderStage
 public:
 	RayTraceStage(Scene* scene, ApplicationInfo& applicationInfo);
 
+	void Update();
+
 	void RecordStage(ComPtr<ID3D12GraphicsCommandList4> commandList) override;
 	
 private:

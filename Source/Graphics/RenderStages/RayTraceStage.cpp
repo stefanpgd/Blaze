@@ -13,6 +13,8 @@
 
 RayTraceStage::RayTraceStage(Scene* scene, ApplicationInfo& applicationInfo) : activeScene(scene), applicationInfo(applicationInfo)
 {	
+	rayTraceHeap = new DXDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 5, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
+
 	mesh = activeScene->GetModels()[0]->GetMesh(0); // TODO: Of course replace with an actual loop over all meshes //
 	TLAS = new DXTopLevelAS(scene);
 	
@@ -46,6 +48,20 @@ RayTraceStage::RayTraceStage(Scene* scene, ApplicationInfo& applicationInfo) : a
 	CreateShaderResourceHeap();
 
 	InitializePipeline();
+}
+
+void RayTraceStage::Update()
+{
+	if(activeScene->HasGeometryMoved)
+	{
+		// TODO: Even though this works, we need to find a proper place to fit this in //
+		TLAS->RebuildTLAS();
+
+		CreateShaderResourceHeap();
+		InitializePipeline();
+
+		activeScene->HasGeometryMoved = false;
+	}
 }
 
 void RayTraceStage::RecordStage(ComPtr<ID3D12GraphicsCommandList4> commandList)
@@ -118,7 +134,6 @@ void RayTraceStage::CreateColorBuffer()
 
 void RayTraceStage::CreateShaderResourceHeap()
 {
-	rayTraceHeap = new DXDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 5, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
 
 	ComPtr<ID3D12Device5> device = DXAccess::GetDevice();
 	D3D12_CPU_DESCRIPTOR_HANDLE handle = rayTraceHeap->GetCPUHandleAt(0);
@@ -166,7 +181,7 @@ void RayTraceStage::InitializePipeline()
 	settings.uavSrvHeap = rayTraceHeap;
 	settings.vertexBuffer = mesh->GetVertexBuffer();
 	settings.indexBuffer = mesh->GetIndexBuffer();
-	settings.maxRayRecursionDepth = 12;
+	settings.maxRayRecursionDepth = 16;
 	settings.TLAS = TLAS;
 	settings.environmentMap = EXRTexture;
 

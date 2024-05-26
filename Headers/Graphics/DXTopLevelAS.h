@@ -9,6 +9,9 @@ class DXTopLevelAS
 public:
 	DXTopLevelAS(Scene* scene);
 
+	void RebuildTLAS();
+
+	void SetScene(Scene* scene);
 	D3D12_GPU_VIRTUAL_ADDRESS GetTLASAddress();
 
 private:
