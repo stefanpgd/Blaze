@@ -1,41 +1,47 @@
 #include "Graphics/DXTopLevelAS.h"
 #include "Graphics/DXAccess.h"
-#include "Graphics/Mesh.h"
 #include "Graphics/DXUtilities.h"
 #include "Graphics/DXRayTracingUtilities.h"
+#include "Graphics/Model.h"
+#include "Graphics/Mesh.h"
+
+#include "Framework/Scene.h"
 #include "Framework/Mathematics.h"
 
 // TODO: Once we've a bit more control, such as an editor
 // we want to be able to pass "models", which already contain a transform we can link against
 // Then once we know the editor updates some transform, we can simply recompile
 // the TLAS
-DXTopLevelAS::DXTopLevelAS(Mesh* mesh) : mesh(mesh)
+DXTopLevelAS::DXTopLevelAS(Scene* scene) : activeScene(scene)
 {
 	BuildTLAS();
 }
 
 void DXTopLevelAS::BuildTLAS()
 {
+	auto models = activeScene->GetModels();
+	int instanceCount = models.size();
+	
 	ComPtr<ID3D12Device5> device = DXAccess::GetDevice();
+	std::vector<D3D12_RAYTRACING_INSTANCE_DESC> instances(instanceCount);
 
-	std::vector<D3D12_RAYTRACING_INSTANCE_DESC> instances(3);
-
-	for(int i = 0; i < 3; i++)
+	for(int i = 0; i < instanceCount; i++)
 	{
+		Mesh* mesh = models[i]->GetMesh(0);
+
 		D3D12_RAYTRACING_INSTANCE_DESC instanceDesc = {};
 		instanceDesc.InstanceID = i;
 		instanceDesc.InstanceContributionToHitGroupIndex = 0;
 		instanceDesc.InstanceMask = 0xFF;
 		instanceDesc.AccelerationStructure = mesh->GetBLAS()->GetGPUVirtualAddress();
 
-		glm::mat4 test = glm::mat4(1.0f);
-		test = glm::translate(test, glm::vec3(-1.85f + 1.85f * i, 0.0f, 0.0f));
+		glm::mat4 transform = models[i]->transform.GetModelMatrix();
 
 		for(int x = 0; x < 3; x++)
 		{
 			for(int y = 0; y < 4; y++)
 			{
-				instanceDesc.Transform[x][y] = test[y][x];
+				instanceDesc.Transform[x][y] = transform[y][x];
 			}
 		}
 

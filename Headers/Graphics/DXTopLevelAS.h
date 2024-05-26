@@ -2,13 +2,12 @@
 
 #include "Graphics/DXCommon.h"
 
-class Mesh;
-
+class Scene;
 
 class DXTopLevelAS
 {
 public:
-	DXTopLevelAS(Mesh* mesh);
+	DXTopLevelAS(Scene* scene);
 
 	D3D12_GPU_VIRTUAL_ADDRESS GetTLASAddress();
 
@@ -16,7 +15,7 @@ private:
 	void BuildTLAS();
 
 private:
-	Mesh* mesh;
+	Scene* activeScene;
 
 	ComPtr<ID3D12Resource> tlasInstanceDesc;
 	ComPtr<ID3D12Resource> tlasScratch;

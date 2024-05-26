@@ -13,12 +13,12 @@
 RayTraceStage::RayTraceStage(Scene* scene) : activeScene(scene)
 {	
 	mesh = activeScene->GetModels()[0]->GetMesh(0); // TODO: Of course replace with an actual loop over all meshes //
-	TLAS = new DXTopLevelAS(mesh);
+	TLAS = new DXTopLevelAS(scene);
 	
 	CreateOutputBuffer();
 	CreateColorBuffer();
 
-	// TODO: Temporarily here, move it to something proper
+	// TODO: Temporarily here, move it to something proper, like Scene //
 	AllocateAndMapResource(settingsBuffer, &settings, sizeof(RayTraceSettings));
 
 	// TODO: Probably move the loading of EXRs into its own thing
