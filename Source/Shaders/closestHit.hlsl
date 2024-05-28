@@ -19,13 +19,12 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
     Vertex b = VertexData[indices[vertID + 1]];
     Vertex c = VertexData[indices[vertID + 2]];
     
-    // TODO: The (model) transform of the object is not been taken into account yet, along the vertex/index data
-    // We need to pass a buffer with all sorts of information per instance, that includes at least the Transform 
     float3 baryCoords = float3(1.0f - attrib.bary.x - attrib.bary.y, attrib.bary.x, attrib.bary.y);
     float3 normal = a.normal * baryCoords.x + b.normal * baryCoords.y + c.normal * baryCoords.z;
+    normal = normalize(mul(ObjectToWorld3x4(), float4(normal, 0.0f)).xyz);
     
     payload.depth += 1;
-    const uint maxDepth = 10;
+    const uint maxDepth = 8;
     
     if(payload.depth >= maxDepth)
     {

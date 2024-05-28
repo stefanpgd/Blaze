@@ -19,6 +19,14 @@ DXTopLevelAS::DXTopLevelAS(Scene* scene) : activeScene(scene)
 
 void DXTopLevelAS::RebuildTLAS()
 {
+	// 1) Make sure the current TLAS memory is cleared //
+	DXCommands* commands = DXAccess::GetCommands(D3D12_COMMAND_LIST_TYPE_DIRECT);
+	commands->Flush();
+
+	tlasScratch.Reset();
+	tlasResult.Reset();
+
+	// 2) Rebuild TLAS //
 	BuildTLAS();
 }
 

@@ -28,7 +28,7 @@ public:
 	
 private:
 	void CreateShaderResources();
-	void CreateShaderResourceHeap();
+	void CreateShaderDescriptors();
 
 	void InitializePipeline();
 

@@ -18,7 +18,7 @@ RayTraceStage::RayTraceStage(Scene* scene) : activeScene(scene)
 	TLAS = new DXTopLevelAS(scene);
 	
 	CreateShaderResources();
-	CreateShaderResourceHeap();
+	CreateShaderDescriptors();
 
 	InitializePipeline();
 }
@@ -37,7 +37,7 @@ void RayTraceStage::Update(float deltaTime)
 		// how resizing is handled within Nova 
 		TLAS->RebuildTLAS();
 
-		CreateShaderResourceHeap();
+		CreateShaderDescriptors();
 		InitializePipeline();
 
 		activeScene->HasGeometryMoved = false;
@@ -86,7 +86,7 @@ void RayTraceStage::CreateShaderResources()
 	AllocateAndMapResource(settingsBuffer, &settings, sizeof(PipelineSettings));
 }
 
-void RayTraceStage::CreateShaderResourceHeap()
+void RayTraceStage::CreateShaderDescriptors()
 {
 	// TODO: Honestly we can move this to the regular descriptor heap
 	// The important thing is that pointers/indexes are stored so that we can relocate important buffers such as output & color
