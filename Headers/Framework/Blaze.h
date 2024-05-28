@@ -9,17 +9,6 @@ class Renderer;
 class Editor;
 class Scene;
 
-/// <summary>
-/// Information that gets used by the Editor & the ray tracing pipeline
-/// </summary>
-struct ApplicationInfo
-{
-	bool clearBuffers = false;
-	float time = 1.0f;
-	unsigned int frameCount = 0;
-	float stub[61];
-};
-
 class Blaze
 {
 public:
@@ -37,8 +26,6 @@ private:
 	static LRESULT CALLBACK WindowsCallback(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 private:
-	ApplicationInfo info;
-
 	std::wstring applicationName = L"Blaze";
 	bool runApplication = true;
 

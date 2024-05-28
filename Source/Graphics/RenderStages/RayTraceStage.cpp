@@ -9,7 +9,7 @@
 #include "Graphics/Mesh.h"
 #include "Graphics/EnvironmentMap.h"
 
-RayTraceStage::RayTraceStage(Scene* scene, ApplicationInfo& applicationInfo) : activeScene(scene), applicationInfo(applicationInfo)
+RayTraceStage::RayTraceStage(Scene* scene) : activeScene(scene)
 {	
 	rayTraceHeap = new DXDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 5, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
 
@@ -19,27 +19,40 @@ RayTraceStage::RayTraceStage(Scene* scene, ApplicationInfo& applicationInfo) : a
 	CreateOutputBuffer();
 	CreateColorBuffer();
 
-	// TODO: Temporarily here, move it to something proper, like Scene //
-	AllocateAndMapResource(appInfoBuffer, &applicationInfo, sizeof(ApplicationInfo));
+	// TODO: Find a proper place to contain pipeline buffers? 
+	AllocateAndMapResource(settingsBuffer, &settings, sizeof(PipelineSettings));
 
 	CreateShaderResourceHeap();
 	InitializePipeline();
 }
 
-void RayTraceStage::Update()
+void RayTraceStage::Update(float deltaTime)
 {
+	settings.frameCount++;
+	settings.time += deltaTime;
+
+	// The RayTraceStage has a buffer of relevant information about the application
+	// Things like time, frame count, and some settings like that it needs to clear the screen.
+	// Based on the information of the scene & app, we adjust the pipeline accordingly 
 	if(activeScene->HasGeometryMoved)
 	{
-		// TODO: Even though this works, we need to find a proper place to fit this in //
+		// TODO: Even though this works, we need to find a proper place to fit this in, for example
+		// how resizing is handled within Nova 
 		TLAS->RebuildTLAS();
 
 		CreateShaderResourceHeap();
 		InitializePipeline();
 
 		activeScene->HasGeometryMoved = false;
+		settings.frameCount = 0;
+		settings.clearBuffers = true;
+	}
+	else
+	{
+		settings.clearBuffers = false;
 	}
 
-	UpdateUploadHeapResource(appInfoBuffer, &applicationInfo, sizeof(ApplicationInfo));
+	UpdateUploadHeapResource(settingsBuffer, &settings, sizeof(PipelineSettings));
 }
 
 void RayTraceStage::RecordStage(ComPtr<ID3D12GraphicsCommandList4> commandList)
@@ -139,8 +152,8 @@ void RayTraceStage::CreateShaderResourceHeap()
 	handle = rayTraceHeap->GetCPUHandleAt(3);
 
 	D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
-	cbvDesc.BufferLocation = appInfoBuffer->GetGPUVirtualAddress();
-	cbvDesc.SizeInBytes = sizeof(ApplicationInfo);
+	cbvDesc.BufferLocation = settingsBuffer->GetGPUVirtualAddress();
+	cbvDesc.SizeInBytes = sizeof(PipelineSettings);
 	device->CreateConstantBufferView(&cbvDesc, handle);
 
 	handle = rayTraceHeap->GetCPUHandleAt(4);

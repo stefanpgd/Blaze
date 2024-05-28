@@ -57,15 +57,15 @@ Renderer::Renderer(const std::wstring& applicationName, unsigned int windowWidth
 	InitializeImGui();
 }
 
-void Renderer::InitializeStage(Scene* activeScene, ApplicationInfo& applicationInfo)
+void Renderer::InitializeStage(Scene* activeScene)
 {
 	this->activeScene = activeScene;
-	rayTraceStage = new RayTraceStage(activeScene, applicationInfo);
+	rayTraceStage = new RayTraceStage(activeScene);
 }
 
-void Renderer::Update()
+void Renderer::Update(float deltaTime)
 {
-	rayTraceStage->Update();
+	rayTraceStage->Update(deltaTime);
 }
 
 void Renderer::Render()
