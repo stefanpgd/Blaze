@@ -188,6 +188,10 @@ glm::mat4 Model::GetTransformFromNode(tinygltf::Node& node)
 	return transform.GetModelMatrix();
 }
 
+// TODO: I'm uncertain if this is the right approach to BLAS?
+// It makes sense to include all lower levels of geometry, but another thing we do is bind
+// the buffers themselves on the GPU. I should probably look up per instance data/buffers
+// and see if that's the solution to this problem, otherwise I need to figure out something else.
 void Model::BuildBLAS()
 {
 	int geometryCount = meshes.size();

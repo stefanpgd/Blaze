@@ -7,9 +7,7 @@
 #include "Graphics/DXTopLevelAS.h"
 #include "Graphics/Model.h"
 #include "Graphics/Mesh.h"
-#include "Graphics/Texture.h"
-
-#include <tinyexr.h>
+#include "Graphics/EnvironmentMap.h"
 
 RayTraceStage::RayTraceStage(Scene* scene, ApplicationInfo& applicationInfo) : activeScene(scene), applicationInfo(applicationInfo)
 {	
@@ -24,29 +22,7 @@ RayTraceStage::RayTraceStage(Scene* scene, ApplicationInfo& applicationInfo) : a
 	// TODO: Temporarily here, move it to something proper, like Scene //
 	AllocateAndMapResource(appInfoBuffer, &applicationInfo, sizeof(ApplicationInfo));
 
-	// TODO: Probably move the loading of EXRs into its own thing
-	std::string path = "Assets/EXRs/wharf.exr";
-	const char* err = nullptr;
-
-	float* image;
-	int imageWidth;
-	int imageHeight;
-
-	int result = LoadEXR(&image, &imageWidth, &imageHeight, path.c_str(), &err);
-	if(result != TINYEXR_SUCCESS)
-	{
-		std::string error(err);
-		LOG(Log::MessageType::Error, "Failed to load EXR:");
-		LOG(Log::MessageType::Error, error.c_str());
-
-		assert(false);
-	}
-
-	EXRTexture = new Texture(image, imageWidth, imageHeight, DXGI_FORMAT_R32G32B32A32_FLOAT, sizeof(float) * 4);
-	delete image;
-
 	CreateShaderResourceHeap();
-
 	InitializePipeline();
 }
 
@@ -62,18 +38,19 @@ void RayTraceStage::Update()
 
 		activeScene->HasGeometryMoved = false;
 	}
+
+	UpdateUploadHeapResource(appInfoBuffer, &applicationInfo, sizeof(ApplicationInfo));
 }
 
 void RayTraceStage::RecordStage(ComPtr<ID3D12GraphicsCommandList4> commandList)
 {
-	UpdateUploadHeapResource(appInfoBuffer, &applicationInfo, sizeof(ApplicationInfo));
-
-	// Resources //
 	ComPtr<ID3D12Resource> renderTargetBuffer = DXAccess::GetWindow()->GetCurrentScreenBuffer();
 
+	// 1) Bind necessary resources //
 	ID3D12DescriptorHeap* heaps[] = { rayTraceHeap->GetAddress() };
 	commandList->SetDescriptorHeaps(1, heaps);
 
+	// 2) Prepare render buffer & Run the ray tracing pipeline // 
 	TransitionResource(rayTraceOutput.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
 	commandList->SetPipelineState1(rayTracePipeline->GetPipelineState());
@@ -81,6 +58,7 @@ void RayTraceStage::RecordStage(ComPtr<ID3D12GraphicsCommandList4> commandList)
 
 	TransitionResource(rayTraceOutput.Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE);
 
+	// 3) Copy output from the ray tracing pipeline to the screen buffer //
 	TransitionResource(renderTargetBuffer.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_DEST);
 	commandList->CopyResource(renderTargetBuffer.Get(), rayTraceOutput.Get());
 	TransitionResource(renderTargetBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET);
@@ -134,7 +112,8 @@ void RayTraceStage::CreateColorBuffer()
 
 void RayTraceStage::CreateShaderResourceHeap()
 {
-
+	// TODO: Honestly we can move this to the regular descriptor heap
+	// The important thing is that pointers/indexes are stored so that we can relocate important buffers such as output & color
 	ComPtr<ID3D12Device5> device = DXAccess::GetDevice();
 	D3D12_CPU_DESCRIPTOR_HANDLE handle = rayTraceHeap->GetCPUHandleAt(0);
 
@@ -167,12 +146,12 @@ void RayTraceStage::CreateShaderResourceHeap()
 	handle = rayTraceHeap->GetCPUHandleAt(4);
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC exrDesc = {};
-	exrDesc.Format = EXRTexture->GetFormat();
+	exrDesc.Format = activeScene->GetEnvironementMap()->GetFormat();
 	exrDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	exrDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	exrDesc.Texture2D.MipLevels = 1;
 
-	device->CreateShaderResourceView(EXRTexture->GetResource().Get(), &exrDesc, handle);
+	device->CreateShaderResourceView(activeScene->GetEnvironementMap()->GetAddress(), &exrDesc, handle);
 }
 
 void RayTraceStage::InitializePipeline()
@@ -183,7 +162,7 @@ void RayTraceStage::InitializePipeline()
 	settings.indexBuffer = mesh->GetIndexBuffer();
 	settings.maxRayRecursionDepth = 16;
 	settings.TLAS = TLAS;
-	settings.environmentMap = EXRTexture;
+	settings.environmentMap = activeScene->GetEnvironementMap()->GetTexture();
 
 	// RayGen Root //
 	CD3DX12_DESCRIPTOR_RANGE rayGenRanges[4];

@@ -32,7 +32,6 @@ private:
 
 	Scene* activeScene;
 	Mesh* mesh;
-	Texture* EXRTexture;
 
 	DXRayTracingPipeline* rayTracePipeline;
 	DXTopLevelAS* TLAS;

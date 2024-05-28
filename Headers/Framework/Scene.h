@@ -4,6 +4,7 @@
 #include <vector>
 
 class Model;
+class EnvironmentMap;
 
 /// <summary>
 /// Responsible for owning and managing all the geometry in a Scene
@@ -18,6 +19,7 @@ public:
 	void AddModel(const std::string& path);
 
 	const std::vector<Model*>& GetModels();
+	EnvironmentMap* const GetEnvironementMap();
 
 public:
 	bool HasGeometryMoved = false;
@@ -26,6 +28,7 @@ public:
 private:
 	std::string sceneName;
 	std::vector<Model*> models;
+	EnvironmentMap* environmentMap;
 
 	friend class Editor;
 };

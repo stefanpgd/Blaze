@@ -1,5 +1,6 @@
 #include "Framework/Scene.h"
 #include "Graphics/Model.h"
+#include "Graphics/EnvironmentMap.h"
 
 Scene::Scene()
 {
@@ -13,6 +14,10 @@ Scene::Scene()
 	AddModel("Assets/Models/Dragon/dragon.gltf");
 	models[2]->transform.Position = glm::vec3(2.15f, 0.5f, -2.0f);
 	models[2]->transform.Rotation = glm::vec3(0.0f, 35.0f, 0.0f);
+
+	// Environment Map //
+	std::string exrPath = "Assets/EXRs/wharf.exr";
+	environmentMap = new EnvironmentMap(exrPath);
 }
 
 void Scene::AddModel(const std::string& path)
@@ -23,4 +28,9 @@ void Scene::AddModel(const std::string& path)
 const std::vector<Model*>& Scene::GetModels()
 {
 	return models;
+}
+
+EnvironmentMap* const Scene::GetEnvironementMap()
+{
+	return environmentMap;
 }
