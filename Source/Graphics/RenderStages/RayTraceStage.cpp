@@ -1,28 +1,25 @@
 #include "Graphics/RenderStages/RayTraceStage.h"
 #include "Graphics/DXRayTracingPipeline.h"
 #include "Framework/Scene.h"
-#include "Framework/Blaze.h"
 
 #include "Graphics/DXUtilities.h"
 #include "Graphics/DXTopLevelAS.h"
 #include "Graphics/Model.h"
 #include "Graphics/Mesh.h"
+#include "Graphics/Texture.h"
 #include "Graphics/EnvironmentMap.h"
 
 RayTraceStage::RayTraceStage(Scene* scene) : activeScene(scene)
 {	
+	// TODO: Replace this with the actual main CBV heap //
 	rayTraceHeap = new DXDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 5, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
 
 	mesh = activeScene->GetModels()[0]->GetMesh(0); // TODO: Of course replace with an actual loop over all meshes //
 	TLAS = new DXTopLevelAS(scene);
 	
-	CreateOutputBuffer();
-	CreateColorBuffer();
-
-	// TODO: Find a proper place to contain pipeline buffers? 
-	AllocateAndMapResource(settingsBuffer, &settings, sizeof(PipelineSettings));
-
+	CreateShaderResources();
 	CreateShaderResourceHeap();
+
 	InitializePipeline();
 }
 
@@ -58,69 +55,35 @@ void RayTraceStage::Update(float deltaTime)
 void RayTraceStage::RecordStage(ComPtr<ID3D12GraphicsCommandList4> commandList)
 {
 	ComPtr<ID3D12Resource> renderTargetBuffer = DXAccess::GetWindow()->GetCurrentScreenBuffer();
+	ID3D12Resource* const output = outputBuffer->GetAddress();
 
 	// 1) Bind necessary resources //
 	ID3D12DescriptorHeap* heaps[] = { rayTraceHeap->GetAddress() };
 	commandList->SetDescriptorHeaps(1, heaps);
 
 	// 2) Prepare render buffer & Run the ray tracing pipeline // 
-	TransitionResource(rayTraceOutput.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	TransitionResource(output, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
 	commandList->SetPipelineState1(rayTracePipeline->GetPipelineState());
 	commandList->DispatchRays(rayTracePipeline->GetDispatchRayDescription());
 
-	TransitionResource(rayTraceOutput.Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE);
+	TransitionResource(output, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE);
 
 	// 3) Copy output from the ray tracing pipeline to the screen buffer //
 	TransitionResource(renderTargetBuffer.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_DEST);
-	commandList->CopyResource(renderTargetBuffer.Get(), rayTraceOutput.Get());
+	commandList->CopyResource(renderTargetBuffer.Get(), output);
 	TransitionResource(renderTargetBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET);
 }
 
-void RayTraceStage::CreateOutputBuffer()
+void RayTraceStage::CreateShaderResources()
 {
-	ComPtr<ID3D12Device5> device = DXAccess::GetDevice();
-	Window* window = DXAccess::GetWindow();
+	int width = DXAccess::GetWindow()->GetWindowWidth();
+	int height = DXAccess::GetWindow()->GetWindowHeight();
 
-	D3D12_RESOURCE_DESC resourceDescription = {};
-	resourceDescription.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-	resourceDescription.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	resourceDescription.DepthOrArraySize = 1;
-	resourceDescription.MipLevels = 1;
-	resourceDescription.SampleDesc.Count = 1;
+	outputBuffer = new Texture(width, height, DXGI_FORMAT_R8G8B8A8_UNORM);
+	colorBuffer = new Texture(width, height, DXGI_FORMAT_R32G32B32A32_FLOAT);
 
-	resourceDescription.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
-	resourceDescription.Width = window->GetWindowWidth();
-	resourceDescription.Height = window->GetWindowHeight();
-	resourceDescription.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-
-	CD3DX12_HEAP_PROPERTIES defaultHeap = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
-
-	device->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &resourceDescription,
-		 D3D12_RESOURCE_STATE_COPY_SOURCE, nullptr, IID_PPV_ARGS(&rayTraceOutput));
-}
-
-void RayTraceStage::CreateColorBuffer()
-{
-	ComPtr<ID3D12Device5> device = DXAccess::GetDevice();
-	Window* window = DXAccess::GetWindow();
-
-	D3D12_RESOURCE_DESC resourceDescription = {};
-	resourceDescription.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-	resourceDescription.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	resourceDescription.DepthOrArraySize = 1;
-	resourceDescription.MipLevels = 1;
-	resourceDescription.SampleDesc.Count = 1;
-
-	resourceDescription.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
-	resourceDescription.Width = window->GetWindowWidth();
-	resourceDescription.Height = window->GetWindowHeight();
-	resourceDescription.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-
-	CD3DX12_HEAP_PROPERTIES defaultHeap = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
-
-	device->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &resourceDescription,
-		 D3D12_RESOURCE_STATE_COPY_SOURCE, nullptr, IID_PPV_ARGS(&colorBuffer));
+	AllocateAndMapResource(settingsBuffer, &settings, sizeof(PipelineSettings));
 }
 
 void RayTraceStage::CreateShaderResourceHeap()
@@ -132,13 +95,13 @@ void RayTraceStage::CreateShaderResourceHeap()
 
 	D3D12_UNORDERED_ACCESS_VIEW_DESC outputDescription = {};
 	outputDescription.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
-	device->CreateUnorderedAccessView(rayTraceOutput.Get(), nullptr, &outputDescription, handle);
+	device->CreateUnorderedAccessView(outputBuffer->GetAddress(), nullptr, &outputDescription, handle);
 
 	handle = rayTraceHeap->GetCPUHandleAt(1);
 
 	D3D12_UNORDERED_ACCESS_VIEW_DESC colorBufferDescription = {};
 	colorBufferDescription.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
-	device->CreateUnorderedAccessView(colorBuffer.Get(), nullptr, &colorBufferDescription, handle);
+	device->CreateUnorderedAccessView(colorBuffer->GetAddress(), nullptr, &colorBufferDescription, handle);
 
 	handle = rayTraceHeap->GetCPUHandleAt(2);
 

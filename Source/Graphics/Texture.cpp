@@ -3,10 +3,19 @@
 #include "Graphics/DXAccess.h"
 #include <stb_image.h>
 
-Texture::Texture(void* data, int width, int height, DXGI_FORMAT format, unsigned int formatSizeInBytes) 
-	: format(format), formatSizeInBytes(formatSizeInBytes), width(width), height(height)
+Texture::Texture(int width, int height, DXGI_FORMAT format) : width(width), height(height), format(format)
 {
-	UploadData(data, width, height);
+	// Main purpose is allocating buffers without necessarily allocating data to it directly
+	// usually most useful for things like textures that will be manipulated by shaders (UAV)
+	AllocateTexture();
+	CreateDescriptors();
+}
+
+Texture::Texture(void* data, int width, int height, DXGI_FORMAT format, unsigned int formatSizeInBytes)
+	: width(width), height(height), format(format), formatSizeInBytes(formatSizeInBytes)
+{
+	UploadData(data);
+	CreateDescriptors();
 }
 
 Texture::~Texture()
@@ -36,6 +45,7 @@ int Texture::GetUAVIndex()
 
 CD3DX12_GPU_DESCRIPTOR_HANDLE Texture::GetSRV()
 {
+	// TODO: Honestly we can add a function in DXAccess along the lines of 'DXAccess::GetDescriptor(heapType, index) //
 	DXDescriptorHeap* SRVHeap = DXAccess::GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	return SRVHeap->GetGPUHandleAt(srvIndex);
 }
@@ -51,9 +61,33 @@ D3D12_GPU_VIRTUAL_ADDRESS Texture::GetGPULocation()
 	return textureResource->GetGPUVirtualAddress();
 }
 
+void Texture::AllocateTexture()
+{
+	D3D12_RESOURCE_DESC textureDescription = {};
+	textureDescription.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET | D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+	textureDescription.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	textureDescription.Format = format;
+	textureDescription.Width = width;
+	textureDescription.Height = height;
+
+	textureDescription.DepthOrArraySize = 1;
+	textureDescription.MipLevels = 1;
+	textureDescription.SampleDesc.Count = 1;
+	textureDescription.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+
+	CD3DX12_HEAP_PROPERTIES defaultHeap = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+	DXAccess::GetDevice()->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &textureDescription,
+		 D3D12_RESOURCE_STATE_COPY_SOURCE, nullptr, IID_PPV_ARGS(&textureResource));
+}
+
 DXGI_FORMAT Texture::GetFormat()
 {
 	return format;
+}
+
+ID3D12Resource* Texture::GetAddress()
+{
+	return textureResource.Get();
 }
 
 ComPtr<ID3D12Resource> Texture::GetResource()
@@ -61,7 +95,7 @@ ComPtr<ID3D12Resource> Texture::GetResource()
 	return textureResource;
 }
 
-void Texture::UploadData(void* data, int width, int height)
+void Texture::UploadData(void* data)
 {
 	D3D12_RESOURCE_DESC description = CD3DX12_RESOURCE_DESC::Tex2D(
 		format, width, height);
@@ -73,7 +107,10 @@ void Texture::UploadData(void* data, int width, int height)
 
 	ComPtr<ID3D12Resource> intermediateTexture;
 	UploadPixelShaderResource(textureResource, intermediateTexture, description, subresource);
+}
 
+void Texture::CreateDescriptors()
+{
 	DXDescriptorHeap* heap = DXAccess::GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	// Create SRV //

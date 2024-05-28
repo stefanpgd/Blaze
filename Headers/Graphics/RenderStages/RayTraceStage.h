@@ -27,8 +27,7 @@ public:
 	void RecordStage(ComPtr<ID3D12GraphicsCommandList4> commandList) override;
 	
 private:
-	void CreateOutputBuffer();
-	void CreateColorBuffer();
+	void CreateShaderResources();
 	void CreateShaderResourceHeap();
 
 	void InitializePipeline();
@@ -39,12 +38,11 @@ private:
 	PipelineSettings settings;
 
 	DXRayTracingPipeline* rayTracePipeline;
+	DXDescriptorHeap* rayTraceHeap;
 	DXTopLevelAS* TLAS;
 
-	ComPtr<ID3D12Resource> rayTraceOutput;
-	ComPtr<ID3D12Resource> colorBuffer;
-	ComPtr<ID3D12Resource> settingsBuffer;
-	DXDescriptorHeap* rayTraceHeap;
+	Texture* outputBuffer;
+	Texture* colorBuffer;
 
-	D3D12_DISPATCH_RAYS_DESC dispatchRayDescription;
+	ComPtr<ID3D12Resource> settingsBuffer;
 };
