@@ -29,8 +29,7 @@ Blaze::Blaze()
 	renderer = new Renderer(applicationName, windowWidth, windowHeight);
 	activeScene = new Scene();
 
-	renderer->InitializeStage(activeScene, applicationInfo);
-
+	renderer->InitializeStage(activeScene, info);
 	editor = new Editor(this, activeScene);
 
 	LOG("Successfully initialized - Blaze");
@@ -79,15 +78,16 @@ void Blaze::Start()
 
 void Blaze::Update(float deltaTime)
 {
-	applicationInfo.frameCount++;
-	applicationInfo.time += deltaTime;
+	info.frameCount++;
+	info.time += deltaTime;
 
 	// We start with this since it could be that the previous frame
 	// was cleared, if so we can put the request to false.
 	// Then the editor can check if there is need for clearing again this frame.
-	if(applicationInfo.clearBuffers)
+	if(info.clearBuffers)
 	{
-		applicationInfo.clearBuffers = false;
+		info.frameCount = 1;
+		info.clearBuffers = false;
 	}
 
 	Input::Update();

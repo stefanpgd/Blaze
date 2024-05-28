@@ -1,7 +1,6 @@
 #include "Graphics/Mesh.h"
 #include "Graphics/DXAccess.h"
 #include "Graphics/DXUtilities.h"
-#include "Graphics/DXRayTracingUtilities.h"
 #include "Graphics/Texture.h"
 #include "Graphics/DXCommands.h"
 #include "Framework/Mathematics.h"
@@ -21,7 +20,7 @@ Mesh::Mesh(tinygltf::Model& model, tinygltf::Primitive& primitive, glm::mat4& tr
 
 	if(isRayTracingGeometry)
 	{
-		BuildRayTracingBLAS();
+		SetupGeometryDescription();
 	}
 }
 
@@ -42,7 +41,7 @@ Mesh::Mesh(Vertex* verts, unsigned int vertexCount, unsigned int* indi,
 
 	if(isRayTracingGeometry)
 	{
-		BuildRayTracingBLAS();
+		SetupGeometryDescription();
 	}
 }
 
@@ -71,9 +70,9 @@ ID3D12Resource* Mesh::GetIndexBuffer()
 	return indexBuffer.Get();
 }
 
-ID3D12Resource* Mesh::GetBLAS()
+D3D12_RAYTRACING_GEOMETRY_DESC Mesh::GetGeometryDescription()
 {
-	return blasResult.Get();
+	return geometryDescription;
 }
 
 void Mesh::UploadBuffers()
@@ -113,37 +112,36 @@ void Mesh::UploadBuffers()
 	indices.clear();
 }
 
-// TODO: Check based on material info if its opaque or transparent..
-void Mesh::BuildRayTracingBLAS()
+void Mesh::SetupGeometryDescription()
 {
 	ComPtr<ID3D12Device5> device = DXAccess::GetDevice();
 
-	D3D12_RAYTRACING_GEOMETRY_DESC geometry;
-	geometry.Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE; 
-	geometry.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
-	geometry.Triangles.Transform3x4 = 0;
+	// TODO: Check based on material info if its opaque or transparent?
+	geometryDescription.Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE;
+	geometryDescription.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
+	geometryDescription.Triangles.Transform3x4 = 0;
 
 	// Vertex Buffer //
-	geometry.Triangles.VertexBuffer.StartAddress = vertexBuffer->GetGPUVirtualAddress();
-	geometry.Triangles.VertexBuffer.StrideInBytes = sizeof(Vertex);
-	geometry.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
-	geometry.Triangles.VertexCount = verticesCount;
+	geometryDescription.Triangles.VertexBuffer.StartAddress = vertexBuffer->GetGPUVirtualAddress();
+	geometryDescription.Triangles.VertexBuffer.StrideInBytes = sizeof(Vertex);
+	geometryDescription.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
+	geometryDescription.Triangles.VertexCount = verticesCount;
 
 	// Index Buffer //
-	geometry.Triangles.IndexBuffer = indexBuffer->GetGPUVirtualAddress();
-	geometry.Triangles.IndexFormat = DXGI_FORMAT_R32_UINT;
-	geometry.Triangles.IndexCount = indicesCount;
+	geometryDescription.Triangles.IndexBuffer = indexBuffer->GetGPUVirtualAddress();
+	geometryDescription.Triangles.IndexFormat = DXGI_FORMAT_R32_UINT;
+	geometryDescription.Triangles.IndexCount = indicesCount;
 
-	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
-	inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
-	inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
-
-	inputs.pGeometryDescs = &geometry;
-	inputs.NumDescs = 1; // TODO: Maybe consider storing all the geometry descriptions, then let the Model build the desc?
-	inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE; // there are also other options like 'Fast Build'
-
-	AllocateAccelerationStructureMemory(inputs, blasScratch.GetAddressOf(), blasResult.GetAddressOf());
-	BuildAccelerationStructure(inputs, blasScratch, blasResult);
+	//D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
+	//inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
+	//inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+	//
+	//inputs.pGeometryDescs = &geometry;
+	//inputs.NumDescs = 1; // TODO: Maybe consider storing all the geometry descriptions, then let the Model build the desc?
+	//inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE; // there are also other options like 'Fast Build'
+	//
+	//AllocateAccelerationStructureMemory(inputs, blasScratch.GetAddressOf(), blasResult.GetAddressOf());
+	//BuildAccelerationStructure(inputs, blasScratch, blasResult);
 }
 
 #pragma region TinyGLTF Loading

@@ -1,5 +1,6 @@
 #include "Graphics/Model.h"
 #include "Graphics/Mesh.h"
+#include "Graphics/DXRayTracingUtilities.h"
 
 #include "Utilities/Logger.h"
 
@@ -29,12 +30,22 @@ Model::Model(const std::string& filePath, bool isRayTracingGeometry) : isRayTrac
 	}
 
 	TraverseRootNodes(model);
+
+	if(isRayTracingGeometry)
+	{
+		BuildBLAS();
+	}
 }
 
 Model::Model(Vertex* vertices, unsigned int vertexCount, unsigned int* indices, unsigned int indexCount, bool isRayTracingGeometry)
 {
 	Mesh* mesh = new Mesh(vertices, vertexCount, indices, indexCount, isRayTracingGeometry);
 	meshes.push_back(mesh);
+
+	if(isRayTracingGeometry)
+	{
+		BuildBLAS();
+	}
 }
 
 Mesh* Model::GetMesh(int index)
@@ -45,6 +56,11 @@ Mesh* Model::GetMesh(int index)
 const std::vector<Mesh*>& Model::GetMeshes()
 {
 	return meshes;
+}
+
+ID3D12Resource* Model::GetBLAS()
+{
+	return blasResult.Get();
 }
 
 void Model::TraverseRootNodes(tinygltf::Model& model)
@@ -170,4 +186,26 @@ glm::mat4 Model::GetTransformFromNode(tinygltf::Node& node)
 	}
 
 	return transform.GetModelMatrix();
+}
+
+void Model::BuildBLAS()
+{
+	int geometryCount = meshes.size();
+	std::vector<D3D12_RAYTRACING_GEOMETRY_DESC> geometryDescs(geometryCount);
+
+	for(int i = 0; i < geometryCount; i++)
+	{
+		geometryDescs[i] = meshes[i]->GetGeometryDescription();
+	}
+
+	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
+	inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
+	inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+
+	inputs.pGeometryDescs = geometryDescs.data();
+	inputs.NumDescs = geometryCount; 
+	inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE; // there are also other options like 'Fast Build'
+
+	AllocateAccelerationStructureMemory(inputs, blasScratch.GetAddressOf(), blasResult.GetAddressOf());
+	BuildAccelerationStructure(inputs, blasScratch, blasResult);
 }

@@ -9,7 +9,7 @@ Scene::Scene()
 	AddModel("Assets/Models/Dragon/dragon.gltf");
 	models[1]->transform.Position = glm::vec3(-1.95f, 0.0f, -2.0f);
 	models[1]->transform.Rotation = glm::vec3(0.0f, 40.0f, 0.0f);
-
+	
 	AddModel("Assets/Models/Dragon/dragon.gltf");
 	models[2]->transform.Position = glm::vec3(2.15f, 0.5f, -2.0f);
 	models[2]->transform.Rotation = glm::vec3(0.0f, 35.0f, 0.0f);

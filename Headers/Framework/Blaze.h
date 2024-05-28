@@ -37,7 +37,7 @@ private:
 	static LRESULT CALLBACK WindowsCallback(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 private:
-	ApplicationInfo applicationInfo;
+	ApplicationInfo info;
 
 	std::wstring applicationName = L"Blaze";
 	bool runApplication = true;

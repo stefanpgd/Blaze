@@ -5,6 +5,9 @@
 #include <tiny_gltf.h>
 
 #include "Graphics/Transform.h"
+#include <wrl.h>
+#include <d3d12.h>
+using namespace Microsoft::WRL;
 
 class Mesh;
 struct Vertex;
@@ -20,11 +23,15 @@ public:
 	Mesh* GetMesh(int index);
 	const std::vector<Mesh*>& GetMeshes();
 
+	ID3D12Resource* GetBLAS();
+
 private:
 	void TraverseRootNodes(tinygltf::Model& model);
 	void TraverseChildNodes(tinygltf::Model& model, tinygltf::Node& node, const glm::mat4& parentMatrix);
 
 	glm::mat4 GetTransformFromNode(tinygltf::Node& node);
+	
+	void BuildBLAS();
 
 public:
 	Transform transform;
@@ -32,5 +39,9 @@ public:
 
 private:
 	std::vector<Mesh*> meshes;
+
+	// Ray Tracing //
 	bool isRayTracingGeometry;
+	ComPtr<ID3D12Resource> blasScratch;
+	ComPtr<ID3D12Resource> blasResult;
 };

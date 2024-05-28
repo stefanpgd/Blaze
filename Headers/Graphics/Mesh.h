@@ -31,11 +31,12 @@ public:
 
 	ID3D12Resource* GetVertexBuffer();
 	ID3D12Resource* GetIndexBuffer();
-	ID3D12Resource* GetBLAS();
+
+	D3D12_RAYTRACING_GEOMETRY_DESC GetGeometryDescription();
 
 private:
 	void UploadBuffers();
-	void BuildRayTracingBLAS();
+	void SetupGeometryDescription();
 
 	// TinyGLTF Loading //
 	void LoadAttribute(tinygltf::Model& model, tinygltf::Primitive& primitive, const std::string& attributeType);
@@ -61,6 +62,5 @@ private:
 
 	// Ray Tracing //
 	bool isRayTracingGeometry;
-	ComPtr<ID3D12Resource> blasScratch;
-	ComPtr<ID3D12Resource> blasResult;
+	D3D12_RAYTRACING_GEOMETRY_DESC geometryDescription;
 };

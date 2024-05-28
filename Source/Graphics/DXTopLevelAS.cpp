@@ -32,13 +32,11 @@ void DXTopLevelAS::BuildTLAS()
 
 	for(int i = 0; i < instanceCount; i++)
 	{
-		Mesh* mesh = models[i]->GetMesh(0);
-
 		D3D12_RAYTRACING_INSTANCE_DESC instanceDesc = {};
 		instanceDesc.InstanceID = i;
 		instanceDesc.InstanceContributionToHitGroupIndex = 0;
 		instanceDesc.InstanceMask = 0xFF;
-		instanceDesc.AccelerationStructure = mesh->GetBLAS()->GetGPUVirtualAddress();
+		instanceDesc.AccelerationStructure = models[i]->GetBLAS()->GetGPUVirtualAddress();
 
 		glm::mat4 transform = models[i]->transform.GetModelMatrix();
 

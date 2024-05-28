@@ -14,7 +14,7 @@ Editor::Editor(Blaze* application, Scene* scene) : application(application), act
 void Editor::Update(float deltaTime)
 {
 	// Record FPS //
-	int index = application->applicationInfo.frameCount % averageFPS.size();
+	int index = application->info.frameCount % averageFPS.size();
 	averageFPS[index] = int(1.0f / deltaTime);
 
 	// Record calls for different windows //
@@ -43,10 +43,10 @@ void Editor::Menubar()
 		ImGui::Separator();
 
 		ImGui::PushFont(boldFont);
-		ImGui::Text("Frame count:");
+		ImGui::Text("Sample count:");
 		ImGui::PopFont();
 
-		std::string frames = std::to_string(frameCount);
+		std::string frames = std::to_string(application->info.frameCount);
 		ImGui::Text(frames.c_str());
 		ImGui::Separator();
 
@@ -70,7 +70,7 @@ void Editor::TransformWindow()
 		// TODO: Maybe consider having one generalized place where stuff like resetting happens
 		// For instance the update call of Blaze? Maybe the renderer??
 		activeScene->HasGeometryMoved = true;
-		application->applicationInfo.clearBuffers = true;
+		application->info.clearBuffers = true;
 	}
 }
 
