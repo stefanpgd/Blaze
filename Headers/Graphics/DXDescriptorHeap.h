@@ -14,6 +14,7 @@ public:
 	CD3DX12_GPU_DESCRIPTOR_HANDLE GetGPUHandleAt(unsigned int index);
 
 	unsigned int GetNextAvailableIndex();
+	unsigned int GetDescriptorSize();
 
 private:
 	ComPtr<ID3D12DescriptorHeap> descriptorHeap;

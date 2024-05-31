@@ -49,3 +49,8 @@ unsigned int DXDescriptorHeap::GetNextAvailableIndex()
 	currentDescriptorIndex++;
 	return index;
 }
+
+unsigned int DXDescriptorHeap::GetDescriptorSize()
+{
+	return 0;
+}

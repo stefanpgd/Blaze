@@ -12,9 +12,6 @@
 
 RayTraceStage::RayTraceStage(Scene* scene) : activeScene(scene)
 {	
-	// TODO: Replace this with the actual main CBV heap //
-	rayTraceHeap = new DXDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 5, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
-
 	mesh = activeScene->GetModels()[0]->GetMesh(0); // TODO: Of course replace with an actual loop over all meshes //
 	TLAS = new DXTopLevelAS(scene);
 	
@@ -22,6 +19,7 @@ RayTraceStage::RayTraceStage(Scene* scene) : activeScene(scene)
 	CreateShaderDescriptors();
 
 	InitializePipeline();
+	InitializeShaderBindingTable();
 }
 
 void RayTraceStage::Update(float deltaTime)
@@ -58,11 +56,7 @@ void RayTraceStage::RecordStage(ComPtr<ID3D12GraphicsCommandList4> commandList)
 	ComPtr<ID3D12Resource> renderTargetBuffer = DXAccess::GetWindow()->GetCurrentScreenBuffer();
 	ID3D12Resource* const output = outputBuffer->GetAddress();
 
-	// 1) Bind necessary resources //
-	ID3D12DescriptorHeap* heaps[] = { rayTraceHeap->GetAddress() };
-	commandList->SetDescriptorHeaps(1, heaps);
-
-	// 2) Prepare render buffer & Run the ray tracing pipeline // 
+	// 1) Prepare render buffer & Run the ray tracing pipeline // 
 	TransitionResource(output, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
 	commandList->SetPipelineState1(rayTracePipeline->GetPipelineState());
@@ -70,7 +64,7 @@ void RayTraceStage::RecordStage(ComPtr<ID3D12GraphicsCommandList4> commandList)
 
 	TransitionResource(output, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE);
 
-	// 3) Copy output from the ray tracing pipeline to the screen buffer //
+	// 2) Copy output from the ray tracing pipeline to the screen buffer //
 	TransitionResource(renderTargetBuffer.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_DEST);
 	commandList->CopyResource(renderTargetBuffer.Get(), output);
 	TransitionResource(renderTargetBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET);
@@ -89,22 +83,25 @@ void RayTraceStage::CreateShaderResources()
 
 void RayTraceStage::CreateShaderDescriptors()
 {
-	// TODO: Honestly we can move this to the regular descriptor heap
-	// The important thing is that pointers/indexes are stored so that we can relocate important buffers such as output & color
+	// TODO: Consider replacing output & color with just directly mapped resources similar to the current hitgroup
+	// root ranges. Same goes for the TLAS, the DXTopLevelAS can also generate a SRV
 	ComPtr<ID3D12Device5> device = DXAccess::GetDevice();
-	D3D12_CPU_DESCRIPTOR_HANDLE handle = rayTraceHeap->GetCPUHandleAt(0);
+	DXDescriptorHeap* heap = DXAccess::GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	rayGenTableIndex = heap->GetNextAvailableIndex();
+
+	D3D12_CPU_DESCRIPTOR_HANDLE handle = heap->GetCPUHandleAt(rayGenTableIndex);
 
 	D3D12_UNORDERED_ACCESS_VIEW_DESC outputDescription = {};
 	outputDescription.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
 	device->CreateUnorderedAccessView(outputBuffer->GetAddress(), nullptr, &outputDescription, handle);
-
-	handle = rayTraceHeap->GetCPUHandleAt(1);
+	
+	handle = heap->GetCPUHandleAt(heap->GetNextAvailableIndex());
 
 	D3D12_UNORDERED_ACCESS_VIEW_DESC colorBufferDescription = {};
 	colorBufferDescription.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
 	device->CreateUnorderedAccessView(colorBuffer->GetAddress(), nullptr, &colorBufferDescription, handle);
 
-	handle = rayTraceHeap->GetCPUHandleAt(2);
+	handle = heap->GetCPUHandleAt(heap->GetNextAvailableIndex());
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc;
 	srvDesc.Format = DXGI_FORMAT_UNKNOWN;
@@ -113,26 +110,17 @@ void RayTraceStage::CreateShaderDescriptors()
 	srvDesc.RaytracingAccelerationStructure.Location = TLAS->GetTLASAddress();
 	device->CreateShaderResourceView(nullptr, &srvDesc, handle);
 
-	handle = rayTraceHeap->GetCPUHandleAt(3);
+	handle = heap->GetCPUHandleAt(heap->GetNextAvailableIndex());
 
 	D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
 	cbvDesc.BufferLocation = settingsBuffer->GetGPUVirtualAddress();
 	cbvDesc.SizeInBytes = sizeof(PipelineSettings);
 	device->CreateConstantBufferView(&cbvDesc, handle);
-
-	handle = rayTraceHeap->GetCPUHandleAt(4);
-
-	D3D12_SHADER_RESOURCE_VIEW_DESC exrDesc = {};
-	exrDesc.Format = activeScene->GetEnvironementMap()->GetFormat();
-	exrDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	exrDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	exrDesc.Texture2D.MipLevels = 1;
-
-	device->CreateShaderResourceView(activeScene->GetEnvironementMap()->GetAddress(), &exrDesc, handle);
 }
 
 void RayTraceStage::InitializePipeline()
 {
+	// TODO: A lot of these descriptor ranges can probably be available for each one of em?
 	DXRayTracingPipelineSettings settings;
 	settings.maxRayRecursionDepth = 16;
 
@@ -171,13 +159,19 @@ void RayTraceStage::InitializePipeline()
 	settings.payLoadSize = sizeof(float) * 5; // RGB, Depth, Seed
 
 	rayTracePipeline = new DXRayTracingPipeline(settings);
+}
+
+void RayTraceStage::InitializeShaderBindingTable()
+{
+	DXDescriptorHeap* heap = DXAccess::GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
 	shaderTable = new DXShaderBindingTable(rayTracePipeline->GetPipelineProperties());
 
-	auto heapPtr = reinterpret_cast<UINT64*>(rayTraceHeap->GetGPUHandleAt(0).ptr);
-	auto heapPtr4 = reinterpret_cast<UINT64*>(rayTraceHeap->GetGPUHandleAt(4).ptr);
-
+	auto heapPtr = reinterpret_cast<UINT64*>(heap->GetGPUHandleAt(rayGenTableIndex).ptr);
 	shaderTable->SetRayGenerationProgram(L"RayGen", { heapPtr });
-	shaderTable->SetMissProgram(L"Miss", { heapPtr4 });
+
+	auto exrPtr = reinterpret_cast<UINT64*>(activeScene->GetEnvironementMap()->GetTexture()->GetSRV().ptr);
+	shaderTable->SetMissProgram(L"Miss", { exrPtr });
 
 	auto vertex = reinterpret_cast<UINT64*>(mesh->GetVertexBuffer()->GetGPUVirtualAddress());
 	auto index = reinterpret_cast<UINT64*>(mesh->GetIndexBuffer()->GetGPUVirtualAddress());

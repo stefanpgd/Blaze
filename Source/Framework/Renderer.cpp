@@ -78,17 +78,22 @@ void Renderer::Render()
 	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle = window->GetCurrentScreenRTV();
 	CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle = window->GetDepthDSV();
 
+	// 1) Reset command list & Bind general resource heap //
 	directCommands->ResetCommandList(backBufferIndex);
-
+	commandList->SetDescriptorHeaps(1, heaps);
+	
+	// 2) Prepare render target & Clear RTV and Depth buffer //
 	TransitionResource(renderTargetBuffer.Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 	BindAndClearRenderTarget(window, &rtvHandle, &dsvHandle);
 
+	// 3) Run custom render stages //
 	rayTraceStage->RecordStage(commandList);
 
-	commandList->SetDescriptorHeaps(1, heaps);
+	// 4) Draw UI (ImGui) and prepare render target for presenting //
 	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());
 	TransitionResource(renderTargetBuffer.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 
+	// 5) Execute command list 
 	directCommands->ExecuteCommandList(backBufferIndex);
 	window->Present();
 	directCommands->WaitForFenceValue(window->GetCurrentBackBufferIndex());

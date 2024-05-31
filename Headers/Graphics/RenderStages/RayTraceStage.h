@@ -32,19 +32,22 @@ private:
 	void CreateShaderDescriptors();
 
 	void InitializePipeline();
+	void InitializeShaderBindingTable();
 
 private:
-	Mesh* mesh;
-	Scene* activeScene;
 	PipelineSettings settings;
+	unsigned int rayGenTableIndex = 0;
 
-	DXRayTracingPipeline* rayTracePipeline;
-	DXDescriptorHeap* rayTraceHeap;
+	// Ray Tracing Components //
 	DXTopLevelAS* TLAS;
+	DXRayTracingPipeline* rayTracePipeline;
 	DXShaderBindingTable* shaderTable;
 
+	// Buffers for screen //
 	Texture* outputBuffer;
 	Texture* colorBuffer;
 
+	Mesh* mesh;
+	Scene* activeScene;
 	ComPtr<ID3D12Resource> settingsBuffer;
 };
