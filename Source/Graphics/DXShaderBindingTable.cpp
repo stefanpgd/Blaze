@@ -3,16 +3,7 @@
 #include "Graphics/DXRayTracingPipeline.h"
 #include "Graphics/DXTopLevelAS.h"
 
-DXShaderBindingTable::DXShaderBindingTable(ID3D12StateObjectProperties* pipelineProperties, DXRayTracingPipelineSettings& settings)
-	: pipelineProperties(pipelineProperties), settings(settings)
-{
-	BuildShaderTable();
-}
-
-const D3D12_DISPATCH_RAYS_DESC* DXShaderBindingTable::GetDispatchRayDescription()
-{
-	return &dispatchRayDescription;
-}
+DXShaderBindingTable::DXShaderBindingTable(ID3D12StateObjectProperties* pipelineProperties) : pipelineProperties(pipelineProperties) { }
 
 void DXShaderBindingTable::BuildShaderTable()
 {
@@ -22,20 +13,27 @@ void DXShaderBindingTable::BuildShaderTable()
 	UpdateDispatchRayDescription();
 }
 
-void DXShaderBindingTable::CalculateShaderTableSizes()
+void DXShaderBindingTable::SetRayGenerationProgram(const std::wstring& identifier, const std::vector<void*>& inputs)
 {
-	// TODO: Figure out the largest 'record' and based on that adjust all other record sizes 
-	shaderIdentifierSize = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
+	rayGenEntry.identifier = identifier;
+	rayGenEntry.inputs = inputs;
+}
 
-	shaderRecordSize = shaderIdentifierSize;
-	shaderRecordSize += 8; // UAV-SRV Descriptor Table //
-	shaderRecordSize += 8; // UAV-SRV Descriptor Table - 2 //
+void DXShaderBindingTable::SetMissProgram(const std::wstring& identifier, const std::vector<void*>& inputs)
+{
+	missEntry.identifier = identifier;
+	missEntry.inputs = inputs;
+}
 
-	// Aligns record to be 64-byte, ensuring alignment //
-	shaderRecordSize = ALIGN(D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT, shaderRecordSize);
+void DXShaderBindingTable::SetHitProgram(const std::wstring& identifier, const std::vector<void*>& inputs)
+{
+	hitEntry.identifier = identifier;
+	hitEntry.inputs = inputs;
+}
 
-	shaderTableSize = shaderRecordSize * 3; // 3 shader entries //
-	shaderTableSize = ALIGN(D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT, shaderTableSize);
+const D3D12_DISPATCH_RAYS_DESC* DXShaderBindingTable::GetDispatchRayDescription()
+{
+	return &dispatchRayDescription;
 }
 
 void DXShaderBindingTable::BindShaderTable()
@@ -43,25 +41,40 @@ void DXShaderBindingTable::BindShaderTable()
 	uint8_t* pData;
 	ThrowIfFailed(shaderTable->Map(0, nullptr, (void**)&pData));
 
-	// Shader Record 0 - Ray Generation program and local root parameter data 
-	memcpy(pData, pipelineProperties->GetShaderIdentifier(L"RayGen"), shaderIdentifierSize);
-
-	// Set the root parameter data, Point to start of descriptor heap //
-	*reinterpret_cast<D3D12_GPU_DESCRIPTOR_HANDLE*>(pData + shaderIdentifierSize) = settings.uavSrvHeap->GetGPUHandleAt(0);
-
-	// Shader Record 1 - Miss Record 
-	pData += shaderRecordSize;
-	memcpy(pData, pipelineProperties->GetShaderIdentifier(L"Miss"), shaderIdentifierSize);
-	*reinterpret_cast<D3D12_GPU_DESCRIPTOR_HANDLE*>(pData + shaderIdentifierSize) = settings.uavSrvHeap->GetGPUHandleAt(4);
-
-	// Shader Record 2 - HitGroup Record 
-	pData += shaderRecordSize;
-	memcpy(pData, pipelineProperties->GetShaderIdentifier(L"HitGroup"), shaderIdentifierSize);
-	*reinterpret_cast<UINT64*>(pData + shaderIdentifierSize) = settings.vertexBuffer->GetGPUVirtualAddress();
-	*reinterpret_cast<UINT64*>(pData + shaderIdentifierSize + 8) = settings.indexBuffer->GetGPUVirtualAddress();
-	*reinterpret_cast<UINT64*>(pData + shaderIdentifierSize + 16) = settings.TLAS->GetTLASAddress();
+	BindShaderRecord(rayGenEntry, pData);
+	BindShaderRecord(missEntry, pData);
+	BindShaderRecord(hitEntry, pData);
 
 	shaderTable->Unmap(0, nullptr);
+}
+
+void DXShaderBindingTable::BindShaderRecord(ShaderTableEntry& entry, uint8_t*& ptr)
+{
+	memcpy(ptr, pipelineProperties->GetShaderIdentifier(entry.identifier.c_str()), shaderIdentifierSize);
+	memcpy(ptr + shaderIdentifierSize, entry.inputs.data(), entry.inputs.size() * sizeof(UINT64));
+
+	ptr += shaderRecordSize;
+}
+
+void DXShaderBindingTable::CalculateShaderTableSizes()
+{
+	// 1) Figure out the record with the most amount of entries, that input size
+	// will be used to size the shaderRecord 
+	size_t maxInputs = 0;
+	maxInputs = std::max(rayGenEntry.inputs.size(), missEntry.inputs.size());
+	maxInputs = std::max(maxInputs, hitEntry.inputs.size());
+
+	// TODO: Figure out the largest 'record' and based on that adjust all other record sizes 
+	shaderIdentifierSize = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
+
+	shaderRecordSize = shaderIdentifierSize;
+	shaderRecordSize += maxInputs * sizeof(UINT64); 
+
+	// Aligns record to be 64-byte, ensuring alignment //
+	shaderRecordSize = ALIGN(D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT, shaderRecordSize);
+
+	shaderTableSize = shaderRecordSize * 3; // 3 shader entries //
+	shaderTableSize = ALIGN(D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT, shaderTableSize);
 }
 
 void DXShaderBindingTable::UpdateDispatchRayDescription()

@@ -134,12 +134,7 @@ void RayTraceStage::CreateShaderDescriptors()
 void RayTraceStage::InitializePipeline()
 {
 	DXRayTracingPipelineSettings settings;
-	settings.uavSrvHeap = rayTraceHeap;
-	settings.vertexBuffer = mesh->GetVertexBuffer();
-	settings.indexBuffer = mesh->GetIndexBuffer();
 	settings.maxRayRecursionDepth = 16;
-	settings.TLAS = TLAS;
-	settings.environmentMap = activeScene->GetEnvironementMap()->GetTexture();
 
 	// RayGen Root //
 	CD3DX12_DESCRIPTOR_RANGE rayGenRanges[4];
@@ -176,5 +171,18 @@ void RayTraceStage::InitializePipeline()
 	settings.payLoadSize = sizeof(float) * 5; // RGB, Depth, Seed
 
 	rayTracePipeline = new DXRayTracingPipeline(settings);
-	shaderTable = new DXShaderBindingTable(rayTracePipeline->GetPipelineProperties(), settings);
+	shaderTable = new DXShaderBindingTable(rayTracePipeline->GetPipelineProperties());
+
+	auto heapPtr = reinterpret_cast<UINT64*>(rayTraceHeap->GetGPUHandleAt(0).ptr);
+	auto heapPtr4 = reinterpret_cast<UINT64*>(rayTraceHeap->GetGPUHandleAt(4).ptr);
+
+	shaderTable->SetRayGenerationProgram(L"RayGen", { heapPtr });
+	shaderTable->SetMissProgram(L"Miss", { heapPtr4 });
+
+	auto vertex = reinterpret_cast<UINT64*>(mesh->GetVertexBuffer()->GetGPUVirtualAddress());
+	auto index = reinterpret_cast<UINT64*>(mesh->GetIndexBuffer()->GetGPUVirtualAddress());
+	auto tlasAddress = reinterpret_cast<UINT64*>(TLAS->GetTLASAddress());
+
+	shaderTable->SetHitProgram(L"HitGroup", { vertex, index, tlasAddress });
+	shaderTable->BuildShaderTable();
 }
