@@ -60,7 +60,7 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
     }
     else
     {
-        colorOutput = float3(0, 0.859, 1);
+        colorOutput = float3(1.0f, 1.0f, 1.0f);
     }
     
     // Surface we hit is 'Diffuse' so we scatter //

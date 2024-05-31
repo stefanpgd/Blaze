@@ -15,6 +15,7 @@ public:
 
 	void UpdateData(void* data);
 
+	D3D12_GPU_VIRTUAL_ADDRESS GetGPUVirtualAddress();
 	CD3DX12_GPU_DESCRIPTOR_HANDLE GetCBV();
 	unsigned int GetCBVIndex();
 	unsigned int GetBufferSize();

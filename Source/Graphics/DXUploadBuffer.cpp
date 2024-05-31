@@ -25,6 +25,11 @@ void DXUploadBuffer::UpdateData(void* data)
 	UpdateUploadHeapResource(buffer, data, bufferSize);
 }
 
+D3D12_GPU_VIRTUAL_ADDRESS DXUploadBuffer::GetGPUVirtualAddress()
+{
+	return buffer->GetGPUVirtualAddress();
+}
+
 CD3DX12_GPU_DESCRIPTOR_HANDLE DXUploadBuffer::GetCBV()
 {
 	DXDescriptorHeap* CBVHeap = DXAccess::GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);

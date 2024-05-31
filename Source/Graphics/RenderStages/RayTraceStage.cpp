@@ -1,14 +1,15 @@
 #include "Graphics/RenderStages/RayTraceStage.h"
 #include "Graphics/DXRayTracingPipeline.h"
+#include "Graphics/DXShaderBindingTable.h"
+#include "Graphics/DXTopLevelAS.h"
 #include "Framework/Scene.h"
 
 #include "Graphics/DXUtilities.h"
-#include "Graphics/DXTopLevelAS.h"
+#include "Graphics/DXUploadBuffer.h"
 #include "Graphics/Model.h"
 #include "Graphics/Mesh.h"
 #include "Graphics/Texture.h"
 #include "Graphics/EnvironmentMap.h"
-#include "Graphics/DXShaderBindingTable.h"
 
 RayTraceStage::RayTraceStage(Scene* scene) : activeScene(scene)
 {	
@@ -49,7 +50,7 @@ void RayTraceStage::Update(float deltaTime)
 		settings.clearBuffers = false;
 	}
 
-	UpdateUploadHeapResource(settingsBuffer, &settings, sizeof(PipelineSettings));
+	settingsBuffer->UpdateData(&settings);
 }
 
 void RayTraceStage::RecordStage(ComPtr<ID3D12GraphicsCommandList4> commandList)
@@ -79,7 +80,7 @@ void RayTraceStage::CreateShaderResources()
 	outputBuffer = new Texture(width, height, DXGI_FORMAT_R8G8B8A8_UNORM);
 	colorBuffer = new Texture(width, height, DXGI_FORMAT_R32G32B32A32_FLOAT);
 
-	AllocateAndMapResource(settingsBuffer, &settings, sizeof(PipelineSettings));
+	settingsBuffer = new DXUploadBuffer(&settings, sizeof(PipelineSettings));
 }
 
 void RayTraceStage::CreateShaderDescriptors()
@@ -112,11 +113,6 @@ void RayTraceStage::CreateShaderDescriptors()
 	device->CreateShaderResourceView(nullptr, &srvDesc, handle);
 
 	handle = heap->GetCPUHandleAt(heap->GetNextAvailableIndex());
-
-	D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
-	cbvDesc.BufferLocation = settingsBuffer->GetGPUVirtualAddress();
-	cbvDesc.SizeInBytes = sizeof(PipelineSettings);
-	device->CreateConstantBufferView(&cbvDesc, handle);
 }
 
 void RayTraceStage::InitializePipeline()
@@ -126,14 +122,14 @@ void RayTraceStage::InitializePipeline()
 	settings.maxRayRecursionDepth = 16;
 
 	// RayGen Root //
-	CD3DX12_DESCRIPTOR_RANGE rayGenRanges[4];
+	CD3DX12_DESCRIPTOR_RANGE rayGenRanges[3];
 	rayGenRanges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0); // Screen 
 	rayGenRanges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 1, 0); // Color Buffer 
 	rayGenRanges[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0); // Acceleration Structure 
-	rayGenRanges[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0, 0); // General Settings 
 
-	CD3DX12_ROOT_PARAMETER rayGenParameters[1];
+	CD3DX12_ROOT_PARAMETER rayGenParameters[2];
 	rayGenParameters[0].InitAsDescriptorTable(_countof(rayGenRanges), &rayGenRanges[0]);
+	rayGenParameters[1].InitAsConstantBufferView(0, 0);
 
 	settings.rayGenParameters = &rayGenParameters[0];
 	settings.rayGenParameterCount = _countof(rayGenParameters);
@@ -169,7 +165,8 @@ void RayTraceStage::InitializeShaderBindingTable()
 	shaderTable = new DXShaderBindingTable(rayTracePipeline->GetPipelineProperties());
 
 	auto heapPtr = reinterpret_cast<UINT64*>(heap->GetGPUHandleAt(rayGenTableIndex).ptr);
-	shaderTable->SetRayGenerationProgram(L"RayGen", { heapPtr });
+	auto settingsPtr = reinterpret_cast<UINT64*>(settingsBuffer->GetGPUVirtualAddress());
+	shaderTable->SetRayGenerationProgram(L"RayGen", { heapPtr, settingsPtr });
 
 	auto exrPtr = reinterpret_cast<UINT64*>(activeScene->GetEnvironementMap()->GetTexture()->GetSRV().ptr);
 	shaderTable->SetMissProgram(L"Miss", { exrPtr });

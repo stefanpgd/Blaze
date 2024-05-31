@@ -2,16 +2,18 @@
 
 #include "Graphics/RenderStage.h"
 
-class Mesh;
-class DXDescriptorHeap;
 class DXRayTracingPipeline;
 class DXTopLevelAS;
 class DXShaderBindingTable;
+class DXUploadBuffer;
+class Mesh;
 class Texture;
 class Scene;
 
 struct PipelineSettings
 {
+	// TODO: Instead of placing stubs, update the util to actually
+	// `ALIGN` the buffer, then just upload what data needs to be uploaded
 	bool clearBuffers = false;
 	float time = 1.0f;
 	unsigned int frameCount = 0;
@@ -36,6 +38,8 @@ private:
 
 private:
 	PipelineSettings settings;
+	DXUploadBuffer* settingsBuffer;
+
 	unsigned int rayGenTableIndex = 0;
 
 	// Ray Tracing Components //
@@ -49,5 +53,4 @@ private:
 
 	Mesh* mesh;
 	Scene* activeScene;
-	ComPtr<ID3D12Resource> settingsBuffer;
 };
