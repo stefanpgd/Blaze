@@ -14,7 +14,7 @@ RayTraceStage::RayTraceStage(Scene* scene) : activeScene(scene)
 {	
 	mesh = activeScene->GetModels()[0]->GetMesh(0); // TODO: Of course replace with an actual loop over all meshes //
 	TLAS = new DXTopLevelAS(scene);
-	
+
 	CreateShaderResources();
 	CreateShaderDescriptors();
 

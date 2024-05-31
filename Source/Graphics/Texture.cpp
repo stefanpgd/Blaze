@@ -56,7 +56,7 @@ CD3DX12_GPU_DESCRIPTOR_HANDLE Texture::GetUAV()
 	return SRVHeap->GetGPUHandleAt(uavIndex);
 }
 
-D3D12_GPU_VIRTUAL_ADDRESS Texture::GetGPULocation()
+D3D12_GPU_VIRTUAL_ADDRESS Texture::GetGPUVirtualAddress()
 {
 	return textureResource->GetGPUVirtualAddress();
 }

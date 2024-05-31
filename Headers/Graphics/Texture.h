@@ -21,7 +21,7 @@ public:
 
 	ID3D12Resource* GetAddress();
 	ComPtr<ID3D12Resource> GetResource();
-	D3D12_GPU_VIRTUAL_ADDRESS GetGPULocation();
+	D3D12_GPU_VIRTUAL_ADDRESS GetGPUVirtualAddress();
 
 private:
 	void AllocateTexture();

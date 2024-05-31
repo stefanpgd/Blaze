@@ -145,6 +145,7 @@
   <ItemGroup>
     <ClCompile Include="Dependencies\tinyexr\tinyexr.cpp" />
     <ClCompile Include="Dependencies\tinyglTF\tiny_gltf.cpp" />
+    <ClCompile Include="Source\Graphics\DXUploadBuffer.cpp" />
     <ClCompile Include="Source\Graphics\DXShaderBindingTable.cpp" />
     <ClCompile Include="Source\Graphics\EnvironmentMap.cpp" />
     <ClCompile Include="Source\Framework\Scene.cpp" />
@@ -179,6 +180,7 @@
     <ClCompile Include="Source\Graphics\DXTopLevelAS.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Headers\Graphics\DXUploadBuffer.h" />
     <ClInclude Include="Headers\Graphics\DXRayTracingPipeline.h" />
     <ClInclude Include="Headers\Graphics\DXRayTracingUtilities.h" />
     <ClInclude Include="Headers\Framework\Editor.h" />
