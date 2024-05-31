@@ -38,6 +38,7 @@ void RayTraceStage::Update(float deltaTime)
 
 		CreateShaderDescriptors();
 		InitializePipeline();
+		InitializeShaderBindingTable();
 
 		activeScene->HasGeometryMoved = false;
 		settings.frameCount = 0;
