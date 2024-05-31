@@ -64,6 +64,8 @@ void Editor::TransformWindow()
 	ImGui::Begin("Test Transform");
 	if(ImGui::DragFloat3("Position", &testModel->transform.Position[0], 0.05f)) { geometryMoved = true; }
 	if(ImGui::DragFloat3("Rotation", &testModel->transform.Rotation[0], 0.5f)) { geometryMoved = true; }
+
+	// TODO: Consider making this just a DragFloat to avoid the problem on non-uniform scaling //
 	if(ImGui::DragFloat3("Scale", &testModel->transform.Scale[0], 0.05f)) { geometryMoved = true; }
 	ImGui::End();
 

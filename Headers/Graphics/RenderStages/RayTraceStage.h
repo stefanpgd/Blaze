@@ -6,6 +6,7 @@ class Mesh;
 class DXDescriptorHeap;
 class DXRayTracingPipeline;
 class DXTopLevelAS;
+class DXShaderBindingTable;
 class Texture;
 class Scene;
 
@@ -40,6 +41,7 @@ private:
 	DXRayTracingPipeline* rayTracePipeline;
 	DXDescriptorHeap* rayTraceHeap;
 	DXTopLevelAS* TLAS;
+	DXShaderBindingTable* shaderTable;
 
 	Texture* outputBuffer;
 	Texture* colorBuffer;

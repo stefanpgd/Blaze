@@ -8,6 +8,7 @@
 #include "Graphics/Mesh.h"
 #include "Graphics/Texture.h"
 #include "Graphics/EnvironmentMap.h"
+#include "Graphics/DXShaderBindingTable.h"
 
 RayTraceStage::RayTraceStage(Scene* scene) : activeScene(scene)
 {	
@@ -65,7 +66,7 @@ void RayTraceStage::RecordStage(ComPtr<ID3D12GraphicsCommandList4> commandList)
 	TransitionResource(output, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
 	commandList->SetPipelineState1(rayTracePipeline->GetPipelineState());
-	commandList->DispatchRays(rayTracePipeline->GetDispatchRayDescription());
+	commandList->DispatchRays(shaderTable->GetDispatchRayDescription());
 
 	TransitionResource(output, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE);
 
@@ -175,4 +176,5 @@ void RayTraceStage::InitializePipeline()
 	settings.payLoadSize = sizeof(float) * 5; // RGB, Depth, Seed
 
 	rayTracePipeline = new DXRayTracingPipeline(settings);
+	shaderTable = new DXShaderBindingTable(rayTracePipeline->GetPipelineProperties(), settings);
 }

@@ -37,11 +37,10 @@ public:
 	DXRayTracingPipeline(DXRayTracingPipelineSettings settings);
 
 	ID3D12StateObject* GetPipelineState();
-	D3D12_DISPATCH_RAYS_DESC* GetDispatchRayDescription();
+	ID3D12StateObjectProperties* GetPipelineProperties();
 
 private:
 	void CreatePipeline();
-	void CreateShaderBindingTable();
 
 	void CreateRootSignature(ComPtr<ID3D12RootSignature>& rootSignature,
 		D3D12_ROOT_PARAMETER* parameterData, unsigned int parameterCount, bool isLocal);
@@ -70,5 +69,4 @@ private:
 	ComPtr<ID3D12RootSignature> localDummyRootSignature;
 	ComPtr<ID3D12RootSignature> globalDummyRootSignature;
 
-	D3D12_DISPATCH_RAYS_DESC dispatchRayDescription;
 };

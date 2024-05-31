@@ -131,17 +131,6 @@ void Mesh::SetupGeometryDescription()
 	geometryDescription.Triangles.IndexBuffer = indexBuffer->GetGPUVirtualAddress();
 	geometryDescription.Triangles.IndexFormat = DXGI_FORMAT_R32_UINT;
 	geometryDescription.Triangles.IndexCount = indicesCount;
-
-	//D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
-	//inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
-	//inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
-	//
-	//inputs.pGeometryDescs = &geometry;
-	//inputs.NumDescs = 1; // TODO: Maybe consider storing all the geometry descriptions, then let the Model build the desc?
-	//inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE; // there are also other options like 'Fast Build'
-	//
-	//AllocateAccelerationStructureMemory(inputs, blasScratch.GetAddressOf(), blasResult.GetAddressOf());
-	//BuildAccelerationStructure(inputs, blasScratch, blasResult);
 }
 
 #pragma region TinyGLTF Loading

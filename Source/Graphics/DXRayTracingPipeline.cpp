@@ -28,7 +28,6 @@ DXRayTracingPipeline::DXRayTracingPipeline(DXRayTracingPipelineSettings settings
 
 	// Create pipeline & make shader binding table //
 	CreatePipeline();
-	CreateShaderBindingTable();
 }
 
 ID3D12StateObject* DXRayTracingPipeline::GetPipelineState()
@@ -36,9 +35,9 @@ ID3D12StateObject* DXRayTracingPipeline::GetPipelineState()
 	return pipeline.Get();
 }
 
-D3D12_DISPATCH_RAYS_DESC* DXRayTracingPipeline::GetDispatchRayDescription()
+ID3D12StateObjectProperties* DXRayTracingPipeline::GetPipelineProperties()
 {
-	return &dispatchRayDescription;
+	return pipelineProperties.Get();
 }
 
 void DXRayTracingPipeline::CreatePipeline()
@@ -89,84 +88,6 @@ void DXRayTracingPipeline::CreatePipeline()
 
 	ThrowIfFailed(DXAccess::GetDevice()->CreateStateObject(&pipelineDesc, IID_PPV_ARGS(&pipeline)));
 	ThrowIfFailed(pipeline->QueryInterface(IID_PPV_ARGS(&pipelineProperties)));
-}
-
-void DXRayTracingPipeline::CreateShaderBindingTable()
-{
-	// TODO: Consider making some wrapper called SBTBuilder 
-	// that takes in calls like 'Bind shader' and responds accordingly
-
-	// The idea of the Shader Binding Table is sort of shaping an array with where all the 
-	// information of our pipeline can be found. It's our dictionary
-	// For example we know we've shaders that require buffers like the TLAS
-	// So where can our program find that? Well we bind the pointer to our descriptorHeap in this program for example
-
-	/*
-	All shader records in the Shader Table must have the same size, so shader record size will be based on the largest required entry.
-	The ray generation program requires the largest entry:
-		32 bytes - D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES
-	  +  8 bytes - a CBV/SRV/UAV descriptor table pointer (64-bits)
-	  = 40 bytes ->> aligns to 64 bytes
-	The entry size must be aligned up to D3D12_RAYTRACING_SHADER_BINDING_TABLE_RECORD_BYTE_ALIGNMENT
-	*/
-
-	// Step 1 - Figuring out how much bytes we need to allocate for the SBT //
-	uint32_t shaderTableSize = 0;
-	uint32_t shaderTableRecordSize = 0;
-	uint32_t shaderIdSize = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
-
-	shaderTableRecordSize = shaderIdSize;
-	shaderTableRecordSize += 8; // UAV-SRV Descriptor Table //
-	shaderTableRecordSize += 8; // UAV-SRV Descriptor Table - 2 //
-
-	// Aligns record to be 64-byte, ensuring alignment //
-	shaderTableRecordSize = ALIGN(D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT, shaderTableRecordSize); 
-
-	shaderTableSize = shaderTableRecordSize * 3; // 3 shader entries //
-	shaderTableSize = ALIGN(D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT, shaderTableSize); // Ensures data is still 64-byte aligned //
-
-	// Step 2 - Allocating memory for the SBT //
-	AllocateUploadResource(shaderTable, shaderTableSize);
-
-	// Step 3 - Map data from resources into the SBT //
-	uint8_t* pData;
-	ThrowIfFailed(shaderTable->Map(0, nullptr, (void**)&pData));
-
-	// Shader Record 0 - Ray Generation program and local root parameter data 
-	memcpy(pData, pipelineProperties->GetShaderIdentifier(L"RayGen"), shaderIdSize);
-
-	// Set the root parameter data, Point to start of descriptor heap //
-	*reinterpret_cast<D3D12_GPU_DESCRIPTOR_HANDLE*>(pData + shaderIdSize) = settings.uavSrvHeap->GetGPUHandleAt(0);
-
-	// Shader Record 1 - Miss Record 
-	pData += shaderTableRecordSize;
-	memcpy(pData, pipelineProperties->GetShaderIdentifier(L"Miss"), shaderIdSize);
-	*reinterpret_cast<D3D12_GPU_DESCRIPTOR_HANDLE*>(pData + shaderIdSize) = settings.uavSrvHeap->GetGPUHandleAt(4);
-
-	// Shader Record 2 - HitGroup Record 
-	pData += shaderTableRecordSize;
-	memcpy(pData, pipelineProperties->GetShaderIdentifier(L"HitGroup"), shaderIdSize);
-	*reinterpret_cast<UINT64*>(pData + shaderIdSize) = settings.vertexBuffer->GetGPUVirtualAddress();
-	*reinterpret_cast<UINT64*>(pData + shaderIdSize + 8) = settings.indexBuffer->GetGPUVirtualAddress();
-	*reinterpret_cast<UINT64*>(pData + shaderIdSize + 16) = settings.TLAS->GetTLASAddress();
-
-	shaderTable->Unmap(0, nullptr);
-
-	// Step 4 - Use the same information to describe the dispatch Ray
-	dispatchRayDescription.RayGenerationShaderRecord.StartAddress = shaderTable->GetGPUVirtualAddress();
-	dispatchRayDescription.RayGenerationShaderRecord.SizeInBytes = shaderTableRecordSize;
-
-	dispatchRayDescription.MissShaderTable.StartAddress = shaderTable->GetGPUVirtualAddress() + shaderTableRecordSize;
-	dispatchRayDescription.MissShaderTable.SizeInBytes = shaderTableRecordSize;
-	dispatchRayDescription.MissShaderTable.StrideInBytes = shaderTableRecordSize;
-
-	dispatchRayDescription.HitGroupTable.StartAddress = shaderTable->GetGPUVirtualAddress() + (shaderTableRecordSize * 2);
-	dispatchRayDescription.HitGroupTable.SizeInBytes = shaderTableRecordSize;
-	dispatchRayDescription.HitGroupTable.StrideInBytes = shaderTableRecordSize;
-
-	dispatchRayDescription.Width = DXAccess::GetWindow()->GetWindowWidth();
-	dispatchRayDescription.Height = DXAccess::GetWindow()->GetWindowHeight();
-	dispatchRayDescription.Depth = 1;
 }
 
 void DXRayTracingPipeline::CreateRootSignature(ComPtr<ID3D12RootSignature>& rootSignature,

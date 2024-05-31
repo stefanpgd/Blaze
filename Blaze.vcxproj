@@ -145,6 +145,7 @@
   <ItemGroup>
     <ClCompile Include="Dependencies\tinyexr\tinyexr.cpp" />
     <ClCompile Include="Dependencies\tinyglTF\tiny_gltf.cpp" />
+    <ClCompile Include="Source\Graphics\DXShaderBindingTable.cpp" />
     <ClCompile Include="Source\Graphics\EnvironmentMap.cpp" />
     <ClCompile Include="Source\Framework\Scene.cpp" />
     <ClCompile Include="Source\Graphics\Model.cpp" />
@@ -181,6 +182,7 @@
     <ClInclude Include="Headers\Graphics\DXRayTracingPipeline.h" />
     <ClInclude Include="Headers\Graphics\DXRayTracingUtilities.h" />
     <ClInclude Include="Headers\Framework\Editor.h" />
+    <ClInclude Include="Headers\Graphics\DXShaderBindingTable.h" />
     <ClInclude Include="Headers\Utilities\Random.h" />
     <ClInclude Include="Dependencies\ImGui\imconfig.h" />
     <ClInclude Include="Dependencies\ImGui\imgui.h" />
