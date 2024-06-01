@@ -2,6 +2,7 @@
 #include "Graphics/DXAccess.h"
 #include "Graphics/DXUtilities.h"
 #include "Graphics/DXRayTracingUtilities.h"
+#include "Graphics/DXDescriptorHeap.h"
 #include "Graphics/Model.h"
 #include "Graphics/Mesh.h"
 
@@ -79,7 +80,7 @@ void DXTopLevelAS::SetScene(Scene* scene)
 	RebuildTLAS();
 }
 
-D3D12_GPU_VIRTUAL_ADDRESS DXTopLevelAS::GetTLASAddress()
+D3D12_GPU_VIRTUAL_ADDRESS DXTopLevelAS::GetGPUVirtualAddress()
 {
 	return tlasResult->GetGPUVirtualAddress();
 }

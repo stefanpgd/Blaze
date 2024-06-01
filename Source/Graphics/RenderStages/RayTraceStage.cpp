@@ -104,15 +104,6 @@ void RayTraceStage::CreateShaderDescriptors()
 	device->CreateUnorderedAccessView(colorBuffer->GetAddress(), nullptr, &colorBufferDescription, handle);
 
 	handle = heap->GetCPUHandleAt(heap->GetNextAvailableIndex());
-
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc;
-	srvDesc.Format = DXGI_FORMAT_UNKNOWN;
-	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_RAYTRACING_ACCELERATION_STRUCTURE;
-	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc.RaytracingAccelerationStructure.Location = TLAS->GetTLASAddress();
-	device->CreateShaderResourceView(nullptr, &srvDesc, handle);
-
-	handle = heap->GetCPUHandleAt(heap->GetNextAvailableIndex());
 }
 
 void RayTraceStage::InitializePipeline()
@@ -122,14 +113,14 @@ void RayTraceStage::InitializePipeline()
 	settings.maxRayRecursionDepth = 16;
 
 	// RayGen Root //
-	CD3DX12_DESCRIPTOR_RANGE rayGenRanges[3];
+	CD3DX12_DESCRIPTOR_RANGE rayGenRanges[2];
 	rayGenRanges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0); // Screen 
 	rayGenRanges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 1, 0); // Color Buffer 
-	rayGenRanges[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0); // Acceleration Structure 
 
-	CD3DX12_ROOT_PARAMETER rayGenParameters[2];
+	CD3DX12_ROOT_PARAMETER rayGenParameters[3];
 	rayGenParameters[0].InitAsDescriptorTable(_countof(rayGenRanges), &rayGenRanges[0]);
 	rayGenParameters[1].InitAsConstantBufferView(0, 0);
+	rayGenParameters[2].InitAsShaderResourceView(0, 0);
 
 	settings.rayGenParameters = &rayGenParameters[0];
 	settings.rayGenParameterCount = _countof(rayGenParameters);
@@ -161,20 +152,20 @@ void RayTraceStage::InitializePipeline()
 void RayTraceStage::InitializeShaderBindingTable()
 {
 	DXDescriptorHeap* heap = DXAccess::GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
 	shaderTable = new DXShaderBindingTable(rayTracePipeline->GetPipelineProperties());
 
-	auto heapPtr = reinterpret_cast<UINT64*>(heap->GetGPUHandleAt(rayGenTableIndex).ptr);
+	auto rayGenTable = reinterpret_cast<UINT64*>(heap->GetGPUHandleAt(rayGenTableIndex).ptr);
 	auto settingsPtr = reinterpret_cast<UINT64*>(settingsBuffer->GetGPUVirtualAddress());
-	shaderTable->SetRayGenerationProgram(L"RayGen", { heapPtr, settingsPtr });
+	auto tlasPtr = reinterpret_cast<UINT64*>(TLAS->GetGPUVirtualAddress());
+	shaderTable->SetRayGenerationProgram(L"RayGen", { rayGenTable, settingsPtr, tlasPtr });
 
 	auto exrPtr = reinterpret_cast<UINT64*>(activeScene->GetEnvironementMap()->GetTexture()->GetSRV().ptr);
 	shaderTable->SetMissProgram(L"Miss", { exrPtr });
 
 	auto vertex = reinterpret_cast<UINT64*>(mesh->GetVertexBuffer()->GetGPUVirtualAddress());
 	auto index = reinterpret_cast<UINT64*>(mesh->GetIndexBuffer()->GetGPUVirtualAddress());
-	auto tlasAddress = reinterpret_cast<UINT64*>(TLAS->GetTLASAddress());
-
+	auto tlasAddress = reinterpret_cast<UINT64*>(TLAS->GetGPUVirtualAddress());
 	shaderTable->SetHitProgram(L"HitGroup", { vertex, index, tlasAddress });
+
 	shaderTable->BuildShaderTable();
 }

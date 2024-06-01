@@ -12,7 +12,7 @@ public:
 	void RebuildTLAS();
 
 	void SetScene(Scene* scene);
-	D3D12_GPU_VIRTUAL_ADDRESS GetTLASAddress();
+	D3D12_GPU_VIRTUAL_ADDRESS GetGPUVirtualAddress();
 
 private:
 	void BuildTLAS();

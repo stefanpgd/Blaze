@@ -24,7 +24,7 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
     normal = normalize(mul(ObjectToWorld3x4(), float4(normal, 0.0f)).xyz);
     
     payload.depth += 1;
-    const uint maxDepth = 8;
+    const uint maxDepth = 12;
     
     if(payload.depth >= maxDepth)
     {
