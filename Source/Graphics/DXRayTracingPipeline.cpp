@@ -128,8 +128,6 @@ void DXRayTracingPipeline::CompileShaderLibrary(ComPtr<IDxcBlob>& shaderLibrary,
 	std::wstring filePath = std::wstring(path.begin(), path.end());
 
 	ThrowIfFailed(library->CreateBlobFromFile(filePath.c_str(), &code, &pShaderText));
-
 	ThrowIfFailed(compiler->Compile(pShaderText, filePath.c_str(), L"", L"lib_6_3", nullptr, 0, nullptr, 0, dxcIncludeHandler, &result));
-
 	ThrowIfFailed(result->GetResult(&shaderLibrary));
 }

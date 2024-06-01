@@ -154,9 +154,11 @@ void RayTraceStage::InitializeShaderBindingTable()
 	DXDescriptorHeap* heap = DXAccess::GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	shaderTable = new DXShaderBindingTable(rayTracePipeline->GetPipelineProperties());
 
+	// Common
+	auto tlasPtr = reinterpret_cast<UINT64*>(TLAS->GetGPUVirtualAddress());
+
 	auto rayGenTable = reinterpret_cast<UINT64*>(heap->GetGPUHandleAt(rayGenTableIndex).ptr);
 	auto settingsPtr = reinterpret_cast<UINT64*>(settingsBuffer->GetGPUVirtualAddress());
-	auto tlasPtr = reinterpret_cast<UINT64*>(TLAS->GetGPUVirtualAddress());
 	shaderTable->SetRayGenerationProgram(L"RayGen", { rayGenTable, settingsPtr, tlasPtr });
 
 	auto exrPtr = reinterpret_cast<UINT64*>(activeScene->GetEnvironementMap()->GetTexture()->GetSRV().ptr);
@@ -164,8 +166,7 @@ void RayTraceStage::InitializeShaderBindingTable()
 
 	auto vertex = reinterpret_cast<UINT64*>(mesh->GetVertexBuffer()->GetGPUVirtualAddress());
 	auto index = reinterpret_cast<UINT64*>(mesh->GetIndexBuffer()->GetGPUVirtualAddress());
-	auto tlasAddress = reinterpret_cast<UINT64*>(TLAS->GetGPUVirtualAddress());
-	shaderTable->SetHitProgram(L"HitGroup", { vertex, index, tlasAddress });
+	shaderTable->SetHitProgram(L"HitGroup", { vertex, index, tlasPtr });
 
 	shaderTable->BuildShaderTable();
 }

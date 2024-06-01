@@ -23,4 +23,3 @@ private:
 	ComPtr<ID3D12PipelineState> pipeline;
 	ComPtr<ID3DBlob> computeShaderBlob;
 };
-

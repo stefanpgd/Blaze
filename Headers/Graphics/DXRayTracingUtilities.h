@@ -157,5 +157,4 @@ inline void AddDummyRootSignatureSubobjects(std::vector<D3D12_STATE_SUBOBJECT>& 
 	subobjects[index] = dummyLocalRootSig;
 	index++;
 }
-
 #pragma endregion

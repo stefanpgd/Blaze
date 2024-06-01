@@ -4,9 +4,9 @@
 DXStructuredBuffer::DXStructuredBuffer(const void* data, unsigned int numberOfElements, unsigned int elementSize)
 	: numberOfElements(numberOfElements), elementSize(elementSize)
 {
-	DXDescriptorHeap* CBVHeap = DXAccess::GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	srvIndex = CBVHeap->GetNextAvailableIndex();
-	uavIndex = CBVHeap->GetNextAvailableIndex();
+	DXDescriptorHeap* heap = DXAccess::GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	srvIndex = heap->GetNextAvailableIndex();
+	uavIndex = heap->GetNextAvailableIndex();
 
 	bufferSize = numberOfElements * elementSize;
 
