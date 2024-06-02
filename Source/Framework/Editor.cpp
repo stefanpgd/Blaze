@@ -108,7 +108,7 @@ void Editor::MaterialWindow()
 		ImGui::SeparatorText(model->Name.c_str());
 
 		if(ImGui::ColorEdit3("Color", &material.color[0])) { updateMaterial = true; }
-		if(ImGui::Checkbox("Is Specular?", &material.isSpecular)) { updateMaterial = true; }
+		if(ImGui::DragFloat("Specularity", &material.specularity, 0.001f, 0.0f, 1.0f)) { updateMaterial = true; }
 		
 		if(updateMaterial)
 		{

@@ -13,7 +13,7 @@ RaytracingAccelerationStructure SceneBVH : register(t2);
 struct Material
 {
     float3 color;
-    bool isSpecular;
+    float specularity;
 };
 ConstantBuffer<Material> material : register(b0);
 
@@ -31,7 +31,7 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
     normal = normalize(mul(ObjectToWorld3x4(), float4(normal, 0.0f)).xyz);
     
     payload.depth += 1;
-    const uint maxDepth = 12;
+    const uint maxDepth = 5;
     
     if(payload.depth >= maxDepth)
     {
@@ -39,9 +39,9 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
         return;
     }
 
-    float3 colorOutput = material.color;
+    float3 colorOutput = float3(0.0f, 0.0f, 0.0f);
     
-    if(material.isSpecular)
+    if(material.specularity > 0.01f)
     {
         float3 intersection = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
         float3 direction = reflect(WorldRayDirection(), normal);
@@ -56,32 +56,37 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
         reflectLoad.depth = payload.depth;
         
         TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, reflectLoad);
-        payload.color = reflectLoad.color * material.color;
-        return;
+        colorOutput += reflectLoad.color * material.specularity * material.color;
     }
     
     // Surface we hit is 'Diffuse' so we scatter //
-    float3 materialColor = colorOutput;
-    float3 BRDF = materialColor / PI; // TODO: Read that article Jacco send about the distribution by Pi
-    
-    float3 intersection = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
-    float3 direction = RandomUnitVector(payload.seed);
-    if(dot(normal, direction) < 0.0f)
+    if(1.0f - material.specularity > 0.01f)
     {
-        // Normal is facing inwards //
-        direction *= -1.0f;
+        float3 materialColor = material.color;
+        float3 BRDF = materialColor / PI; // TODO: Read that article Jacco send about the distribution by Pi
+    
+        float3 intersection = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
+        float3 direction = RandomUnitVector(payload.seed);
+        if(dot(normal, direction) < 0.0f)
+        {
+            // Normal is facing inwards //
+            direction *= -1.0f;
+        }
+    
+        float cosI = dot(normal, direction);
+    
+        RayDesc ray;
+        ray.Origin = intersection;
+        ray.Direction = direction;
+        ray.TMin = 0.001f;
+        ray.TMax = 100000;
+    
+        TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, payload);
+        float3 irradiance = payload.color * cosI;
+    
+        float3 diffuse = (PI * 2.0f * BRDF * irradiance) * (1.0f - material.specularity);
+        colorOutput += diffuse;
     }
     
-    float cosI = dot(normal, direction);
-    
-    RayDesc ray;
-    ray.Origin = intersection;
-    ray.Direction = direction;
-    ray.TMin = 0.001f;
-    ray.TMax = 100000;
-    
-    TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, payload);
-    float3 irradiance = payload.color * cosI;
-    
-    payload.color = PI * 2.0f * BRDF * irradiance;
+    payload.color = colorOutput;
 }

@@ -16,7 +16,9 @@ Scene::Scene()
 	models[2]->transform.Rotation = glm::vec3(0.0f, 40.0f, 0.0f);
 	
 	AddModel("Assets/Models/Bunny/bunny.gltf");
-	models[3]->transform.Position = glm::vec3(-1.95f, -0.6f, -2.0f);
+	models[3]->transform.Position = glm::vec3(-1.05f, -0.6f, -0.75f);
+	models[3]->transform.Rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+	models[3]->transform.Scale = glm::vec3(0.75f, 0.75f, 0.75f);
 
 	// Environment Map //
 	std::string exrPath = "Assets/EXRs/wharf.exr";
