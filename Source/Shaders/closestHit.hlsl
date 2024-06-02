@@ -32,38 +32,68 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
         return;
     }
 
-    float3 colorOutput = float3(0.0f, 0.0f, 0.0f);
-    if(InstanceID() == 0)
-    {
-        colorOutput = float3(1, 0.549, 0);
-    }
-    else if(InstanceID() == 1)
-    {
-        colorOutput = float3(1.0f, 1.0f, 1.0f);
-      
-        //colorOutput = float3(1.0f, 1.0f, 1.0f);
-        //
-        //// Metallic
-        //float3 intersection = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
-        //float3 direction = reflect(WorldRayDirection(), normal);
-        //
-        //RayDesc ray;
-        //ray.Origin = intersection;
-        //ray.Direction = direction;
-        //ray.TMin = 0.001f;
-        //ray.TMax = 100000;
-        //
-        //HitInfo reflectLoad;
-        //reflectLoad.depth = payload.depth;
-        //
-        //TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, reflectLoad);
-        //payload.color = reflectLoad.color;
-        //return;
-    }
-    else
-    {
-        colorOutput = float3(1.0f, 1.0f, 1.0f);
-    }
+    float3 colorOutput = float3(0.85f, 0.85f, 0.85f);
+    //{
+    //    float3 intersection = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
+    //    float3 direction = reflect(WorldRayDirection(), normal);
+    //
+    //    RayDesc ray;
+    //    ray.Origin = intersection;
+    //    ray.Direction = direction;
+    //    ray.TMin = 0.001f;
+    //    ray.TMax = 100000;
+    //
+    //    HitInfo reflectLoad;
+    //    reflectLoad.depth = payload.depth;
+    //
+    //    TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, reflectLoad);
+    //    payload.color = reflectLoad.color * 0.95f;
+    //    return;
+    //}
+    
+ 
+    //if(InstanceID() == 0)
+    //{
+    //    float3 intersection = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
+    //    float3 direction = reflect(WorldRayDirection(), normal);
+    //    
+    //    RayDesc ray;
+    //    ray.Origin = intersection;
+    //    ray.Direction = direction;
+    //    ray.TMin = 0.001f;
+    //    ray.TMax = 100000;
+    //    
+    //    HitInfo reflectLoad;
+    //    reflectLoad.depth = payload.depth;
+    //    
+    //    TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, reflectLoad);
+    //    colorOutput = (reflectLoad.color * 0.15f) + float3(0.5f, 0.5f, 0.5f) * 0.85f;
+    //}
+    //else if(InstanceID() == 1)
+    //{
+    //    colorOutput = float3(1.0f, 1.0f, 1.0f);
+    //    
+    //    // Metallic
+    //    float3 intersection = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
+    //    float3 direction = reflect(WorldRayDirection(), normal);
+    //    
+    //    RayDesc ray;
+    //    ray.Origin = intersection;
+    //    ray.Direction = direction;
+    //    ray.TMin = 0.001f;
+    //    ray.TMax = 100000;
+    //    
+    //    HitInfo reflectLoad;
+    //    reflectLoad.depth = payload.depth;
+    //    
+    //    TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, reflectLoad);
+    //    payload.color = reflectLoad.color;
+    //    return;
+    //}
+    //else
+    //{
+    //    colorOutput = float3(1, 0.549, 0);
+    //}
     
     // Surface we hit is 'Diffuse' so we scatter //
     float3 materialColor = colorOutput;

@@ -30,22 +30,12 @@ Model::Model(const std::string& filePath, bool isRayTracingGeometry) : isRayTrac
 	}
 
 	TraverseRootNodes(model);
-
-	if(isRayTracingGeometry)
-	{
-		BuildBLAS();
-	}
 }
 
 Model::Model(Vertex* vertices, unsigned int vertexCount, unsigned int* indices, unsigned int indexCount, bool isRayTracingGeometry)
 {
 	Mesh* mesh = new Mesh(vertices, vertexCount, indices, indexCount, isRayTracingGeometry);
 	meshes.push_back(mesh);
-
-	if(isRayTracingGeometry)
-	{
-		BuildBLAS();
-	}
 }
 
 Mesh* Model::GetMesh(int index)
@@ -58,9 +48,9 @@ const std::vector<Mesh*>& Model::GetMeshes()
 	return meshes;
 }
 
-ID3D12Resource* Model::GetBLAS()
+unsigned int Model::GetMeshCount()
 {
-	return blasResult.Get();
+	return meshes.size();
 }
 
 void Model::TraverseRootNodes(tinygltf::Model& model)
@@ -186,33 +176,4 @@ glm::mat4 Model::GetTransformFromNode(tinygltf::Node& node)
 	}
 
 	return transform.GetModelMatrix();
-}
-
-// TODO: The right approach is probably, having a 'list' of BLASs, which all use the same transform
-// in the TLAS instance(s)
-
-// TODO: I'm uncertain if this is the right approach to BLAS?
-// It makes sense to include all lower levels of geometry, but another thing we do is bind
-// the buffers themselves on the GPU. I should probably look up per instance data/buffers
-// and see if that's the solution to this problem, otherwise I need to figure out something else.
-void Model::BuildBLAS()
-{
-	int geometryCount = meshes.size();
-	std::vector<D3D12_RAYTRACING_GEOMETRY_DESC> geometryDescs(geometryCount);
-
-	for(int i = 0; i < geometryCount; i++)
-	{
-		geometryDescs[i] = meshes[i]->GetGeometryDescription();
-	}
-
-	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
-	inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
-	inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
-
-	inputs.pGeometryDescs = geometryDescs.data();
-	inputs.NumDescs = geometryCount; 
-	inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE; // there are also other options like 'Fast Build'
-
-	AllocateAccelerationStructureMemory(inputs, blasScratch.GetAddressOf(), blasResult.GetAddressOf());
-	BuildAccelerationStructure(inputs, blasScratch, blasResult);
 }

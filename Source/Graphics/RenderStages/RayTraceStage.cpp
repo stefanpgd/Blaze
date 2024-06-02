@@ -164,13 +164,17 @@ void RayTraceStage::InitializeShaderBindingTable()
 	shaderTable->AddMissProgram(L"Miss", { exrPtr });
 
 	const std::vector<Model*>& models = activeScene->GetModels();
-	for(int i = 0; i < models.size(); i++)
-	{
-		Mesh* mesh = models[i]->GetMesh(0);
-		auto vertex = reinterpret_cast<UINT64*>(mesh->GetVertexBuffer()->GetGPUVirtualAddress());
-		auto index = reinterpret_cast<UINT64*>(mesh->GetIndexBuffer()->GetGPUVirtualAddress());
 
-		shaderTable->AddHitProgram(L"HitGroup", { vertex, index, tlasPtr });
+	for(Model* model : models)
+	{
+		const std::vector<Mesh*>& meshes = model->GetMeshes();
+		for(Mesh* mesh : meshes)
+		{
+			auto vertex = reinterpret_cast<UINT64*>(mesh->GetVertexBuffer()->GetGPUVirtualAddress());
+			auto index = reinterpret_cast<UINT64*>(mesh->GetIndexBuffer()->GetGPUVirtualAddress());
+
+			shaderTable->AddHitProgram(L"HitGroup", { vertex, index, tlasPtr });
+		}
 	}
 
 	shaderTable->BuildShaderTable();

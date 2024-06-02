@@ -33,33 +33,47 @@ void DXTopLevelAS::RebuildTLAS()
 
 void DXTopLevelAS::BuildTLAS()
 {
-	auto models = activeScene->GetModels();
-	int instanceCount = models.size();
+	// 1) Figure out how many instances we wanna have 
+	int instanceCount = 0;
 	
+	auto models = activeScene->GetModels();
+	for(Model* model : models)
+	{
+		instanceCount += model->GetMeshCount();
+	}
+
 	ComPtr<ID3D12Device5> device = DXAccess::GetDevice();
 	std::vector<D3D12_RAYTRACING_INSTANCE_DESC> instances(instanceCount);
 
-	for(int i = 0; i < instanceCount; i++)
+	// 2) Iterate over meshes, create a instance description for each 
+	int instanceIndex = 0;
+	for(Model* model : models)
 	{
-		D3D12_RAYTRACING_INSTANCE_DESC instanceDesc = {};
-		instanceDesc.InstanceID = i;
-		instanceDesc.InstanceContributionToHitGroupIndex = i;
-		instanceDesc.InstanceMask = 0xFF;
-		instanceDesc.AccelerationStructure = models[i]->GetBLAS()->GetGPUVirtualAddress();
+		glm::mat4 transform = model->transform.GetModelMatrix();
 
-		glm::mat4 transform = models[i]->transform.GetModelMatrix();
-
-		for(int x = 0; x < 3; x++)
+		const std::vector<Mesh*>& meshes = model->GetMeshes();
+		for(Mesh* mesh : meshes)
 		{
-			for(int y = 0; y < 4; y++)
-			{
-				instanceDesc.Transform[x][y] = transform[y][x];
-			}
-		}
+			D3D12_RAYTRACING_INSTANCE_DESC instanceDesc = {};
+			instanceDesc.InstanceID = instanceIndex;
+			instanceDesc.InstanceContributionToHitGroupIndex = instanceIndex;
+			instanceDesc.InstanceMask = 0xFF;
+			instanceDesc.AccelerationStructure = mesh->GetBLAS()->GetGPUVirtualAddress();
 
-		instances[i] = instanceDesc;
+			for(int x = 0; x < 3; x++)
+			{
+				for(int y = 0; y < 4; y++)
+				{
+					instanceDesc.Transform[x][y] = transform[y][x];
+				}
+			}
+
+			instances[instanceIndex] = instanceDesc;
+			instanceIndex++;
+		}
 	}
 
+	// 3) Allocate a buffer to map all the instance data to & Build the TLAS 
 	unsigned int dataSize = sizeof(D3D12_RAYTRACING_INSTANCE_DESC) * instances.size();
 	AllocateAndMapResource(tlasInstanceDesc, instances.data(), dataSize);
 

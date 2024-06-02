@@ -22,8 +22,7 @@ public:
 
 	Mesh* GetMesh(int index);
 	const std::vector<Mesh*>& GetMeshes();
-
-	ID3D12Resource* GetBLAS();
+	unsigned int GetMeshCount();
 
 private:
 	void TraverseRootNodes(tinygltf::Model& model);
@@ -31,8 +30,6 @@ private:
 
 	glm::mat4 GetTransformFromNode(tinygltf::Node& node);
 	
-	void BuildBLAS();
-
 public:
 	Transform transform;
 	std::string Name;
@@ -40,8 +37,5 @@ public:
 private:
 	std::vector<Mesh*> meshes;
 
-	// Ray Tracing //
 	bool isRayTracingGeometry;
-	ComPtr<ID3D12Resource> blasScratch;
-	ComPtr<ID3D12Resource> blasResult;
 };

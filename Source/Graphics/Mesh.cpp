@@ -1,6 +1,7 @@
 #include "Graphics/Mesh.h"
 #include "Graphics/DXAccess.h"
 #include "Graphics/DXUtilities.h"
+#include "Graphics/DXRayTracingUtilities.h"
 #include "Graphics/Texture.h"
 #include "Graphics/DXCommands.h"
 #include "Framework/Mathematics.h"
@@ -21,6 +22,7 @@ Mesh::Mesh(tinygltf::Model& model, tinygltf::Primitive& primitive, glm::mat4& tr
 	if(isRayTracingGeometry)
 	{
 		SetupGeometryDescription();
+		BuildBLAS();
 	}
 }
 
@@ -42,6 +44,7 @@ Mesh::Mesh(Vertex* verts, unsigned int vertexCount, unsigned int* indi,
 	if(isRayTracingGeometry)
 	{
 		SetupGeometryDescription();
+		BuildBLAS();
 	}
 }
 
@@ -73,6 +76,11 @@ ID3D12Resource* Mesh::GetIndexBuffer()
 D3D12_RAYTRACING_GEOMETRY_DESC Mesh::GetGeometryDescription()
 {
 	return geometryDescription;
+}
+
+ID3D12Resource* Mesh::GetBLAS()
+{
+	return blasResult.Get();
 }
 
 void Mesh::UploadBuffers()
@@ -116,7 +124,6 @@ void Mesh::SetupGeometryDescription()
 {
 	ComPtr<ID3D12Device5> device = DXAccess::GetDevice();
 
-	// TODO: Check based on material info if its opaque or transparent?
 	geometryDescription.Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE;
 	geometryDescription.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
 	geometryDescription.Triangles.Transform3x4 = 0;
@@ -131,6 +138,20 @@ void Mesh::SetupGeometryDescription()
 	geometryDescription.Triangles.IndexBuffer = indexBuffer->GetGPUVirtualAddress();
 	geometryDescription.Triangles.IndexFormat = DXGI_FORMAT_R32_UINT;
 	geometryDescription.Triangles.IndexCount = indicesCount;
+}
+
+void Mesh::BuildBLAS()
+{
+	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs = {};
+	inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
+	inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+
+	inputs.pGeometryDescs = &geometryDescription;
+	inputs.NumDescs = 1;
+	inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE; // there are also other options like 'Fast Build'
+
+	AllocateAccelerationStructureMemory(inputs, blasScratch.GetAddressOf(), blasResult.GetAddressOf());
+	BuildAccelerationStructure(inputs, blasScratch, blasResult);
 }
 
 #pragma region TinyGLTF Loading
