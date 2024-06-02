@@ -14,11 +14,10 @@
 
 RayTraceStage::RayTraceStage(Scene* scene) : activeScene(scene)
 {	
-	TLAS = new DXTopLevelAS(scene);
-
 	CreateShaderResources();
 	CreateShaderDescriptors();
 
+	TLAS = new DXTopLevelAS(scene);
 	InitializePipeline();
 	InitializeShaderBindingTable();
 }
