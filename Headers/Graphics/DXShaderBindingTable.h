@@ -17,6 +17,7 @@ public:
 	DXShaderBindingTable(ID3D12StateObjectProperties* pipelineProperties);
 
 	void BuildShaderTable();
+	void ClearShaderTable();
 
 	void AddRayGenerationProgram(const std::wstring& identifier, const std::vector<void*>& inputs);
 	void AddMissProgram(const std::wstring& identifier, const std::vector<void*>& inputs);

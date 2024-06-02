@@ -13,6 +13,12 @@ void DXShaderBindingTable::BuildShaderTable()
 	UpdateDispatchRayDescription();
 }
 
+void DXShaderBindingTable::ClearShaderTable()
+{
+	hitEntries.clear();
+	shaderTable.Reset();
+}
+
 void DXShaderBindingTable::AddRayGenerationProgram(const std::wstring& identifier, const std::vector<void*>& inputs)
 {
 	rayGenEntry.identifier = identifier;

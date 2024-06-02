@@ -35,9 +35,7 @@ void RayTraceStage::Update(float deltaTime)
 		// TODO: Even though this works, we need to find a proper place to fit this in, for example
 		// how resizing is handled within Nova 
 		TLAS->RebuildTLAS();
-
-		CreateShaderDescriptors();
-		InitializePipeline();
+		shaderTable->ClearShaderTable();
 		InitializeShaderBindingTable();
 
 		activeScene->HasGeometryMoved = false;
@@ -107,7 +105,6 @@ void RayTraceStage::CreateShaderDescriptors()
 
 void RayTraceStage::InitializePipeline()
 {
-	// TODO: A lot of these descriptor ranges can probably be available for each one of em?
 	DXRayTracingPipelineSettings settings;
 	settings.maxRayRecursionDepth = 16;
 
@@ -151,21 +148,24 @@ void RayTraceStage::InitializePipeline()
 
 void RayTraceStage::InitializeShaderBindingTable()
 {
+	if(!shaderTable)
+	{
+		shaderTable = new DXShaderBindingTable(rayTracePipeline->GetPipelineProperties());
+	}
+
+	// Ray Gen Entry //
 	DXDescriptorHeap* heap = DXAccess::GetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	shaderTable = new DXShaderBindingTable(rayTracePipeline->GetPipelineProperties());
-
-	// Common
 	auto tlasPtr = reinterpret_cast<UINT64*>(TLAS->GetGPUVirtualAddress());
-
 	auto rayGenTable = reinterpret_cast<UINT64*>(heap->GetGPUHandleAt(rayGenTableIndex).ptr);
 	auto settingsPtr = reinterpret_cast<UINT64*>(settingsBuffer->GetGPUVirtualAddress());
 	shaderTable->AddRayGenerationProgram(L"RayGen", { rayGenTable, settingsPtr, tlasPtr });
 
+	// Mis Entry //
 	auto exrPtr = reinterpret_cast<UINT64*>(activeScene->GetEnvironementMap()->GetTexture()->GetSRV().ptr);
 	shaderTable->AddMissProgram(L"Miss", { exrPtr });
 
+	// Hit Entries //
 	const std::vector<Model*>& models = activeScene->GetModels();
-
 	for(Model* model : models)
 	{
 		const std::vector<Mesh*>& meshes = model->GetMeshes();
