@@ -51,6 +51,5 @@ private:
 	Texture* outputBuffer;
 	Texture* colorBuffer;
 
-	Mesh* mesh;
 	Scene* activeScene;
 };

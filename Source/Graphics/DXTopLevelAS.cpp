@@ -43,7 +43,7 @@ void DXTopLevelAS::BuildTLAS()
 	{
 		D3D12_RAYTRACING_INSTANCE_DESC instanceDesc = {};
 		instanceDesc.InstanceID = i;
-		instanceDesc.InstanceContributionToHitGroupIndex = 0;
+		instanceDesc.InstanceContributionToHitGroupIndex = i;
 		instanceDesc.InstanceMask = 0xFF;
 		instanceDesc.AccelerationStructure = models[i]->GetBLAS()->GetGPUVirtualAddress();
 

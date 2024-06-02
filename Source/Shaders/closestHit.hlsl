@@ -7,7 +7,7 @@ struct Vertex
     float3 normal;
 };
 StructuredBuffer<Vertex> VertexData : register(t0);
-StructuredBuffer<uint> indices : register(t1);
+StructuredBuffer<int> indices : register(t1);
 RaytracingAccelerationStructure SceneBVH : register(t2);
 
 [shader("closesthit")]
@@ -40,23 +40,25 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
     else if(InstanceID() == 1)
     {
         colorOutput = float3(1.0f, 1.0f, 1.0f);
-        
-        // Metallic
-        float3 intersection = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
-        float3 direction = reflect(WorldRayDirection(), normal);
-        
-        RayDesc ray;
-        ray.Origin = intersection;
-        ray.Direction = direction;
-        ray.TMin = 0.001f;
-        ray.TMax = 100000;
-        
-        HitInfo reflectLoad;
-        reflectLoad.depth = payload.depth;
-        
-        TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, reflectLoad);
-        payload.color = reflectLoad.color;
-        return;
+      
+        //colorOutput = float3(1.0f, 1.0f, 1.0f);
+        //
+        //// Metallic
+        //float3 intersection = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
+        //float3 direction = reflect(WorldRayDirection(), normal);
+        //
+        //RayDesc ray;
+        //ray.Origin = intersection;
+        //ray.Direction = direction;
+        //ray.TMin = 0.001f;
+        //ray.TMax = 100000;
+        //
+        //HitInfo reflectLoad;
+        //reflectLoad.depth = payload.depth;
+        //
+        //TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, reflectLoad);
+        //payload.color = reflectLoad.color;
+        //return;
     }
     else
     {

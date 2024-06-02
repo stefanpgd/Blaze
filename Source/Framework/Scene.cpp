@@ -7,14 +7,10 @@ Scene::Scene()
 	// TODO: Remove once there is scene control, for now it acts as the default model(s) //
 	AddModel("Assets/Models/Dragon/dragon.gltf");
 	
-	AddModel("Assets/Models/Dragon/dragon.gltf");
-	models[1]->transform.Position = glm::vec3(-1.95f, 0.0f, -2.0f);
-	models[1]->transform.Rotation = glm::vec3(0.0f, 40.0f, 0.0f);
+	AddModel("Assets/Models/Bunny/bunny.gltf");
+	//models[1]->transform.Position = glm::vec3(-1.95f, 0.0f, -2.0f);
+	//models[1]->transform.Rotation = glm::vec3(0.0f, 40.0f, 0.0f);
 	
-	AddModel("Assets/Models/Dragon/dragon.gltf");
-	models[2]->transform.Position = glm::vec3(2.15f, 0.5f, -2.0f);
-	models[2]->transform.Rotation = glm::vec3(0.0f, 35.0f, 0.0f);
-
 	// Environment Map //
 	std::string exrPath = "Assets/EXRs/wharf.exr";
 	environmentMap = new EnvironmentMap(exrPath);

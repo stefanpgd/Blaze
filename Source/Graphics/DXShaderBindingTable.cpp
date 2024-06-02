@@ -13,22 +13,25 @@ void DXShaderBindingTable::BuildShaderTable()
 	UpdateDispatchRayDescription();
 }
 
-void DXShaderBindingTable::SetRayGenerationProgram(const std::wstring& identifier, const std::vector<void*>& inputs)
+void DXShaderBindingTable::AddRayGenerationProgram(const std::wstring& identifier, const std::vector<void*>& inputs)
 {
 	rayGenEntry.identifier = identifier;
 	rayGenEntry.inputs = inputs;
 }
 
-void DXShaderBindingTable::SetMissProgram(const std::wstring& identifier, const std::vector<void*>& inputs)
+void DXShaderBindingTable::AddMissProgram(const std::wstring& identifier, const std::vector<void*>& inputs)
 {
 	missEntry.identifier = identifier;
 	missEntry.inputs = inputs;
 }
 
-void DXShaderBindingTable::SetHitProgram(const std::wstring& identifier, const std::vector<void*>& inputs)
+void DXShaderBindingTable::AddHitProgram(const std::wstring& identifier, const std::vector<void*>& inputs)
 {
-	hitEntry.identifier = identifier;
-	hitEntry.inputs = inputs;
+	ShaderTableEntry entry;
+	entry.identifier = identifier;
+	entry.inputs = inputs;
+
+	hitEntries.push_back(entry);
 }
 
 const D3D12_DISPATCH_RAYS_DESC* DXShaderBindingTable::GetDispatchRayDescription()
@@ -43,7 +46,11 @@ void DXShaderBindingTable::BindShaderTable()
 
 	BindShaderRecord(rayGenEntry, pData);
 	BindShaderRecord(missEntry, pData);
-	BindShaderRecord(hitEntry, pData);
+
+	for(ShaderTableEntry& hitEntry : hitEntries)
+	{
+		BindShaderRecord(hitEntry, pData);
+	}
 
 	shaderTable->Unmap(0, nullptr);
 }
@@ -60,20 +67,24 @@ void DXShaderBindingTable::CalculateShaderTableSizes()
 {
 	// 1) Figure out the record with the most amount of entries, that input size
 	// will be used to size the shaderRecord 
-	size_t maxInputs = 0;
-	maxInputs = std::max(rayGenEntry.inputs.size(), missEntry.inputs.size());
-	maxInputs = std::max(maxInputs, hitEntry.inputs.size());
+	size_t maxInputs = rayGenEntry.inputs.size();
+	maxInputs = std::max(maxInputs, missEntry.inputs.size());
 
-	// TODO: Figure out the largest 'record' and based on that adjust all other record sizes 
+	// Loop over all hitEntries to check if any of them as more inputs than the miss or raygen entry.
+	for(int i = 0; i < hitEntries.size(); i++)
+	{
+		maxInputs = std::max(maxInputs, hitEntries[i].inputs.size());
+	}
+
+	// 2) Based on the largest amount of inputs, determine the record size //
 	shaderIdentifierSize = D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
 
 	shaderRecordSize = shaderIdentifierSize;
-	shaderRecordSize += maxInputs * sizeof(UINT64); 
-
-	// Aligns record to be 64-byte, ensuring alignment //
+	shaderRecordSize += maxInputs * sizeof(UINT64);
 	shaderRecordSize = ALIGN(D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT, shaderRecordSize);
 
-	shaderTableSize = shaderRecordSize * 3; // 3 shader entries //
+	// 3) Determine the shader table size //
+	shaderTableSize = shaderRecordSize * (2 + hitEntries.size()); // RayGen, Miss and all hit entries 
 	shaderTableSize = ALIGN(D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT, shaderTableSize);
 }
 
@@ -87,7 +98,7 @@ void DXShaderBindingTable::UpdateDispatchRayDescription()
 	dispatchRayDescription.MissShaderTable.StrideInBytes = shaderRecordSize;
 
 	dispatchRayDescription.HitGroupTable.StartAddress = shaderTable->GetGPUVirtualAddress() + (shaderRecordSize * 2);
-	dispatchRayDescription.HitGroupTable.SizeInBytes = shaderRecordSize;
+	dispatchRayDescription.HitGroupTable.SizeInBytes = shaderRecordSize * hitEntries.size();
 	dispatchRayDescription.HitGroupTable.StrideInBytes = shaderRecordSize;
 
 	dispatchRayDescription.Width = DXAccess::GetWindow()->GetWindowWidth();

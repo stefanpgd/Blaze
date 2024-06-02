@@ -18,9 +18,9 @@ public:
 
 	void BuildShaderTable();
 
-	void SetRayGenerationProgram(const std::wstring& identifier, const std::vector<void*>& inputs);
-	void SetMissProgram(const std::wstring& identifier, const std::vector<void*>& inputs);
-	void SetHitProgram(const std::wstring& identifier, const std::vector<void*>& inputs);
+	void AddRayGenerationProgram(const std::wstring& identifier, const std::vector<void*>& inputs);
+	void AddMissProgram(const std::wstring& identifier, const std::vector<void*>& inputs);
+	void AddHitProgram(const std::wstring& identifier, const std::vector<void*>& inputs);
 
 	const D3D12_DISPATCH_RAYS_DESC* GetDispatchRayDescription();
 
@@ -35,7 +35,7 @@ private:
 	// make sure to change 'Set' to 'Add' and instead make the individual entries vectors
 	ShaderTableEntry rayGenEntry;
 	ShaderTableEntry missEntry;
-	ShaderTableEntry hitEntry;
+	std::vector<ShaderTableEntry> hitEntries;
 
 	ComPtr<ID3D12Resource> shaderTable;
 	D3D12_DISPATCH_RAYS_DESC dispatchRayDescription;

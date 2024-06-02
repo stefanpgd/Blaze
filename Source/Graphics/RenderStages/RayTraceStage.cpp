@@ -10,10 +10,10 @@
 #include "Graphics/Mesh.h"
 #include "Graphics/Texture.h"
 #include "Graphics/EnvironmentMap.h"
+#include <vector>
 
 RayTraceStage::RayTraceStage(Scene* scene) : activeScene(scene)
 {	
-	mesh = activeScene->GetModels()[0]->GetMesh(0); // TODO: Of course replace with an actual loop over all meshes //
 	TLAS = new DXTopLevelAS(scene);
 
 	CreateShaderResources();
@@ -159,14 +159,20 @@ void RayTraceStage::InitializeShaderBindingTable()
 
 	auto rayGenTable = reinterpret_cast<UINT64*>(heap->GetGPUHandleAt(rayGenTableIndex).ptr);
 	auto settingsPtr = reinterpret_cast<UINT64*>(settingsBuffer->GetGPUVirtualAddress());
-	shaderTable->SetRayGenerationProgram(L"RayGen", { rayGenTable, settingsPtr, tlasPtr });
+	shaderTable->AddRayGenerationProgram(L"RayGen", { rayGenTable, settingsPtr, tlasPtr });
 
 	auto exrPtr = reinterpret_cast<UINT64*>(activeScene->GetEnvironementMap()->GetTexture()->GetSRV().ptr);
-	shaderTable->SetMissProgram(L"Miss", { exrPtr });
+	shaderTable->AddMissProgram(L"Miss", { exrPtr });
 
-	auto vertex = reinterpret_cast<UINT64*>(mesh->GetVertexBuffer()->GetGPUVirtualAddress());
-	auto index = reinterpret_cast<UINT64*>(mesh->GetIndexBuffer()->GetGPUVirtualAddress());
-	shaderTable->SetHitProgram(L"HitGroup", { vertex, index, tlasPtr });
+	const std::vector<Model*>& models = activeScene->GetModels();
+	for(int i = 0; i < models.size(); i++)
+	{
+		Mesh* mesh = models[i]->GetMesh(0);
+		auto vertex = reinterpret_cast<UINT64*>(mesh->GetVertexBuffer()->GetGPUVirtualAddress());
+		auto index = reinterpret_cast<UINT64*>(mesh->GetIndexBuffer()->GetGPUVirtualAddress());
+
+		shaderTable->AddHitProgram(L"HitGroup", { vertex, index, tlasPtr });
+	}
 
 	shaderTable->BuildShaderTable();
 }
