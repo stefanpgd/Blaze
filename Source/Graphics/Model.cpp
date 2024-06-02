@@ -1,12 +1,14 @@
 #include "Graphics/Model.h"
 #include "Graphics/Mesh.h"
 #include "Graphics/DXRayTracingUtilities.h"
+#include "Graphics/DXUploadBuffer.h"
 
 #include "Utilities/Logger.h"
 
 Model::Model(const std::string& filePath, bool isRayTracingGeometry) : isRayTracingGeometry(isRayTracingGeometry)
 {
 	Name = filePath.substr(filePath.find_last_of('\\') + 1);
+	materialBuffer = new DXUploadBuffer(&material, sizeof(Material));
 
 	tinygltf::Model model;
 	tinygltf::TinyGLTF loader;
@@ -38,6 +40,11 @@ Model::Model(Vertex* vertices, unsigned int vertexCount, unsigned int* indices, 
 	meshes.push_back(mesh);
 }
 
+void Model::UpdateMaterial()
+{
+	materialBuffer->UpdateData(&material);
+}
+
 Mesh* Model::GetMesh(int index)
 {
 	return meshes[index];
@@ -51,6 +58,11 @@ const std::vector<Mesh*>& Model::GetMeshes()
 unsigned int Model::GetMeshCount()
 {
 	return meshes.size();
+}
+
+D3D12_GPU_VIRTUAL_ADDRESS Model::GetMaterialGPUAddress()
+{
+	return materialBuffer->GetGPUVirtualAddress();
 }
 
 void Model::TraverseRootNodes(tinygltf::Model& model)

@@ -22,6 +22,7 @@ void Editor::Update(float deltaTime)
 	// Record calls for different windows //
 	Menubar();
 	TransformWindow();
+	MaterialWindow();
 }
 
 void Editor::Menubar()
@@ -58,21 +59,73 @@ void Editor::Menubar()
 
 void Editor::TransformWindow()
 {
-	Model* testModel = activeScene->GetModels()[0];
+	const std::vector<Model*>& models = activeScene->GetModels();
 	bool geometryMoved = false;
 
-	ImGui::Begin("Test Transform");
-	if(ImGui::DragFloat3("Position", &testModel->transform.Position[0], 0.05f)) { geometryMoved = true; }
-	if(ImGui::DragFloat3("Rotation", &testModel->transform.Rotation[0], 0.5f)) { geometryMoved = true; }
+	ImGui::Begin("Transform");
 
-	// TODO: Consider making this just a DragFloat to avoid the problem on non-uniform scaling //
-	if(ImGui::DragFloat3("Scale", &testModel->transform.Scale[0], 0.05f)) { geometryMoved = true; }
+	for(int i = 0; i < models.size(); i++)
+	{
+		Model* model = models[i];
+
+		ImGui::PushID(i);
+		ImGui::SeparatorText(model->Name.c_str());
+
+		if(ImGui::DragFloat3("Position", &model->transform.Position[0], 0.05f)) { geometryMoved = true; }
+		if(ImGui::DragFloat3("Rotation", &model->transform.Rotation[0], 0.5f)) { geometryMoved = true; }
+		if(ImGui::DragFloat3("Scale", &model->transform.Scale[0], 0.05f)) { geometryMoved = true; }
+
+		ImGui::Separator();
+		ImGui::PopID();
+	}
+	
 	ImGui::End();
 
 	if(geometryMoved)
 	{
 		// TODO: Again, similar to other stuff. There needs to be some 'reset scene'
 	    // function similar to 'Resize', this should be reset along side it
+		frameCount = 0;
+		activeScene->HasGeometryMoved = true;
+	}
+}
+
+void Editor::MaterialWindow()
+{
+	const std::vector<Model*>& models = activeScene->GetModels();
+
+	ImGui::Begin("Materials");
+
+	bool sceneUpdated = false;
+
+	for(int i = 0; i < models.size(); i++)
+	{
+		Model* model = models[i];
+		Material& material = model->material;
+		bool updateMaterial = false;
+
+		ImGui::PushID(i);
+		ImGui::SeparatorText(model->Name.c_str());
+
+		if(ImGui::ColorEdit3("Color", &material.color[0])) { updateMaterial = true; }
+		if(ImGui::Checkbox("Is Specular?", &material.isSpecular)) { updateMaterial = true; }
+		
+		if(updateMaterial)
+		{
+			model->UpdateMaterial();
+			sceneUpdated = true;
+		}
+
+		ImGui::Separator();
+		ImGui::PopID();
+	}
+
+	ImGui::End();
+
+	if(sceneUpdated)
+	{
+		// TODO: Again, similar to other stuff. There needs to be some 'reset scene'
+		// function similar to 'Resize', this should be reset along side it
 		frameCount = 0;
 		activeScene->HasGeometryMoved = true;
 	}

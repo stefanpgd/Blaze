@@ -10,6 +10,13 @@ StructuredBuffer<Vertex> VertexData : register(t0);
 StructuredBuffer<int> indices : register(t1);
 RaytracingAccelerationStructure SceneBVH : register(t2);
 
+struct Material
+{
+    float3 color;
+    bool isSpecular;
+};
+ConstantBuffer<Material> material : register(b0);
+
 [shader("closesthit")]
 void ClosestHit(inout HitInfo payload, Attributes attrib)
 {
@@ -32,68 +39,26 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
         return;
     }
 
-    float3 colorOutput = float3(0.85f, 0.85f, 0.85f);
-    //{
-    //    float3 intersection = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
-    //    float3 direction = reflect(WorldRayDirection(), normal);
-    //
-    //    RayDesc ray;
-    //    ray.Origin = intersection;
-    //    ray.Direction = direction;
-    //    ray.TMin = 0.001f;
-    //    ray.TMax = 100000;
-    //
-    //    HitInfo reflectLoad;
-    //    reflectLoad.depth = payload.depth;
-    //
-    //    TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, reflectLoad);
-    //    payload.color = reflectLoad.color * 0.95f;
-    //    return;
-    //}
+    float3 colorOutput = material.color;
     
- 
-    //if(InstanceID() == 0)
-    //{
-    //    float3 intersection = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
-    //    float3 direction = reflect(WorldRayDirection(), normal);
-    //    
-    //    RayDesc ray;
-    //    ray.Origin = intersection;
-    //    ray.Direction = direction;
-    //    ray.TMin = 0.001f;
-    //    ray.TMax = 100000;
-    //    
-    //    HitInfo reflectLoad;
-    //    reflectLoad.depth = payload.depth;
-    //    
-    //    TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, reflectLoad);
-    //    colorOutput = (reflectLoad.color * 0.15f) + float3(0.5f, 0.5f, 0.5f) * 0.85f;
-    //}
-    //else if(InstanceID() == 1)
-    //{
-    //    colorOutput = float3(1.0f, 1.0f, 1.0f);
-    //    
-    //    // Metallic
-    //    float3 intersection = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
-    //    float3 direction = reflect(WorldRayDirection(), normal);
-    //    
-    //    RayDesc ray;
-    //    ray.Origin = intersection;
-    //    ray.Direction = direction;
-    //    ray.TMin = 0.001f;
-    //    ray.TMax = 100000;
-    //    
-    //    HitInfo reflectLoad;
-    //    reflectLoad.depth = payload.depth;
-    //    
-    //    TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, reflectLoad);
-    //    payload.color = reflectLoad.color;
-    //    return;
-    //}
-    //else
-    //{
-    //    colorOutput = float3(1, 0.549, 0);
-    //}
+    if(material.isSpecular)
+    {
+        float3 intersection = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
+        float3 direction = reflect(WorldRayDirection(), normal);
+        
+        RayDesc ray;
+        ray.Origin = intersection;
+        ray.Direction = direction;
+        ray.TMin = 0.001f;
+        ray.TMax = 100000;
+        
+        HitInfo reflectLoad;
+        reflectLoad.depth = payload.depth;
+        
+        TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, reflectLoad);
+        payload.color = reflectLoad.color * material.color;
+        return;
+    }
     
     // Surface we hit is 'Diffuse' so we scatter //
     float3 materialColor = colorOutput;

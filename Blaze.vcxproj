@@ -185,6 +185,7 @@
     <ClInclude Include="Headers\Graphics\DXRayTracingUtilities.h" />
     <ClInclude Include="Headers\Framework\Editor.h" />
     <ClInclude Include="Headers\Graphics\DXShaderBindingTable.h" />
+    <ClInclude Include="Headers\Graphics\Material.h" />
     <ClInclude Include="Headers\Utilities\Random.h" />
     <ClInclude Include="Dependencies\ImGui\imconfig.h" />
     <ClInclude Include="Dependencies\ImGui\imgui.h" />

@@ -242,6 +242,9 @@
     <ClInclude Include="Headers\Graphics\DXUploadBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Headers\Graphics\Material.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\Miss.hlsl" />

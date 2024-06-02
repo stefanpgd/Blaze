@@ -15,6 +15,7 @@ public:
 private:
 	void Menubar();
 	void TransformWindow();
+	void MaterialWindow();
 
 	void ImGuiStyleSettings();
 
