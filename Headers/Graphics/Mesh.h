@@ -5,7 +5,12 @@
 
 #include "Graphics/DXCommon.h"
 #include "Framework/Mathematics.h"
+#include "Material.h"
+
 #include <tiny_gltf.h>
+
+class Texture;
+class DXUploadBuffer;
 
 struct Vertex
 {
@@ -13,8 +18,6 @@ struct Vertex
 	glm::vec2 UVCoord;
 	glm::vec3 Normal;
 };
-
-class Texture;
 
 class Mesh
 {
@@ -25,12 +28,15 @@ public:
 	Mesh(Vertex* vertices, unsigned int vertexCount, unsigned int* indices, 
 		unsigned int indexCount, bool isRayTracingGeometry = false);
 
+	void UpdateMaterial();
+
 	const D3D12_VERTEX_BUFFER_VIEW& GetVertexBufferView();
 	const D3D12_INDEX_BUFFER_VIEW& GetIndexBufferView();
 	const unsigned int GetIndicesCount();
 
 	ID3D12Resource* GetVertexBuffer();
 	ID3D12Resource* GetIndexBuffer();
+	D3D12_GPU_VIRTUAL_ADDRESS GetMaterialGPUAddress();
 
 	D3D12_RAYTRACING_GEOMETRY_DESC GetGeometryDescription();
 	ID3D12Resource* GetBLAS();
@@ -47,6 +53,7 @@ private:
 
 public:
 	std::string Name;
+	Material material;
 
 private:
 	// Vertex & Index Data //
@@ -61,6 +68,8 @@ private:
 
 	unsigned int verticesCount = 0;
 	unsigned int indicesCount = 0;
+
+	DXUploadBuffer* materialBuffer;
 
 	// Ray Tracing //
 	bool isRayTracingGeometry;

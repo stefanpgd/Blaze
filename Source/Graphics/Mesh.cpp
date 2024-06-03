@@ -2,6 +2,7 @@
 #include "Graphics/DXAccess.h"
 #include "Graphics/DXUtilities.h"
 #include "Graphics/DXRayTracingUtilities.h"
+#include "Graphics/DXUploadBuffer.h"
 #include "Graphics/Texture.h"
 #include "Graphics/DXCommands.h"
 #include "Framework/Mathematics.h"
@@ -9,6 +10,8 @@
 
 Mesh::Mesh(tinygltf::Model& model, tinygltf::Primitive& primitive, glm::mat4& transform, bool isRayTracingGeometry)
 {
+	materialBuffer = new DXUploadBuffer(&material, sizeof(Material));
+
 	LoadAttribute(model, primitive, "POSITION");
 	LoadAttribute(model, primitive, "TEXCOORD_0");
 	LoadAttribute(model, primitive, "NORMAL");
@@ -48,6 +51,11 @@ Mesh::Mesh(Vertex* verts, unsigned int vertexCount, unsigned int* indi,
 	}
 }
 
+void Mesh::UpdateMaterial()
+{
+	materialBuffer->UpdateData(&material);
+}
+
 const D3D12_VERTEX_BUFFER_VIEW& Mesh::GetVertexBufferView()
 {
 	return vertexBufferView;
@@ -71,6 +79,11 @@ ID3D12Resource* Mesh::GetVertexBuffer()
 ID3D12Resource* Mesh::GetIndexBuffer()
 {
 	return indexBuffer.Get();
+}
+
+D3D12_GPU_VIRTUAL_ADDRESS Mesh::GetMaterialGPUAddress()
+{
+	return materialBuffer->GetGPUVirtualAddress();
 }
 
 D3D12_RAYTRACING_GEOMETRY_DESC Mesh::GetGeometryDescription()

@@ -169,10 +169,15 @@ void RayTraceStage::InitializeShaderBindingTable()
 	for(Model* model : models)
 	{
 		const std::vector<Mesh*>& meshes = model->GetMeshes();
-		auto material = reinterpret_cast<UINT64*>(model->GetMaterialGPUAddress());
+		auto material = reinterpret_cast<UINT64*>(model->GetMesh(0)->GetMaterialGPUAddress());
 
 		for(Mesh* mesh : meshes)
 		{
+			if(!model->useSingleMaterial)
+			{
+				material = reinterpret_cast<UINT64*>(mesh->GetMaterialGPUAddress());
+			}
+
 			auto vertex = reinterpret_cast<UINT64*>(mesh->GetVertexBuffer()->GetGPUVirtualAddress());
 			auto index = reinterpret_cast<UINT64*>(mesh->GetIndexBuffer()->GetGPUVirtualAddress());
 

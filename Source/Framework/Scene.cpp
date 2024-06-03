@@ -20,6 +20,11 @@ Scene::Scene()
 	models[3]->transform.Rotation = glm::vec3(0.0f, 0.0f, 0.0f);
 	models[3]->transform.Scale = glm::vec3(0.75f, 0.75f, 0.75f);
 
+	AddModel("Assets/Models/MaterialKnob/materialKnob.gltf");
+	models[4]->transform.Position = glm::vec3(-0.65f, -0.537f, 3.75f);
+	models[4]->transform.Rotation = glm::vec3(0.0f, 32.5f, 0.0f);
+	models[4]->transform.Scale = glm::vec3(0.25f, 0.25f, 0.25f);
+
 	// Environment Map //
 	std::string exrPath = "Assets/EXRs/wharf.exr";
 	environmentMap = new EnvironmentMap(exrPath);

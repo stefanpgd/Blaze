@@ -9,11 +9,8 @@
 #include <d3d12.h>
 using namespace Microsoft::WRL;
 
-#include "Material.h"
-
 class Mesh;
 struct Vertex;
-class DXUploadBuffer;
 
 class Model
 {
@@ -23,13 +20,10 @@ public:
 	Model(Vertex* vertices, unsigned int vertexCount, unsigned int* indices,
 		unsigned int indexCount, bool isRayTracingGeometry = false);
 
-	void UpdateMaterial();
-
 	Mesh* GetMesh(int index);
 	const std::vector<Mesh*>& GetMeshes();
 	unsigned int GetMeshCount();
 
-	D3D12_GPU_VIRTUAL_ADDRESS GetMaterialGPUAddress();
 
 private:
 	void TraverseRootNodes(tinygltf::Model& model);
@@ -40,12 +34,13 @@ private:
 public:
 	Transform transform;
 	std::string Name;
-	Material material;
+
+	// When true, all meshes use the same material,
+	// When false, each mesh uses its own material settings
+	bool useSingleMaterial = true;
 
 private:
 	std::vector<Mesh*> meshes;
-
-	DXUploadBuffer* materialBuffer;
 
 	bool isRayTracingGeometry;
 };

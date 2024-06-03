@@ -2,6 +2,7 @@
 #include "Framework/Blaze.h"
 #include "Framework/Scene.h"
 #include "Graphics/Model.h"
+#include "Graphics/Mesh.h"
 
 #include <imgui.h>
 #include <string>
@@ -73,7 +74,11 @@ void Editor::TransformWindow()
 
 		if(ImGui::DragFloat3("Position", &model->transform.Position[0], 0.05f)) { geometryMoved = true; }
 		if(ImGui::DragFloat3("Rotation", &model->transform.Rotation[0], 0.5f)) { geometryMoved = true; }
-		if(ImGui::DragFloat3("Scale", &model->transform.Scale[0], 0.05f)) { geometryMoved = true; }
+		if(ImGui::DragFloat("Scale", &model->transform.Scale[0], 0.05f)) 
+		{ 
+			model->transform.Scale = glm::vec3(model->transform.Scale[0]);
+			geometryMoved = true; 
+		}
 
 		ImGui::Separator();
 		ImGui::PopID();
@@ -100,23 +105,51 @@ void Editor::MaterialWindow()
 
 	for(int i = 0; i < models.size(); i++)
 	{
-		Model* model = models[i];
-		Material& material = model->material;
-		bool updateMaterial = false;
-
 		ImGui::PushID(i);
-		ImGui::SeparatorText(model->Name.c_str());
 
-		if(ImGui::ColorEdit3("Color", &material.color[0])) { updateMaterial = true; }
-		if(ImGui::DragFloat("Specularity", &material.specularity, 0.001f, 0.0f, 1.0f)) { updateMaterial = true; }
-		
-		if(updateMaterial)
+		Model* model = models[i];
+		ImGui::SeparatorText(model->Name.c_str());
+		ImGui::Checkbox("Use Single Material", &model->useSingleMaterial);
+
+		if(model->useSingleMaterial)
 		{
-			model->UpdateMaterial();
-			sceneUpdated = true;
+			Material& material = model->GetMesh(0)->material;
+			bool updateMaterial = false;
+
+			if(ImGui::ColorEdit3("Color", &material.color[0])) { updateMaterial = true; }
+			if(ImGui::DragFloat("Specularity", &material.specularity, 0.001f, 0.0f, 1.0f)) { updateMaterial = true; }
+
+			if(updateMaterial)
+			{
+				model->GetMesh(0)->UpdateMaterial();
+				sceneUpdated = true;
+			}
+
+			ImGui::Separator();
+			ImGui::PopID();
+		}
+		else
+		{
+			for(int j = 0; j < model->GetMeshCount(); j++)
+			{
+				ImGui::PushID(100 + j * 30);
+
+				Material& material = model->GetMesh(j)->material;
+				bool updateMaterial = false;
+
+				if(ImGui::ColorEdit3("Color", &material.color[0])) { updateMaterial = true; }
+				if(ImGui::DragFloat("Specularity", &material.specularity, 0.001f, 0.0f, 1.0f)) { updateMaterial = true; }
+
+				if(updateMaterial)
+				{
+					model->GetMesh(j)->UpdateMaterial();
+					sceneUpdated = true;
+				}
+
+				ImGui::Separator();
+			}
 		}
 
-		ImGui::Separator();
 		ImGui::PopID();
 	}
 
