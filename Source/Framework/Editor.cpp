@@ -118,6 +118,7 @@ void Editor::MaterialWindow()
 
 			if(ImGui::ColorEdit3("Color", &material.color[0])) { updateMaterial = true; }
 			if(ImGui::DragFloat("Specularity", &material.specularity, 0.001f, 0.0f, 1.0f)) { updateMaterial = true; }
+			if(ImGui::Checkbox("Is Emissive", &material.isEmissive)) { updateMaterial = true; }
 
 			if(updateMaterial)
 			{
@@ -126,19 +127,19 @@ void Editor::MaterialWindow()
 			}
 
 			ImGui::Separator();
-			ImGui::PopID();
 		}
 		else
 		{
 			for(int j = 0; j < model->GetMeshCount(); j++)
 			{
-				ImGui::PushID(100 + j * 30);
+				ImGui::PushID(100 + (j * 10) + i);
 
 				Material& material = model->GetMesh(j)->material;
 				bool updateMaterial = false;
 
 				if(ImGui::ColorEdit3("Color", &material.color[0])) { updateMaterial = true; }
 				if(ImGui::DragFloat("Specularity", &material.specularity, 0.001f, 0.0f, 1.0f)) { updateMaterial = true; }
+				if(ImGui::Checkbox("Is Emissive", &material.isEmissive)) { updateMaterial = true; }
 
 				if(updateMaterial)
 				{
@@ -147,6 +148,7 @@ void Editor::MaterialWindow()
 				}
 
 				ImGui::Separator();
+				ImGui::PopID();
 			}
 		}
 

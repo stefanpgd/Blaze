@@ -14,6 +14,7 @@ struct Material
 {
     float3 color;
     float specularity;
+    bool isEmissive;
 };
 ConstantBuffer<Material> material : register(b0);
 
@@ -40,6 +41,12 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
     }
 
     float3 colorOutput = float3(0.0f, 0.0f, 0.0f);
+    
+    if(material.isEmissive)
+    {
+        payload.color = material.color;
+        return;
+    }
     
     if(material.specularity > 0.01f)
     {
