@@ -118,7 +118,8 @@ void Editor::MaterialWindow()
 
 			if(ImGui::ColorEdit3("Color", &material.color[0])) { updateMaterial = true; }
 			if(ImGui::DragFloat("Specularity", &material.specularity, 0.001f, 0.0f, 1.0f)) { updateMaterial = true; }
-			if(ImGui::Checkbox("Is Emissive", &material.isEmissive)) { updateMaterial = true; }
+			if(ImGui::Checkbox("Is Emissive", (bool*)&material.isEmissive)) { updateMaterial = true; }
+			if(ImGui::Checkbox("Is Dieletric", (bool*)&material.isDielectric)) { updateMaterial = true; }
 
 			if(updateMaterial)
 			{
@@ -139,7 +140,8 @@ void Editor::MaterialWindow()
 
 				if(ImGui::ColorEdit3("Color", &material.color[0])) { updateMaterial = true; }
 				if(ImGui::DragFloat("Specularity", &material.specularity, 0.001f, 0.0f, 1.0f)) { updateMaterial = true; }
-				if(ImGui::Checkbox("Is Emissive", &material.isEmissive)) { updateMaterial = true; }
+				if(ImGui::Checkbox("Is Emissive", (bool*)&material.isEmissive)) { updateMaterial = true; }
+				if(ImGui::Checkbox("Is Dieletric", (bool*)&material.isDielectric)) { updateMaterial = true; }
 
 				if(updateMaterial)
 				{

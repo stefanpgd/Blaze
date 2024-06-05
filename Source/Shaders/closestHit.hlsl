@@ -15,6 +15,7 @@ struct Material
     float3 color;
     float specularity;
     bool isEmissive;
+    bool isDielectric;
 };
 ConstantBuffer<Material> material : register(b0);
 
@@ -96,7 +97,7 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
     normal = normalize(mul(ObjectToWorld3x4(), float4(normal, 0.0f)).xyz);
     
     payload.depth += 1;
-    const uint maxDepth = 10;
+    const uint maxDepth = 6;
     
     if(payload.depth >= maxDepth)
     {
@@ -112,8 +113,8 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
         return;
     }
     
+    if(material.isDielectric)
     {
-        // DIELECTRIC
         float reflectance = Fresnel(WorldRayDirection(), normal, 1.51f);
         float transmittance = 1.0f - reflectance;
         float3 intersection = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
@@ -142,7 +143,7 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
             RayDesc ray;
             ray.Origin = intersection;
             ray.Direction = direction;
-            ray.TMin = 1.0f;
+            ray.TMin = 0.01f;
             ray.TMax = 100000;
         
             HitInfo refractLoad;
