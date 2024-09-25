@@ -49,7 +49,7 @@ private:
 
 	// Buffers for screen //
 	Texture* outputBuffer;
-	Texture* colorBuffer;
+	Texture* accumalationBuffer;
 
 	Scene* activeScene;
 };

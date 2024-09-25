@@ -75,7 +75,7 @@ void RayTraceStage::CreateShaderResources()
 	int height = DXAccess::GetWindow()->GetWindowHeight();
 
 	outputBuffer = new Texture(width, height, DXGI_FORMAT_R8G8B8A8_UNORM);
-	colorBuffer = new Texture(width, height, DXGI_FORMAT_R32G32B32A32_FLOAT);
+	accumalationBuffer = new Texture(width, height, DXGI_FORMAT_R32G32B32A32_FLOAT);
 
 	settingsBuffer = new DXUploadBuffer(&settings, sizeof(PipelineSettings));
 }
@@ -98,7 +98,7 @@ void RayTraceStage::CreateShaderDescriptors()
 
 	D3D12_UNORDERED_ACCESS_VIEW_DESC colorBufferDescription = {};
 	colorBufferDescription.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
-	device->CreateUnorderedAccessView(colorBuffer->GetAddress(), nullptr, &colorBufferDescription, handle);
+	device->CreateUnorderedAccessView(accumalationBuffer->GetAddress(), nullptr, &colorBufferDescription, handle);
 
 	handle = heap->GetCPUHandleAt(heap->GetNextAvailableIndex());
 }
@@ -111,7 +111,7 @@ void RayTraceStage::InitializePipeline()
 	// RayGen Root //
 	CD3DX12_DESCRIPTOR_RANGE rayGenRanges[2];
 	rayGenRanges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0); // Screen 
-	rayGenRanges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 1, 0); // Color Buffer 
+	rayGenRanges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 1, 0); // Accumalation Buffer 
 
 	CD3DX12_ROOT_PARAMETER rayGenParameters[3];
 	rayGenParameters[0].InitAsDescriptorTable(_countof(rayGenRanges), &rayGenRanges[0]);
@@ -169,6 +169,7 @@ void RayTraceStage::InitializeShaderBindingTable()
 	for(Model* model : models)
 	{
 		const std::vector<Mesh*>& meshes = model->GetMeshes();
+		// TODO: Instead of storing the material in Mesh 0, store it in Model
 		auto material = reinterpret_cast<UINT64*>(model->GetMesh(0)->GetMaterialGPUAddress());
 
 		for(Mesh* mesh : meshes)

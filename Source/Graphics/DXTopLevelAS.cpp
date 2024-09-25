@@ -9,10 +9,6 @@
 #include "Framework/Scene.h"
 #include "Framework/Mathematics.h"
 
-// TODO: Once we've a bit more control, such as an editor
-// we want to be able to pass "models", which already contain a transform we can link against
-// Then once we know the editor updates some transform, we can simply recompile
-// the TLAS
 DXTopLevelAS::DXTopLevelAS(Scene* scene) : activeScene(scene)
 {
 	BuildTLAS();
