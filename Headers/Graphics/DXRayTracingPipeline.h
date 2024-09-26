@@ -61,5 +61,4 @@ private:
 
 	ComPtr<ID3D12RootSignature> localDummyRootSignature;
 	ComPtr<ID3D12RootSignature> globalDummyRootSignature;
-
 };

@@ -116,7 +116,7 @@ inline void AddShaderPayloadSubobject(std::vector<D3D12_STATE_SUBOBJECT>& subobj
 	unsigned int payLoadSize, unsigned int attributeSize, const WCHAR** shaderExports, unsigned int exportCount)
 {
 	D3D12_RAYTRACING_SHADER_CONFIG* shaderDesc = new D3D12_RAYTRACING_SHADER_CONFIG();
-	shaderDesc->MaxPayloadSizeInBytes = payLoadSize;	// RGB and HitT
+	shaderDesc->MaxPayloadSizeInBytes = payLoadSize;	
 	shaderDesc->MaxAttributeSizeInBytes = attributeSize;
 
 	D3D12_STATE_SUBOBJECT shaderConfigObject = {};

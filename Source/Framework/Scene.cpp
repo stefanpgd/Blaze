@@ -9,6 +9,10 @@ Scene::Scene()
 	models[0]->transform.Rotation = glm::vec3(0.0f, -30.0f, 0.0f);
 	models[0]->transform.Scale = glm::vec3(2.0f, 2.0f, 2.0f);
 
+	//models[0]->transform.Position = glm::vec3(0.8f, -0.1f, 3.0f);
+	//models[0]->transform.Rotation = glm::vec3(6.5f, -56.0f, 65.0f);
+	//models[0]->transform.Scale = glm::vec3(2.0f, 2.0f, 2.0f);
+
 	AddModel("Assets/Models/GroundPlane/plane.gltf");
 	models[1]->transform.Position = glm::vec3(0.0f, -0.55f, 0.0f);
 	

@@ -98,9 +98,7 @@ void RayGen()
     color.y = (color.y * (a * color.y + b)) / (color.y * (c * color.y + d) + e);
     color.z = (color.z * (a * color.z + b)) / (color.z * (c * color.z + d) + e);
     
-    
     float gammaInverse = 1.0f / 2.4f;
-    
     color.x = pow(clamp(color.x, 0.0f, 1.0f), gammaInverse);
     color.y = pow(clamp(color.y, 0.0f, 1.0f), gammaInverse);
     color.z = pow(clamp(color.z, 0.0f, 1.0f), gammaInverse);

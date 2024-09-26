@@ -6,7 +6,7 @@ struct HitInfo
 };
 
 // Attributes output by the raytracing when hitting a surface,
-// here the barycentric coordinates
+// in this instance the barycentric coordinates
 struct Attributes
 {
     float2 bary;
