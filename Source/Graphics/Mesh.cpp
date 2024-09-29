@@ -17,9 +17,9 @@ Mesh::Mesh(tinygltf::Model& model, tinygltf::Primitive& primitive, glm::mat4& tr
 	LoadAttribute(model, primitive, "NORMAL");
 
 	LoadIndices(model, primitive);
+	LoadTexture(model, primitive);
 
 	ApplyNodeTransform(transform);
-
 	UploadBuffers();
 
 	if(isRayTracingGeometry)
@@ -270,6 +270,23 @@ void Mesh::ApplyNodeTransform(const glm::mat4 transform)
 
 		glm::vec4 norm = glm::vec4(vertex.Normal.x, vertex.Normal.y, vertex.Normal.z, 0.0f);
 		vertex.Normal = glm::normalize(transform * norm);
+	}
+}
+void Mesh::LoadTexture(tinygltf::Model& model, tinygltf::Primitive& primitive)
+{
+	tinygltf::Material& mat = model.materials[primitive.material];
+
+	int albedoID = mat.pbrMetallicRoughness.baseColorTexture.index;
+
+	// If there is no valid texture for a given type, -1 gets returned by TinyGLTF
+	if(albedoID != -1)
+	{
+		tinygltf::Image& image = model.images[albedoID];
+		diffuseTexture = new Texture(image.image.data(), image.width, image.height);
+	}
+	else
+	{
+		diffuseTexture = new Texture("Assets/Textures/missing.jpg");
 	}
 }
 #pragma endregion

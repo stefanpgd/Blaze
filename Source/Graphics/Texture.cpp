@@ -18,6 +18,29 @@ Texture::Texture(void* data, int width, int height, DXGI_FORMAT format, unsigned
 	CreateDescriptors();
 }
 
+Texture::Texture(const std::string& filePath)
+{
+	int width;
+	int height;
+	int channels;
+	unsigned char* buffer = stbi_load(filePath.c_str(), &width, &height, &channels, 4);
+
+	this->width = width;
+	this->height = height;
+	this->format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	formatSizeInBytes = 4;
+
+	if(buffer == NULL)
+	{
+		LOG(Log::MessageType::Error, "Unsuccesful with loading: " + filePath);
+		assert(false);
+	}
+
+	UploadData(buffer);
+	CreateDescriptors();
+	stbi_image_free(buffer);
+}
+
 Texture::~Texture()
 {
 	textureResource.Reset();

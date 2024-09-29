@@ -41,6 +41,9 @@ public:
 	D3D12_RAYTRACING_GEOMETRY_DESC GetGeometryDescription();
 	ID3D12Resource* GetBLAS();
 
+	// TEMP //
+	Texture* diffuseTexture;
+
 private:
 	void UploadBuffers();
 	void SetupGeometryDescription();
@@ -50,6 +53,7 @@ private:
 	void LoadAttribute(tinygltf::Model& model, tinygltf::Primitive& primitive, const std::string& attributeType);
 	void LoadIndices(tinygltf::Model& model, tinygltf::Primitive& primitive);
 	void ApplyNodeTransform(const glm::mat4 transform);
+	void LoadTexture(tinygltf::Model& model, tinygltf::Primitive& primitive);
 
 public:
 	std::string Name;
@@ -69,6 +73,7 @@ private:
 	unsigned int verticesCount = 0;
 	unsigned int indicesCount = 0;
 
+	// Texture & Material Data //
 	DXUploadBuffer* materialBuffer;
 
 	// Ray Tracing //

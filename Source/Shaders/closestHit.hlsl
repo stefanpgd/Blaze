@@ -9,6 +9,7 @@ struct Vertex
 StructuredBuffer<Vertex> VertexData : register(t0);
 StructuredBuffer<int> indices : register(t1);
 RaytracingAccelerationStructure SceneBVH : register(t2);
+Texture2D<float4> diffuseTexture : register(t3);
 
 struct Material
 {
@@ -39,12 +40,14 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
     float3 surfaceNormal = a.normal * baryCoords.x + b.normal * baryCoords.y + c.normal * baryCoords.z;
     surfaceNormal = normalize(mul(ObjectToWorld3x4(), float4(surfaceNormal, 0.0f)).xyz);
     
+    float2 uv = a.uv * baryCoords.x + b.uv * baryCoords.y + c.uv * baryCoords.z;
+    
     float3 sunDirection = normalize(float3(-0.4, 1, 0.5));
     float3 outputColor = 0.0f;
     
     // CAST SHADOW //
-    const int shadowRayCount = 8;
-    const float sunDiskSize = 0.05f;
+    const int shadowRayCount = 4;
+    const float sunDiskSize = 0.025f;
     float shadowAccumalation = 0.0f;
     
     for(int i = 0; i < shadowRayCount; i++)
@@ -69,8 +72,16 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
         }
     }
     
-    outputColor = material.color * max(dot(surfaceNormal, sunDirection), 0.05);
+    int width;
+    int height;
+    diffuseTexture.GetDimensions(width, height);
+    uint2 pixelLoc = uint2(uv.x * width, uv.y * height);
+    float3 diffuseColor = diffuseTexture[pixelLoc].rgb;
+    
+    outputColor = diffuseColor * max(dot(surfaceNormal, sunDirection), 0.05);
     float shadow = 1.0 - (shadowAccumalation / shadowRayCount);
+    shadow = max(shadow, 0.05f);
+    
     payload.color = outputColor * shadow;
     return;
 }
