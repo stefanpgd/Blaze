@@ -251,6 +251,7 @@
     <FxCompile Include="Source\Shaders\RayGen.hlsl" />
     <FxCompile Include="Source\Shaders\ClosestHit.hlsl" />
     <FxCompile Include="Source\Shaders\Common.hlsl" />
+    <FxCompile Include="Source\Shaders\ClosestHit-PT.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="Dependencies\Microsoft\dxil.dll" />

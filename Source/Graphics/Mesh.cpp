@@ -10,14 +10,12 @@
 
 Mesh::Mesh(tinygltf::Model& model, tinygltf::Primitive& primitive, glm::mat4& transform, bool isRayTracingGeometry)
 {
-	materialBuffer = new DXUploadBuffer(&material, sizeof(Material));
-
+	// Geometry Data //
 	LoadAttribute(model, primitive, "POSITION");
 	LoadAttribute(model, primitive, "TEXCOORD_0");
 	LoadAttribute(model, primitive, "NORMAL");
 
 	LoadIndices(model, primitive);
-	LoadTexture(model, primitive);
 
 	ApplyNodeTransform(transform);
 	UploadBuffers();
@@ -27,6 +25,10 @@ Mesh::Mesh(tinygltf::Model& model, tinygltf::Primitive& primitive, glm::mat4& tr
 		SetupGeometryDescription();
 		BuildBLAS();
 	}
+
+	// Material & Texture Data //
+	LoadTexture(model, primitive);
+	materialBuffer = new DXUploadBuffer(&material, sizeof(Material));
 }
 
 Mesh::Mesh(Vertex* verts, unsigned int vertexCount, unsigned int* indi,
@@ -274,19 +276,22 @@ void Mesh::ApplyNodeTransform(const glm::mat4 transform)
 }
 void Mesh::LoadTexture(tinygltf::Model& model, tinygltf::Primitive& primitive)
 {
-	tinygltf::Material& mat = model.materials[primitive.material];
-
-	int albedoID = mat.pbrMetallicRoughness.baseColorTexture.index;
-
-	// If there is no valid texture for a given type, -1 gets returned by TinyGLTF
-	if(albedoID != -1)
+	if(model.materials.size() > 0)
 	{
-		tinygltf::Image& image = model.images[albedoID];
-		diffuseTexture = new Texture(image.image.data(), image.width, image.height);
+		tinygltf::Material& mat = model.materials[primitive.material];
+		int albedoID = mat.pbrMetallicRoughness.baseColorTexture.index;
+
+		// If there is no valid texture for a given type, -1 gets returned by TinyGLTF
+		if(albedoID != -1)
+		{
+			tinygltf::Image& image = model.images[albedoID];
+			diffuseTexture = new Texture(image.image.data(), image.width, image.height);
+			material.hasTextures = true;
+
+			return;
+		}
 	}
-	else
-	{
-		diffuseTexture = new Texture("Assets/Textures/missing.jpg");
-	}
+
+	diffuseTexture = new Texture("Assets/Textures/missing.png");
 }
 #pragma endregion

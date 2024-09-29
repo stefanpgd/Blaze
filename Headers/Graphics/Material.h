@@ -6,5 +6,6 @@ struct Material
 	float specularity = 0.0f;
 	BOOL isEmissive = false;
 	BOOL isDielectric = false;
-	float stubs[58];
+	BOOL hasTextures = false;
+	float stubs[57];
 };

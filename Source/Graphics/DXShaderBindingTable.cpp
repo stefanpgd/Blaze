@@ -87,7 +87,7 @@ void DXShaderBindingTable::CalculateShaderTableSizes()
 
 	shaderRecordSize = shaderIdentifierSize;
 	shaderRecordSize += maxInputs * sizeof(UINT64);
-	shaderRecordSize = ALIGN(D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT, shaderRecordSize);
+	shaderRecordSize = ALIGN(D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT, shaderRecordSize);
 
 	// 3) Determine the shader table size //
 	shaderTableSize = shaderRecordSize * (2 + hitEntries.size()); // RayGen, Miss and all hit entries 

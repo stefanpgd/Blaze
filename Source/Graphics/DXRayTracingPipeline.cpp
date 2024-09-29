@@ -23,7 +23,7 @@ DXRayTracingPipeline::DXRayTracingPipeline(DXRayTracingPipelineSettings settings
 	library->CreateIncludeHandler(&dxcIncludeHandler);
 
 	CompileShaderLibrary(rayGenLibrary, L"RayGen.hlsl");
-	CompileShaderLibrary(hitLibrary, L"ClosestHit.hlsl");
+	CompileShaderLibrary(hitLibrary, L"ClosestHit-PT.hlsl");
 	CompileShaderLibrary(missLibrary, L"Miss.hlsl");
 
 	// Create pipeline & make shader binding table //

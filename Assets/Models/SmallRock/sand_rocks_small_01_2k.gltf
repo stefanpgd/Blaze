@@ -1,0 +1,160 @@
+{
+  "asset": {
+    "generator": "Khronos glTF Blender I/O v3.5.30",
+    "version": "2.0"
+  },
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "Scene",
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "mesh": 0,
+      "name": "sand_rocks_small_01_LOD0"
+    }
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "name": "sand_rocks_small_01",
+      "normalTexture": {
+        "index": 0
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 1
+        },
+        "metallicFactor": 0,
+        "metallicRoughnessTexture": {
+          "index": 2
+        }
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "sand_rocks_small_type_01_remesh.001",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "TEXCOORD_0": 1,
+            "NORMAL": 2
+          },
+          "indices": 3,
+          "material": 0
+        }
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "sampler": 0,
+      "source": 0
+    },
+    {
+      "sampler": 0,
+      "source": 1
+    },
+    {
+      "sampler": 0,
+      "source": 2
+    }
+  ],
+  "images": [
+    {
+      "mimeType": "image/jpeg",
+      "name": "sand_rocks_small_01_nor_gl",
+      "uri": "textures/sand_rocks_small_01_nor_gl_2k.jpg"
+    },
+    {
+      "mimeType": "image/jpeg",
+      "name": "sand_rocks_small_01_diff",
+      "uri": "textures/sand_rocks_small_01_diff_2k.jpg"
+    },
+    {
+      "mimeType": "image/jpeg",
+      "name": "sand_rocks_small_01_rough",
+      "uri": "textures/sand_rocks_small_01_arm_2k.jpg"
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 386857,
+      "max": [
+        2.151606321334839,
+        0.43050116300582886,
+        1.9666516780853271
+      ],
+      "min": [
+        -2.4749865531921387,
+        -0.10438916087150574,
+        -1.916453242301941
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 386857,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 386857,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5125,
+      "count": 2218407,
+      "type": "SCALAR"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 4642284,
+      "byteOffset": 0,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 3094856,
+      "byteOffset": 4642284,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 4642284,
+      "byteOffset": 7737140,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 8873628,
+      "byteOffset": 12379424,
+      "target": 34963
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9987
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 21253052,
+      "uri": "sand_rocks_small_01.bin"
+    }
+  ]
+}
