@@ -128,13 +128,17 @@ void RayTraceStage::InitializePipeline()
 	CD3DX12_DESCRIPTOR_RANGE hitNormalRange[1];
 	hitNormalRange[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 4, 0); // Normal 
 
-	CD3DX12_ROOT_PARAMETER hitParameters[6];
+	CD3DX12_DESCRIPTOR_RANGE hitORMRange[1];
+	hitORMRange[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 5, 0); // Normal 
+
+	CD3DX12_ROOT_PARAMETER hitParameters[7];
 	hitParameters[0].InitAsShaderResourceView(0, 0); // Vertex buffer
 	hitParameters[1].InitAsShaderResourceView(1, 0); // Index buffer
 	hitParameters[2].InitAsShaderResourceView(2, 0); // TLAS Scene 
 	hitParameters[3].InitAsConstantBufferView(0, 0); // Material 
 	hitParameters[4].InitAsDescriptorTable(_countof(hitTextureRanges), &hitTextureRanges[0]); 
 	hitParameters[5].InitAsDescriptorTable(_countof(hitNormalRange), &hitNormalRange[0]);  
+	hitParameters[6].InitAsDescriptorTable(_countof(hitORMRange), &hitORMRange[0]);
 
 	settings.hitParameters = &hitParameters[0];
 	settings.hitParameterCount = _countof(hitParameters);
@@ -191,8 +195,10 @@ void RayTraceStage::InitializeShaderBindingTable()
 			auto index = reinterpret_cast<UINT64*>(mesh->GetIndexBuffer()->GetGPUVirtualAddress());
 			auto diffuseTex = reinterpret_cast<UINT64*>(mesh->diffuseTexture->GetSRV().ptr);
 			auto normalTex = reinterpret_cast<UINT64*>(mesh->normalTexture->GetSRV().ptr);
+			auto ormTex = reinterpret_cast<UINT64*>(mesh->ORMTexture->GetSRV().ptr);
 
-			shaderTable->AddHitProgram(L"HitGroup", { vertex, index, tlasPtr, material, diffuseTex, normalTex });
+			shaderTable->AddHitProgram(L"HitGroup", { vertex, index, tlasPtr, material, 
+				diffuseTex, normalTex, ormTex });
 		}
 	}
 

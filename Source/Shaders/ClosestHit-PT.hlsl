@@ -12,6 +12,7 @@ StructuredBuffer<int> indices : register(t1);
 RaytracingAccelerationStructure SceneBVH : register(t2);
 Texture2D<float4> diffuseTexture : register(t3);
 Texture2D<float4> normalTexture : register(t4);
+Texture2D<float4> ormTexture : register(t5);
 
 struct Material
 {
@@ -21,6 +22,7 @@ struct Material
     bool isDielectric;
     bool hasTextures;
     bool hasNormal;
+    bool hasORM;
 };
 ConstantBuffer<Material> material : register(b0);
 
@@ -110,10 +112,12 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
     uint2 textureSampleLocation = uint2(uv.x * width, uv.y * height);
     
     float3 materialColor = material.color;
-        
+    float alpha = 1.0;
+    
     if(material.hasTextures)
     {
         materialColor = diffuseTexture[textureSampleLocation].rgb;
+        alpha = diffuseTexture[textureSampleLocation].a;
     }
     
     if(material.hasNormal)
@@ -126,6 +130,11 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
         
         float3 n = (normalTexture[textureSampleLocation].rgb * 2.0) - float3(1.0, 1.0, 1.0);
         normal = normalize(mul(n, TBN));
+    }
+    
+    if(material.hasORM)
+    {
+        // stub //
     }
         
     payload.depth += 1;
@@ -145,10 +154,10 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
         return;
     }
     
-    if(material.isDielectric)
+    if(material.isDielectric || alpha < 1.0)
     {
         float reflectance = Fresnel(WorldRayDirection(), normal, 1.51f);
-        float transmittance = 1.0f - reflectance;
+        float transmittance = 1.0 - reflectance;
         float3 intersection = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
         
         if(reflectance > 0.0f)
@@ -208,7 +217,7 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
     }
     
     // Surface we hit is 'Diffuse' so we scatter //
-    if(1.0f - material.specularity > 0.01f)
+    if(1.0f - material.specularity > 0.01f && alpha >= 0.99)
     {        
         float3 BRDF = materialColor / PI; // TODO: Read that article Jacco send about the distribution by Pi
     

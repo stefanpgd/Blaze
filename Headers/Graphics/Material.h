@@ -1,5 +1,7 @@
 #pragma once
 
+// TODO:
+// Do some bit-shifting/FLAG stuff and send that over to the GPU with a matching checker in Common.hlsl
 struct Material
 {
 	float color[3] = { 1.0f, 1.0f, 1.0f };
@@ -8,5 +10,6 @@ struct Material
 	BOOL isDielectric = false;
 	BOOL hasTextures = false;
 	BOOL hasNormal = false;
-	float stubs[56];
+	BOOL hasORM = false;
+	float stubs[55];
 };

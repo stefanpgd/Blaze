@@ -308,11 +308,23 @@ void Mesh::LoadTexture(tinygltf::Model& model, tinygltf::Primitive& primitive)
 			normalTexture = new Texture("Assets/Textures/missing.png");
 		}
 
+		int occlusionID = mat.occlusionTexture.index;
+		if (occlusionID != -1)
+		{
+			tinygltf::Image& image = model.images[occlusionID];
+			ORMTexture = new Texture(image.image.data(), image.width, image.height);
+			material.hasORM = true;
+		}
+		else
+		{
+			ORMTexture = new Texture("Assets/Textures/missing.png");
+		}
 		return;
 	}
 
 	diffuseTexture = new Texture("Assets/Textures/missing.png");
 	normalTexture = new Texture("Assets/Textures/missing.png");
+	ORMTexture = new Texture("Assets/Textures/missing.png");
 }
 
 void Mesh::GenerateTangents()

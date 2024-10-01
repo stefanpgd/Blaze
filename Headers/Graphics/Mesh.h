@@ -45,6 +45,7 @@ public:
 	// TEMP //
 	Texture* diffuseTexture;
 	Texture* normalTexture;
+	Texture* ORMTexture;
 
 private:
 	void UploadBuffers();
