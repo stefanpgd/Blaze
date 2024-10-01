@@ -7,5 +7,6 @@ struct Material
 	BOOL isEmissive = false;
 	BOOL isDielectric = false;
 	BOOL hasTextures = false;
-	float stubs[57];
+	BOOL hasNormal = false;
+	float stubs[56];
 };

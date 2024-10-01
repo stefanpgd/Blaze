@@ -14,8 +14,10 @@ Mesh::Mesh(tinygltf::Model& model, tinygltf::Primitive& primitive, glm::mat4& tr
 	LoadAttribute(model, primitive, "POSITION");
 	LoadAttribute(model, primitive, "TEXCOORD_0");
 	LoadAttribute(model, primitive, "NORMAL");
+	LoadAttribute(model, primitive, "TANGENT");
 
 	LoadIndices(model, primitive);
+	GenerateTangents();
 
 	ApplyNodeTransform(transform);
 	UploadBuffers();
@@ -228,6 +230,10 @@ void Mesh::LoadAttribute(tinygltf::Model& model, tinygltf::Primitive& primitive,
 		{
 			memcpy(&vertex.Normal, &buffer.data[bufferLocation], dataSize);
 		}
+		else if (attributeType == "TANGENT")
+		{
+			memcpy(&vertex.Tangent, &buffer.data[bufferLocation], dataSize);
+		}
 	}
 }
 
@@ -287,11 +293,66 @@ void Mesh::LoadTexture(tinygltf::Model& model, tinygltf::Primitive& primitive)
 			tinygltf::Image& image = model.images[albedoID];
 			diffuseTexture = new Texture(image.image.data(), image.width, image.height);
 			material.hasTextures = true;
-
-			return;
 		}
+
+		// Super duper temp... //
+		int normalID = mat.normalTexture.index;
+		if (normalID != -1)
+		{
+			tinygltf::Image& image = model.images[normalID];
+			normalTexture = new Texture(image.image.data(), image.width, image.height);
+			material.hasNormal = true;
+		}
+		else
+		{
+			normalTexture = new Texture("Assets/Textures/missing.png");
+		}
+
+		return;
 	}
 
 	diffuseTexture = new Texture("Assets/Textures/missing.png");
+}
+
+void Mesh::GenerateTangents()
+{
+	Vertex& vertex = vertices[0];
+
+	// Incase the vertex doesn't have the default value of a zero-vector
+	// it means that the Tangent attribute was present for the model
+	// if not, we need to generate them.
+	if (vertex.Tangent != glm::vec3(0.0f))
+	{
+		return;
+	}
+
+	// Grab the average tangent of all triangles in the model //
+	for (unsigned int i = 0; i < indices.size(); i += 3)
+	{
+		Vertex& v0 = vertices[indices[i]];
+		Vertex& v1 = vertices[indices[i + 1]];
+		Vertex& v2 = vertices[indices[i + 2]];
+
+		glm::vec3 tangent;
+
+		// Edges of triangles //
+		glm::vec3 edge1 = v1.Position - v0.Position;
+		glm::vec3 edge2 = v2.Position - v0.Position;
+
+		// UV deltas //
+		glm::vec2 deltaUV1 = v1.UVCoord - v0.UVCoord;
+		glm::vec2 deltaUV2 = v2.UVCoord - v0.UVCoord;
+
+		float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+		tangent = (edge1 * deltaUV2.y - edge2 * deltaUV1.y) * f;
+
+		v0.Tangent += tangent;
+		v1.Tangent += tangent;
+		v2.Tangent += tangent;
+
+		v0.Tangent = glm::normalize(v0.Tangent);
+		v1.Tangent = glm::normalize(v1.Tangent);
+		v2.Tangent = glm::normalize(v2.Tangent);
+	}
 }
 #pragma endregion

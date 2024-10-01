@@ -5,6 +5,7 @@ struct Vertex
     float3 position;
     float2 uv;
     float3 normal;
+    float3 tangent;
 };
 StructuredBuffer<Vertex> VertexData : register(t0);
 StructuredBuffer<int> indices : register(t1);
@@ -17,6 +18,8 @@ struct Material
     float specularity;
     bool isEmissive;
     bool isDielectric;
+    bool hasTextures;
+    bool hasNormal;
 };
 ConstantBuffer<Material> material : register(b0);
 

@@ -17,6 +17,7 @@ struct Vertex
 	glm::vec3 Position;
 	glm::vec2 UVCoord;
 	glm::vec3 Normal;
+	glm::vec3 Tangent;
 };
 
 class Mesh
@@ -43,6 +44,7 @@ public:
 
 	// TEMP //
 	Texture* diffuseTexture;
+	Texture* normalTexture;
 
 private:
 	void UploadBuffers();
@@ -54,6 +56,7 @@ private:
 	void LoadIndices(tinygltf::Model& model, tinygltf::Primitive& primitive);
 	void ApplyNodeTransform(const glm::mat4 transform);
 	void LoadTexture(tinygltf::Model& model, tinygltf::Primitive& primitive);
+	void GenerateTangents();
 
 public:
 	std::string Name;

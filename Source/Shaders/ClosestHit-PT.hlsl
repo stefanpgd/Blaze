@@ -5,11 +5,13 @@ struct Vertex
     float3 position;
     float2 uv;
     float3 normal;
+    float3 tangent;
 };
 StructuredBuffer<Vertex> VertexData : register(t0);
 StructuredBuffer<int> indices : register(t1);
 RaytracingAccelerationStructure SceneBVH : register(t2);
 Texture2D<float4> diffuseTexture : register(t3);
+Texture2D<float4> normalTexture : register(t4);
 
 struct Material
 {
@@ -18,6 +20,7 @@ struct Material
     bool isEmissive;
     bool isDielectric;
     bool hasTextures;
+    bool hasNormal;
 };
 ConstantBuffer<Material> material : register(b0);
 
@@ -88,6 +91,10 @@ float3 refract2(float3 incoming, float3 normal, float IoR)
 [shader("closesthit")]
 void ClosestHit(inout HitInfo payload, Attributes attrib)
 {
+    int width;
+    int height;
+    diffuseTexture.GetDimensions(width, height);
+    
     uint vertID = PrimitiveIndex() * 3;
     
     Vertex a = VertexData[indices[vertID]];
@@ -95,22 +102,32 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
     Vertex c = VertexData[indices[vertID + 2]];
     
     float3 baryCoords = float3(1.0f - attrib.bary.x - attrib.bary.y, attrib.bary.x, attrib.bary.y);
+    
     float3 normal = a.normal * baryCoords.x + b.normal * baryCoords.y + c.normal * baryCoords.z;
     normal = normalize(mul(ObjectToWorld3x4(), float4(normal, 0.0f)).xyz);
-     
+    
     float2 uv = frac((a.uv * baryCoords.x) + (b.uv * baryCoords.y) + (c.uv * baryCoords.z));
+    uint2 textureSampleLocation = uint2(uv.x * width, uv.y * height);
     
     float3 materialColor = material.color;
         
     if(material.hasTextures)
     {
-        int width;
-        int height;
-        diffuseTexture.GetDimensions(width, height);
-        uint2 pixelLoc = uint2(uv.x * width, uv.y * height);
-        materialColor = diffuseTexture[pixelLoc].rgb;
+        materialColor = diffuseTexture[textureSampleLocation].rgb;
     }
     
+    if(material.hasNormal)
+    {
+        float3 tangent = a.tangent * baryCoords.x + b.tangent * baryCoords.y + c.tangent * baryCoords.z;
+        tangent = normalize(mul(ObjectToWorld3x4(), float4(tangent, 0.0f)).xyz);
+        
+        float3 biTangent = cross(normal, tangent);
+        float3x3 TBN = float3x3(tangent, biTangent, normal);
+        
+        float3 n = (normalTexture[textureSampleLocation].rgb * 2.0) - float3(1.0, 1.0, 1.0);
+        //normal = normalize(mul(n, TBN));
+    }
+        
     payload.depth += 1;
     const uint maxDepth = 6;
     
