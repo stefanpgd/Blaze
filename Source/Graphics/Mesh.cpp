@@ -232,7 +232,7 @@ void Mesh::LoadAttribute(tinygltf::Model& model, tinygltf::Primitive& primitive,
 		}
 		else if (attributeType == "TANGENT")
 		{
-			memcpy(&vertex.Tangent, &buffer.data[bufferLocation], dataSize);
+			memcpy(&vertex.Tangent, &buffer.data[bufferLocation], sizeof(float) * 3);
 		}
 	}
 }
