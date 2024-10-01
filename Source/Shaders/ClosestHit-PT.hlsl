@@ -125,7 +125,7 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
         float3x3 TBN = float3x3(tangent, biTangent, normal);
         
         float3 n = (normalTexture[textureSampleLocation].rgb * 2.0) - float3(1.0, 1.0, 1.0);
-        //normal = normalize(mul(n, TBN));
+        normal = normalize(mul(n, TBN));
     }
         
     payload.depth += 1;

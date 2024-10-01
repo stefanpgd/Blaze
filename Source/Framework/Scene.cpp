@@ -4,21 +4,28 @@
 
 Scene::Scene()
 {
-	//AddModel("Assets/Models/FlightHelmet/FlightHelmet.gltf");
-	//models[0]->transform.Position = glm::vec3(0.8f, -0.55f, 3.0f);
-	//models[0]->transform.Rotation = glm::vec3(0.0f, -30.0f, 0.0f);
-	//models[0]->transform.Scale = glm::vec3(2.0f, 2.0f, 2.0f);
+	AddModel("Assets/Models/FlightHelmet/FlightHelmet.gltf");
+	models[0]->transform.Position = glm::vec3(0.8f, -0.55f, 3.0f);
+	models[0]->transform.Rotation = glm::vec3(0.0f, -30.0f, 0.0f);
+	models[0]->transform.Scale = glm::vec3(2.0f, 2.0f, 2.0f);
 
 	//models[0]->transform.Position = glm::vec3(0.8f, -0.1f, 3.0f);
 	//models[0]->transform.Rotation = glm::vec3(6.5f, -56.0f, 65.0f);
 	//models[0]->transform.Scale = glm::vec3(2.0f, 2.0f, 2.0f);
 
-	AddModel("Assets/Models/Rock/coast_rocks_05_2k.gltf");
-	AddModel("Assets/Models/SmallRock/sand_rocks_small_01_2k.gltf");
+	//AddModel("Assets/Models/Rock/coast_rocks_05_2k.gltf");
+	//models[0]->transform.Position = glm::vec3(0.0, -0.7, -3.76);
+	//models[0]->transform.Rotation = glm::vec3(0.0, -21.5, 0.0);
+	//models[0]->transform.Scale = glm::vec3(2.0);
+	//
+	//AddModel("Assets/Models/GroundPlane/plane.gltf");
+	//models[1]->transform.Position = glm::vec3(0.0f, -0.65f, 0.0f);
+	//
+	//AddModel("Assets/Models/SmallRock/sand_rocks_small_01_2k.gltf");
+	//models[2]->transform.Position = glm::vec3(0.0, -0.555, 0.42);
+	//models[2]->transform.Rotation = glm::vec3(2.8, -206, 0.0);
+	//models[2]->transform.Scale = glm::vec3(1.25);
 
-	AddModel("Assets/Models/GroundPlane/plane.gltf");
-	models[1]->transform.Position = glm::vec3(0.0f, -0.55f, 0.0f);
-	
 	//AddModel("Assets/Models/Dragon/dragon.gltf");
 	//models[2]->transform.Rotation = glm::vec3(0.0f, 40.0f, 0.0f);
 	////

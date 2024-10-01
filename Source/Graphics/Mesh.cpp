@@ -312,6 +312,7 @@ void Mesh::LoadTexture(tinygltf::Model& model, tinygltf::Primitive& primitive)
 	}
 
 	diffuseTexture = new Texture("Assets/Textures/missing.png");
+	normalTexture = new Texture("Assets/Textures/missing.png");
 }
 
 void Mesh::GenerateTangents()
