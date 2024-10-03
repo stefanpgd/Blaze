@@ -15,19 +15,19 @@ class DXUploadBuffer;
 struct Vertex
 {
 	glm::vec3 Position;
-	glm::vec2 UVCoord;
 	glm::vec3 Normal;
 	glm::vec3 Tangent;
+	glm::vec2 TextureCoord0;
 };
 
 class Mesh
 {
 public:
-	Mesh(tinygltf::Model& model, tinygltf::Primitive& primitive, 
-		glm::mat4& transform, bool isRayTracingGeometry = false);
-
 	Mesh(Vertex* vertices, unsigned int vertexCount, unsigned int* indices, 
 		unsigned int indexCount, bool isRayTracingGeometry = false);
+
+	Mesh(tinygltf::Model& model, tinygltf::Primitive& primitive,
+		glm::mat4& transform, bool isRayTracingGeometry = false);
 
 	void UpdateMaterial();
 
@@ -39,6 +39,7 @@ public:
 	ID3D12Resource* GetIndexBuffer();
 	D3D12_GPU_VIRTUAL_ADDRESS GetMaterialGPUAddress();
 
+	// Ray Tracing //
 	D3D12_RAYTRACING_GEOMETRY_DESC GetGeometryDescription();
 	ID3D12Resource* GetBLAS();
 
@@ -48,16 +49,10 @@ public:
 	Texture* ORMTexture;
 
 private:
-	void UploadBuffers();
+	void GenerateTangents();
+	void UploadGeometryBuffers();
 	void SetupGeometryDescription();
 	void BuildBLAS();
-
-	// TinyGLTF Loading //
-	void LoadAttribute(tinygltf::Model& model, tinygltf::Primitive& primitive, const std::string& attributeType);
-	void LoadIndices(tinygltf::Model& model, tinygltf::Primitive& primitive);
-	void ApplyNodeTransform(const glm::mat4 transform);
-	void LoadTexture(tinygltf::Model& model, tinygltf::Primitive& primitive);
-	void GenerateTangents();
 
 public:
 	std::string Name;

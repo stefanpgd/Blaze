@@ -221,6 +221,7 @@
     <ClInclude Include="Headers\Graphics\Model.h" />
     <ClInclude Include="Headers\Framework\Scene.h" />
     <ClInclude Include="Headers\Graphics\EnvironmentMap.h" />
+    <ClInclude Include="Headers\Graphics\Extensions\Mesh_TinyglTF.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\ClosestHit-PT.hlsl">

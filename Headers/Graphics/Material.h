@@ -8,7 +8,7 @@ struct Material
 	float specularity = 0.0f;
 	BOOL isEmissive = false;
 	BOOL isDielectric = false;
-	BOOL hasTextures = false;
+	BOOL hasDiffuse = false;
 	BOOL hasNormal = false;
 	BOOL hasORM = false;
 	float stubs[55];

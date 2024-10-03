@@ -3,9 +3,9 @@
 struct Vertex
 {
     float3 position;
-    float2 uv;
     float3 normal;
     float3 tangent;
+    float2 texCoord0;
 };
 StructuredBuffer<Vertex> VertexData : register(t0);
 StructuredBuffer<int> indices : register(t1);
@@ -20,7 +20,7 @@ struct Material
     float specularity;
     bool isEmissive;
     bool isDielectric;
-    bool hasTextures;
+    bool hasDiffuse;
     bool hasNormal;
     bool hasORM;
 };
@@ -108,15 +108,15 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
     float3 normal = a.normal * baryCoords.x + b.normal * baryCoords.y + c.normal * baryCoords.z;
     normal = normalize(mul(ObjectToWorld3x4(), float4(normal, 0.0f)).xyz);
     
-    float2 uv = frac((a.uv * baryCoords.x) + (b.uv * baryCoords.y) + (c.uv * baryCoords.z));
+    float2 uv = frac((a.texCoord0 * baryCoords.x) + (b.texCoord0 * baryCoords.y) + (c.texCoord0 * baryCoords.z));
     uint2 textureSampleLocation = uint2(uv.x * width, uv.y * height);
     
     float3 materialColor = material.color;
     float alpha = 1.0;
     
-    if(material.hasTextures)
+    if(material.hasDiffuse)
     {
-        materialColor = diffuseTexture[textureSampleLocation].rgb;
+        materialColor = diffuseTexture[textureSampleLocation].rgb * material.color;
         alpha = diffuseTexture[textureSampleLocation].a;
     }
     

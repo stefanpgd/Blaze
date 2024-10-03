@@ -154,7 +154,6 @@ void RayTraceStage::InitializePipeline()
 	settings.missParameterCount = _countof(missParameters);
 
 	settings.payLoadSize = sizeof(float) * 5; // RGB, Depth, Seed
-
 	rayTracePipeline = new DXRayTracingPipeline(settings);
 }
 

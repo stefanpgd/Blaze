@@ -9,12 +9,12 @@
 #pragma region Acceleration Structure Helpers
 
 inline void AllocateAccelerationStructureMemory(const D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS& inputs,
-	ID3D12Resource** scratch, ID3D12Resource** result, D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS flag = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE)
+	ID3D12Resource** scratch, ID3D12Resource** result)
 {
 	ComPtr<ID3D12Device5> device = DXAccess::GetDevice();
 
 	D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO prebuildInfo = {};
-	device->GetRaytracingAccelerationStructurePrebuildInfo(&inputs, &prebuildInfo); flag;
+	device->GetRaytracingAccelerationStructurePrebuildInfo(&inputs, &prebuildInfo);
 
 	D3D12_HEAP_PROPERTIES gpuHeap = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
 	D3D12_RESOURCE_DESC scratchDesc = CD3DX12_RESOURCE_DESC::Buffer(prebuildInfo.ScratchDataSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);

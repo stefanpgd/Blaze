@@ -245,6 +245,9 @@
     <ClInclude Include="Headers\Graphics\Material.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Headers\Graphics\Extensions\Mesh_TinyglTF.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\Miss.hlsl" />
