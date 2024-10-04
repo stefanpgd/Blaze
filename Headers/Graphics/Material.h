@@ -6,9 +6,10 @@ struct Material
 {
 	float color[3] = { 1.0f, 1.0f, 1.0f };
 	int materialType;
+	float specularity;
 	float IOR = 1.0f;
 	BOOL hasDiffuse = false;
 	BOOL hasNormal = false;
 	BOOL hasORM = false;
-	float stubs[56];
+	float stubs[55];
 };

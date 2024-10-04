@@ -18,6 +18,7 @@ struct Material
 {
     float3 color;
     int materialType;
+    float specularity;
     float IOR;
     bool hasDiffuse;
     bool hasNormal;
@@ -25,7 +26,7 @@ struct Material
 };
 ConstantBuffer<Material> material : register(b0);
 
-float3 ComputeConductorRadiance(float3 albedo, float3 normal, float3 currentDepth)
+float3 ComputeConductorRadiance(float3 albedo, float3 normal, in HitInfo payload)
 {
     float3 radiance = 0.0f;
     
@@ -39,7 +40,8 @@ float3 ComputeConductorRadiance(float3 albedo, float3 normal, float3 currentDept
     ray.TMax = 100000;
         
     HitInfo reflectLoad;
-    reflectLoad.depth = currentDepth;
+    reflectLoad.seed = payload.seed;
+    reflectLoad.depth = payload.depth;
         
     TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, reflectLoad);
     radiance += reflectLoad.color * albedo;
@@ -47,7 +49,7 @@ float3 ComputeConductorRadiance(float3 albedo, float3 normal, float3 currentDept
     return radiance;
 }
 
-float3 ComputeTransmissionRadiance(float3 albedo, float3 normal, float3 currentDepth)
+float3 ComputeTransmissionRadiance(float3 albedo, float3 normal, in HitInfo payload)
 {
     float3 radiance = 0.0f;
     
@@ -66,7 +68,8 @@ float3 ComputeTransmissionRadiance(float3 albedo, float3 normal, float3 currentD
         ray.TMax = 100000;
         
         HitInfo reflectLoad;
-        reflectLoad.depth = currentDepth;
+        reflectLoad.seed = payload.seed;
+        reflectLoad.depth = payload.depth;
         
         TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, reflectLoad);
         radiance += reflectLoad.color * albedo * reflectance;
@@ -83,7 +86,8 @@ float3 ComputeTransmissionRadiance(float3 albedo, float3 normal, float3 currentD
         ray.TMax = 100000;
         
         HitInfo refractLoad;
-        refractLoad.depth = currentDepth;
+        refractLoad.seed = payload.seed;
+        refractLoad.depth = payload.depth;
         
         TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, refractLoad);
         radiance += refractLoad.color * albedo * transmittance;
@@ -97,7 +101,9 @@ float3 ComputeDielectricRadiance(float3 albedo, float3 normal, in HitInfo payloa
     float3 radiance = 0.0f;
  
     float3 intersection = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
-    float specularFactor = saturate(Fresnel(WorldRayDirection(), normal, material.IOR));
+    
+    float fresnel = Fresnel(WorldRayDirection(), normal, material.IOR);
+    float specularFactor = clamp(material.specularity + fresnel, material.specularity, 1);
     float diffuseFactor = 1.0 - specularFactor;
     
     if (diffuseFactor > 0.01)
@@ -120,6 +126,7 @@ float3 ComputeDielectricRadiance(float3 albedo, float3 normal, in HitInfo payloa
         ray.TMax = 100000;
     
         HitInfo diffuseLoad;
+        diffuseLoad.seed = payload.seed;
         diffuseLoad.depth = payload.depth;
         
         TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, diffuseLoad);
@@ -133,14 +140,6 @@ float3 ComputeDielectricRadiance(float3 albedo, float3 normal, in HitInfo payloa
     {
         float3 direction = reflect(WorldRayDirection(), normal);
         
-        const float roughnessOffset = 0.3f;
-        float3 randomInSphere = 0.0f;
-        randomInSphere.x = RandomInRange(payload.seed, -roughnessOffset, roughnessOffset);
-        randomInSphere.y = RandomInRange(payload.seed, -roughnessOffset, roughnessOffset);
-        randomInSphere.z = RandomInRange(payload.seed, -roughnessOffset, roughnessOffset);
-        
-        direction += randomInSphere;
-        
         RayDesc ray;
         ray.Origin = intersection;
         ray.Direction = direction;
@@ -148,12 +147,46 @@ float3 ComputeDielectricRadiance(float3 albedo, float3 normal, in HitInfo payloa
         ray.TMax = 100000;
         
         HitInfo reflectLoad;
+        reflectLoad.seed = payload.seed;
         reflectLoad.depth = payload.depth;
         
         TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, reflectLoad);
         radiance += reflectLoad.color * albedo * specularFactor;
     }
     
+    return radiance;
+}
+
+float3 ComputePureDiffuse(float3 albedo, float3 normal, in HitInfo payload)
+{
+    float3 radiance;
+    float3 BRDF = albedo / PI;
+    
+    float3 direction = RandomUnitVector(payload.seed);
+    if(dot(normal, direction) < 0.0f)
+    {
+            // Normal is facing inwards //
+        direction *= -1.0f;
+    }
+    
+    float cosI = dot(normal, direction);
+    float3 intersection = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
+    
+    RayDesc ray;
+    ray.Origin = intersection;
+    ray.Direction = direction;
+    ray.TMin = 0.001f;
+    ray.TMax = 100000;
+    
+    HitInfo diffuseLoad;
+    diffuseLoad.seed = payload.seed;
+    diffuseLoad.depth = payload.depth;
+        
+    TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, diffuseLoad);
+    float3 irradiance = diffuseLoad.color * cosI;
+    
+    float3 diffuse = (PI * 2.0f * BRDF * irradiance);
+    radiance = diffuse;
     return radiance;
 }
 
@@ -210,16 +243,19 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
     float3 colorOutput = float3(0.0f, 0.0f, 0.0f);
     switch(material.materialType)
     {
-        case 0: // Dielectric 
+        case 0: // Pure Diffuse
+            colorOutput = ComputePureDiffuse(albedo, normal, payload);
+            break;
+        case 1: // Dielectric 
             colorOutput = ComputeDielectricRadiance(albedo, normal, payload);
             break;
-        case 1: // Conductor
-            colorOutput = ComputeConductorRadiance(albedo, normal, payload.depth);
+        case 2: // Conductor
+            colorOutput = ComputeConductorRadiance(albedo, normal, payload);
             break;
-        case 2: // Transmissive (Glass)
-            colorOutput = ComputeTransmissionRadiance(albedo, normal, payload.depth);
+        case 3: // Transmissive (Glass)
+            colorOutput = ComputeTransmissionRadiance(albedo, normal, payload);
             break;
-        case 3: // Emissive 
+        case 4: // Emissive 
             colorOutput = albedo;
             break;
     }
