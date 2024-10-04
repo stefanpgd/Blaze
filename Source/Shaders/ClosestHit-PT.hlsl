@@ -17,9 +17,8 @@ Texture2D<float4> ormTexture : register(t5);
 struct Material
 {
     float3 color;
-    float specularity;
-    bool isEmissive;
-    bool isDielectric;
+    int materialType;
+    float IOR;
     bool hasDiffuse;
     bool hasNormal;
     bool hasORM;
@@ -52,7 +51,7 @@ float3 ComputeTransmissionRadiance(float3 albedo, float3 normal, float3 currentD
 {
     float3 radiance = 0.0f;
     
-    float reflectance = Fresnel(WorldRayDirection(), normal, 1.51f);
+    float reflectance = Fresnel(WorldRayDirection(), normal, material.IOR);
     float transmittance = 1.0 - reflectance;
     float3 intersection = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
         
@@ -75,7 +74,7 @@ float3 ComputeTransmissionRadiance(float3 albedo, float3 normal, float3 currentD
         
     if (transmittance > 0.0f)
     {
-        float3 direction = refract2(WorldRayDirection(), normal, 1.51f);
+        float3 direction = refract2(WorldRayDirection(), normal, material.IOR);
         
         RayDesc ray;
         ray.Origin = intersection;
@@ -96,17 +95,14 @@ float3 ComputeTransmissionRadiance(float3 albedo, float3 normal, float3 currentD
 float3 ComputeDielectricRadiance(float3 albedo, float3 normal, in HitInfo payload)
 {
     float3 radiance = 0.0f;
-    
-    const float IOR = 1.519f; // TODO: Move to material struct
-    
+ 
     float3 intersection = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
-    
-    float specularFactor = Fresnel(WorldRayDirection(), normal, IOR);
+    float specularFactor = saturate(Fresnel(WorldRayDirection(), normal, material.IOR));
     float diffuseFactor = 1.0 - specularFactor;
     
     if (diffuseFactor > 0.01)
     {
-        float3 BRDF = albedo / PI; // TODO: Read that article Jacco send about the distribution by Pi
+        float3 BRDF = albedo / PI;
     
         float3 direction = RandomUnitVector(payload.seed);
         if (dot(normal, direction) < 0.0f)
@@ -129,7 +125,7 @@ float3 ComputeDielectricRadiance(float3 albedo, float3 normal, in HitInfo payloa
         TraceRay(SceneBVH, RAY_FLAG_NONE, 0xFF, 0, 0, 0, ray, diffuseLoad);
         float3 irradiance = diffuseLoad.color * cosI;
     
-        float3 diffuse = (PI * 2.0f * BRDF * irradiance) * (1.0f - material.specularity);
+        float3 diffuse = (PI * 2.0f * BRDF * irradiance) * diffuseFactor;
         radiance += diffuse;
     }
     
@@ -212,13 +208,21 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
     
     // Calculate Radiance //
     float3 colorOutput = float3(0.0f, 0.0f, 0.0f);
-    
-    if (material.isEmissive)
+    switch(material.materialType)
     {
-        payload.color = albedo;
-        return;
+        case 0: // Dielectric 
+            colorOutput = ComputeDielectricRadiance(albedo, normal, payload);
+            break;
+        case 1: // Conductor
+            colorOutput = ComputeConductorRadiance(albedo, normal, payload.depth);
+            break;
+        case 2: // Transmissive (Glass)
+            colorOutput = ComputeTransmissionRadiance(albedo, normal, payload.depth);
+            break;
+        case 3: // Emissive 
+            colorOutput = albedo;
+            break;
     }
     
-    colorOutput = ComputeDielectricRadiance(albedo, normal, payload);
     payload.color = colorOutput;
 }

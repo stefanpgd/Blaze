@@ -1,3 +1,4 @@
+// REGION - Buffers & Materials //
 struct HitInfo
 {
     float3 color;
@@ -11,9 +12,9 @@ struct Attributes
 {
     float2 bary;
 };
-
 static float PI = 3.14159265;
 
+// REGION - Randomness //
 float Random01(inout uint seed)
 {
     // XorShift32
@@ -38,6 +39,7 @@ float3 RandomUnitVector(inout uint seed)
     return normalize(vec);
 }
 
+// REGION - Utility Functions //
 float Fresnel(float3 incoming, float3 normal, float IoR)
 {
     float cosI = dot(incoming, normal);

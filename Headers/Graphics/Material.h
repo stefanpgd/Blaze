@@ -5,11 +5,10 @@
 struct Material
 {
 	float color[3] = { 1.0f, 1.0f, 1.0f };
-	float specularity = 0.0f;
-	BOOL isEmissive = false;
-	BOOL isDielectric = false;
+	int materialType;
+	float IOR = 1.0f;
 	BOOL hasDiffuse = false;
 	BOOL hasNormal = false;
 	BOOL hasORM = false;
-	float stubs[55];
+	float stubs[56];
 };

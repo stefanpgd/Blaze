@@ -117,9 +117,8 @@ void Editor::MaterialWindow()
 			bool updateMaterial = false;
 
 			if(ImGui::ColorEdit3("Color", &material.color[0])) { updateMaterial = true; }
-			if(ImGui::DragFloat("Specularity", &material.specularity, 0.001f, 0.0f, 1.0f)) { updateMaterial = true; }
-			if(ImGui::Checkbox("Is Emissive", (bool*)&material.isEmissive)) { updateMaterial = true; }
-			if(ImGui::Checkbox("Is Dieletric", (bool*)&material.isDielectric)) { updateMaterial = true; }
+			if(ImGui::SliderInt("Material Type", &material.materialType, 0, 3)) { updateMaterial = true; }
+			if(ImGui::DragFloat("Index of Refraction", &material.IOR, 0.001f, 0.0f, 5.0f)) { updateMaterial = true; }
 
 			if(updateMaterial)
 			{
@@ -139,9 +138,8 @@ void Editor::MaterialWindow()
 				bool updateMaterial = false;
 
 				if(ImGui::ColorEdit3("Color", &material.color[0])) { updateMaterial = true; }
-				if(ImGui::DragFloat("Specularity", &material.specularity, 0.001f, 0.0f, 1.0f)) { updateMaterial = true; }
-				if(ImGui::Checkbox("Is Emissive", (bool*)&material.isEmissive)) { updateMaterial = true; }
-				if(ImGui::Checkbox("Is Dieletric", (bool*)&material.isDielectric)) { updateMaterial = true; }
+				if(ImGui::SliderInt("Material Type", &material.materialType, 0, 3)) { updateMaterial = true; }
+				if(ImGui::DragFloat("Index of Refraction", &material.IOR, 0.001f, 0.0f, 5.0f)) { updateMaterial = true; }
 
 				if(updateMaterial)
 				{
