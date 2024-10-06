@@ -35,7 +35,7 @@ float3 RandomUnitVector(inout uint seed)
     float y = RandomInRange(seed, -1.0f, 1.0f);
     float z = RandomInRange(seed, -1.0f, 1.0f);
     
-    float3 vec = float3(x, y, z);
+    float3 vec = tan(float3(x, y, z));
     return normalize(vec);
 }
 

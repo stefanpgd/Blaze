@@ -8,8 +8,9 @@ struct Material
 	int materialType;
 	float specularity;
 	float IOR = 1.0f;
+	float roughness = 0.0f;
 	BOOL hasDiffuse = false;
 	BOOL hasNormal = false;
 	BOOL hasORM = false;
-	float stubs[55];
+	float stubs[54];
 };

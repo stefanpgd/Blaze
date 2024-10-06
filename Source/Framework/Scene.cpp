@@ -17,10 +17,10 @@ Scene::Scene()
 	AddModel("Assets/Models/GroundPlane/plane.gltf");
 	models[2]->transform.Position = glm::vec3(0.0f, -0.70f, 0.0);
 
-	AddModel("Assets/Models/Camera/Camera_01_4k.gltf");
+	//AddModel("Assets/Models/Sphere/sphere.gltf");
 
 	// Environment Map //
-	std::string exrPath = "Assets/EXRs/studio.exr";
+	std::string exrPath = "Assets/EXRs/wharf.exr";
 	environmentMap = new EnvironmentMap(exrPath);
 }
 

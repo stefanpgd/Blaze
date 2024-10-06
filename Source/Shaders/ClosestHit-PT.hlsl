@@ -20,6 +20,7 @@ struct Material
     int materialType;
     float specularity;
     float IOR;
+    float roughness;
     bool hasDiffuse;
     bool hasNormal;
     bool hasORM;
@@ -32,6 +33,12 @@ float3 ComputeConductorRadiance(float3 albedo, float3 normal, in HitInfo payload
     
     float3 intersection = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
     float3 direction = reflect(WorldRayDirection(), normal);
+    
+    if(material.roughness > 0.0f)
+    {
+        float3 offset = RandomUnitVector(payload.seed) * material.roughness;
+        direction = normalize(direction + offset);
+    }
         
     RayDesc ray;
     ray.Origin = intersection;
