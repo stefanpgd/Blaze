@@ -27,16 +27,16 @@ struct Material
 };
 ConstantBuffer<Material> material : register(b0);
 
-float3 ComputeConductorRadiance(float3 albedo, float3 normal, in HitInfo payload)
+float3 ComputeConductorRadiance(float3 albedo, float3 normal, float roughness, in HitInfo payload)
 {
     float3 radiance = 0.0f;
     
     float3 intersection = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
     float3 direction = reflect(WorldRayDirection(), normal);
     
-    if(material.roughness > 0.0f)
+    if(roughness > 0.0f)
     {
-        float3 offset = RandomUnitVector(payload.seed) * material.roughness;
+        float3 offset = RandomUnitVector(payload.seed) * roughness;
         direction = normalize(direction + offset);
     }
         
@@ -103,13 +103,16 @@ float3 ComputeTransmissionRadiance(float3 albedo, float3 normal, in HitInfo payl
     return radiance;
 }
 
-float3 ComputeDielectricRadiance(float3 albedo, float3 normal, in HitInfo payload)
+float3 ComputeDielectricRadiance(float3 albedo, float3 normal, float roughness, in HitInfo payload)
 {
     float3 radiance = 0.0f;
  
     float3 intersection = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
     
     float fresnel = Fresnel(WorldRayDirection(), normal, material.IOR);
+    
+    // Normally, we only take into account fresnel for dielectrics to determine its specularity (as far as I'm aware)
+    // but here we've the option to biist it a bit more in case we need it.
     float specularFactor = clamp(material.specularity + fresnel, material.specularity, 1);
     float diffuseFactor = 1.0 - specularFactor;
     
@@ -124,7 +127,7 @@ float3 ComputeDielectricRadiance(float3 albedo, float3 normal, in HitInfo payloa
             direction *= -1.0f;
         }
     
-        float cosI = dot(normal, direction);
+        float cosI = saturate(dot(normal, direction));
     
         RayDesc ray;
         ray.Origin = intersection;
@@ -146,6 +149,12 @@ float3 ComputeDielectricRadiance(float3 albedo, float3 normal, in HitInfo payloa
     if(specularFactor > 0.01)
     {
         float3 direction = reflect(WorldRayDirection(), normal);
+        
+        if(roughness > 0.0f)
+        {
+            float3 offset = RandomUnitVector(payload.seed) * roughness;
+            direction = normalize(direction + offset);
+        }
         
         RayDesc ray;
         ray.Origin = intersection;
@@ -246,6 +255,12 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
         normal = normalize(mul(n, TBN));
     }
     
+    float roughness = material.roughness;
+    if(material.hasORM)
+    {
+        roughness = clamp(ormTexture[textureSampleLocation].g, material.roughness, 1.0);
+    }
+    
     // Calculate Radiance //
     float3 colorOutput = float3(0.0f, 0.0f, 0.0f);
     switch(material.materialType)
@@ -254,10 +269,10 @@ void ClosestHit(inout HitInfo payload, Attributes attrib)
             colorOutput = ComputePureDiffuse(albedo, normal, payload);
             break;
         case 1: // Dielectric 
-            colorOutput = ComputeDielectricRadiance(albedo, normal, payload);
+            colorOutput = ComputeDielectricRadiance(albedo, normal, roughness, payload);
             break;
         case 2: // Conductor
-            colorOutput = ComputeConductorRadiance(albedo, normal, payload);
+            colorOutput = ComputeConductorRadiance(albedo, normal, roughness, payload);
             break;
         case 3: // Transmissive (Glass)
             colorOutput = ComputeTransmissionRadiance(albedo, normal, payload);

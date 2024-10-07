@@ -33,7 +33,7 @@ Mesh::Mesh(tinygltf::Model& model, tinygltf::Primitive& primitive, glm::mat4& tr
 	// Material & Texture Data //
 	material.hasDiffuse = glTFLoadTextureByType(&diffuseTexture, glTFTextureType::BaseColor, model, primitive);
 	material.hasNormal = glTFLoadTextureByType(&normalTexture, glTFTextureType::Normal, model, primitive);
-	material.hasORM = glTFLoadTextureByType(&ORMTexture, glTFTextureType::Occlusion, model, primitive);
+	material.hasORM = glTFLoadTextureByType(&ORMTexture, glTFTextureType::MetallicRoughness, model, primitive);
 
 	materialBuffer = new DXUploadBuffer(&material, sizeof(Material));
 }
