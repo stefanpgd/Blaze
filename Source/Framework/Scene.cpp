@@ -8,16 +8,19 @@ Scene::Scene()
 	models[0]->transform.Position = glm::vec3(-0.79f, -0.70f, 3.65f);
 	models[0]->transform.Rotation = glm::vec3(0.0f, 37.0f, 0.0f);
 	models[0]->transform.Scale = glm::vec3(2.25f);
-
+	
 	AddModel("Assets/Models/Chess/chess_set_2k.gltf");
 	models[1]->transform.Position = glm::vec3(0.5f, -0.707f, 3.15f);
 	models[1]->transform.Rotation = glm::vec3(0.0f, 33.0f, 0.0f);
 	models[1]->transform.Scale = glm::vec3(3.0f);
-
+	
 	AddModel("Assets/Models/Table/side_table_01_8k.gltf");
 	models[2]->transform.Position = glm::vec3(0.08f, -4.27f, 3.24f);
 	models[2]->transform.Rotation = glm::vec3(0.0f, 0.0f, 0.0f);
 	models[2]->transform.Scale = glm::vec3(6.5f);
+
+	AddModel("Assets/Models/FlightHelmet/FlightHelmet.gltf");
+
 
 	// Environment Map //
 	std::string exrPath = "Assets/EXRs/wharf.exr";

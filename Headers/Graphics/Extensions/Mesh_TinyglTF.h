@@ -5,6 +5,7 @@
 #include <vector>
 #include "Graphics/Mesh.h"
 #include "Utilities/Logger.h"
+#include "Graphics/TextureManager.h"
 
 enum glTFTextureType
 {
@@ -176,7 +177,19 @@ inline bool glTFLoadTextureByType(Texture** texture, glTFTextureType type, tinyg
 		if(textureIndex != -1)
 		{
 			tinygltf::Image& image = model.images[textureIndex];
-			*texture = new Texture(image.image.data(), image.width, image.height);
+
+			// Load or Store textures into teh TextureManager
+			if(TextureManager::IsStored(image.uri))
+			{
+				*texture = TextureManager::GetTexture(image.uri);
+			}
+			else
+			{
+				Texture* imageTexture = new Texture(image.image.data(), image.width, image.height);
+				TextureManager::AddTexture(image.uri, imageTexture);
+				*texture = imageTexture;
+			}
+
 			return true;
 		}
 	}

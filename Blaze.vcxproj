@@ -178,6 +178,7 @@
     <ClCompile Include="Source\Framework\Blaze.cpp" />
     <ClCompile Include="Source\main.cpp" />
     <ClCompile Include="Source\Graphics\DXTopLevelAS.cpp" />
+    <ClCompile Include="Source\Graphics\TextureManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\Graphics\DXUploadBuffer.h" />
@@ -222,6 +223,7 @@
     <ClInclude Include="Headers\Framework\Scene.h" />
     <ClInclude Include="Headers\Graphics\EnvironmentMap.h" />
     <ClInclude Include="Headers\Graphics\Extensions\Mesh_TinyglTF.h" />
+    <ClInclude Include="Headers\Graphics\TextureManager.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Source\Shaders\ClosestHit-PT.hlsl">
